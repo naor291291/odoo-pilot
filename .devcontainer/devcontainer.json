@@ -1,0 +1,16 @@
+{
+  "name": "Odoo 18 Pilot",
+  "dockerComposeFile": "compose.yaml",
+  "service": "odoo",
+  "workspaceFolder": "/workspaces/odoo-pilot",
+  "remoteUser": "odoo",
+  "updateRemoteUserUID": true,
+  "overrideCommand": false,
+  "shutdownAction": "stopCompose",
+  "forwardPorts": [8069],
+  "portsAttributes": {
+    "8069": {"label": "Odoo Pilot", "onAutoForward": "notify", "protocol": "http"}
+  },
+  "postStartCommand": "python3 scripts/pilot.py start",
+  "postAttachCommand": "python3 scripts/pilot.py status"
+}
