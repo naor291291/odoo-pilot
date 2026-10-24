@@ -92,7 +92,7 @@ python3 scripts/pilot.py status
 
 ## בדיקות
 
-ה־workflow שב־Actions מריץ את 19 בדיקות האינטגרציה על Odoo ו־PostgreSQL אמיתיים.
+ה־workflow שב־Actions מריץ את 20 בדיקות האינטגרציה על Odoo ו־PostgreSQL אמיתיים, כולל בדיקת מעבר נתוני גרסה קודמת ובדיקת הפעלה מחדש.
 אפשר להריץ אותן גם מהטרמינל של Codespaces:
 
 ```bash
