@@ -1,5 +1,7 @@
 import base64
+import importlib.util
 from io import BytesIO
+from pathlib import Path
 
 from PIL import Image
 from odoo.exceptions import AccessError, UserError, ValidationError
@@ -180,3 +182,20 @@ class TestFieldWorkPhotos(TransactionCase):
         task = self.task()
         with self.assertRaises(UserError), self.cr.savepoint():
             task.write({'field_after_image': base64.b64encode(b'not an image')})
+
+    def test_upgrade_preserves_legacy_photos_and_requires_review(self):
+        task = self.task(field_before_image=self.photo, field_after_image=self.photo)
+        # Emulate a v1 completion, which predates the review invariant.
+        self.env.flush_all()
+        self.cr.execute("UPDATE project_task SET state = '1_done' WHERE id = %s", (task.id,))
+        task.invalidate_recordset(['state'])
+        path = Path(__file__).resolve().parents[1] / 'migrations/18.0.2.0.0/post-migrate.py'
+        spec = importlib.util.spec_from_file_location('field_review_migration', path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        module.migrate(self.cr, '18.0.1.0.0')
+        self.assertEqual(task.field_review_state, 'pending')
+        self.assertNotEqual(task.state, '1_done')
+        self.assertTrue(task.field_before_image)
+        self.assertTrue(task.field_after_image)
+        self.assertFalse(task.field_approved_by)
