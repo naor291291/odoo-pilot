@@ -252,3 +252,25 @@ class TestFieldDispatch(TransactionCase):
         self.assertEqual(form.xpath('//field[@name="stage_id"]')[0].get('readonly'), '1')
         kanban = etree.fromstring(self.env.ref('field_work_photos.view_field_lead_kanban').arch_db)
         self.assertEqual(kanban.get('records_draggable'), 'false')
+
+    def test_conversion_cannot_start_midway(self):
+        lead = self.env['crm.lead'].with_user(self.ops).create({'name': 'Ordinary lead'})
+        with self.assertRaises(ValidationError), self.cr.savepoint():
+            lead.write({'is_field_service': True, 'stage_id': self.env.ref('field_work_photos.stage_field_field').id})
+        self.assertFalse(lead.is_field_service)
+
+    def test_copy_starts_new_without_a_linked_task(self):
+        lead, task = self.dispatch()
+        duplicate = lead.copy()
+        self.assertEqual(duplicate.field_dispatch_code, 'new')
+        self.assertFalse(duplicate.field_task_ids)
+
+    def test_action_defaults_to_field_team_and_first_stage(self):
+        from odoo.tools.safe_eval import safe_eval
+        action = self.env.ref('field_work_photos.action_field_service_leads')
+        context = safe_eval(action.context)
+        self.assertEqual(context['default_stage_id'], self.env.ref('field_work_photos.stage_field_new').id)
+        self.assertEqual(context['default_team_id'], self.env.ref('field_work_photos.team_field_service').id)
+        defaults = self.env['crm.lead'].with_user(self.ops).with_context(**context).default_get(['stage_id', 'is_field_service'])
+        self.assertTrue(defaults['is_field_service'])
+        self.assertEqual(defaults['stage_id'], context['default_stage_id'])

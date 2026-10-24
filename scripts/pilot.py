@@ -57,7 +57,7 @@ def config(path, data_dir, master_password, database):
         "data_dir": str(data_dir),
         "admin_passwd": master_password,
         "db_host": os.environ.get("PGHOST", "db"),
-        "db_port": os.environ.get("PGPORT", "5432"),
+        "db_port": os.environ.get("PGPORT", "5732"),
         "db_user": os.environ.get("PGUSER", "odoo"),
         "db_password": os.environ.get("PGPASSWORD", "odoo_pilot_dev_only"),
         "db_name": database,
@@ -258,8 +258,8 @@ def test():
         if result.returncode:
             raise SystemExit(result.returncode)
         count = len(re.findall(r"Starting Test(FieldWorkPhotos|FieldDispatch|FieldPortal)\.test_", result.stdout))
-        if count < 54 or not re.search(r"0 failed, 0 error\(s\)", result.stdout):
-            raise SystemExit("Expected all 54 field-review, dispatch and portal tests to pass; inspect the log.")
+        if count < 57 or not re.search(r"0 failed, 0 error\(s\)", result.stdout):
+            raise SystemExit("Expected all 57 field-review, dispatch and portal tests to pass; inspect the log.")
         print(f"Verified {count} Odoo integration tests.")
 
 

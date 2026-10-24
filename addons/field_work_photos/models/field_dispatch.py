@@ -146,7 +146,8 @@ class CrmLead(models.Model):
             if vals.get('is_field_service', self.env.context.get('default_is_field_service')):
                 self._require_dispatcher()
                 vals.setdefault('team_id', self.env.ref('field_work_photos.team_field_service').id)
-                vals.setdefault('stage_id', self.env.ref('field_work_photos.stage_field_new').id)
+                if not vals.get('stage_id'):
+                    vals['stage_id'] = self.env.ref('field_work_photos.stage_field_new').id
                 vals.setdefault('type', 'opportunity')
                 if self.env['crm.stage'].browse(vals['stage_id']).field_dispatch_code != 'new':
                     raise ValidationError('פניית שטח חדשה מתחילה בשלב לקוח חדש / פנייה. יש להתקדם באמצעות המשך.')
@@ -158,6 +159,11 @@ class CrmLead(models.Model):
         service = self.filtered('is_field_service')
         if service or vals.get('is_field_service'):
             self._require_dispatcher()
+        if vals.get('is_field_service'):
+            for lead in self - service:
+                stage = self.env['crm.stage'].browse(vals['stage_id']) if vals.get('stage_id') else lead.stage_id
+                if stage.field_dispatch_code != 'new':
+                    raise ValidationError('המרה לפניית שטח מתחילה בשלב לקוח חדש / פנייה בלבד.')
         if service and vals.get('is_field_service') is False:
             raise ValidationError('לא ניתן להסיר את סוג פניית השטח לאחר יצירתה.')
         if 'field_task_ids' in vals:

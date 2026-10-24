@@ -51,6 +51,13 @@ with sync_playwright() as playwright:
     page = context.new_page()
     errors = []
     page.on('pageerror', lambda error: errors.append(str(error)))
+    page.goto(f'http://127.0.0.1:8069/odoo/action-{action}/new')
+    expect(page.locator('.o_field_service_hero')).to_be_visible(timeout=60000)
+    page.locator('.o_field_service_heading [name="name"] input').fill('טיוטה — בדיקת ממשק')
+    page.locator('.o_form_button_save').click()
+    expect(page.locator('.o_form_status_indicator_new_record')).to_have_count(0)
+    drafts = model('crm.lead', 'search_read', [[['name', '=', 'טיוטה — בדיקת ממשק']]], fields=['field_dispatch_code'])
+    assert drafts and drafts[0]['field_dispatch_code'] == 'new', 'New form defaults or partial draft save failed'
     url = f'http://127.0.0.1:8069/odoo/action-{action}/{lead}'
     page.goto(url)
     expect(page.locator('.o_field_service_hero')).to_be_visible(timeout=60000)
@@ -75,4 +82,4 @@ with sync_playwright() as playwright:
     assert not errors, errors
     context.close()
     browser.close()
-print('PASS: real Chrome rendered desktop/mobile forms, missing-field dialog and Continue action; no JS errors.')
+print('PASS: real Chrome rendered new draft, desktop/mobile forms, missing-field dialog and Continue action; no JS errors.')

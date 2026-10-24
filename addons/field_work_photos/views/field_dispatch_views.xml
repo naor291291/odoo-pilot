@@ -118,7 +118,7 @@
     <record id="action_field_service_leads" model="ir.actions.act_window">
         <field name="name">פניות ושיבוץ עבודות</field><field name="res_model">crm.lead</field>
         <field name="view_mode">kanban,list,form</field><field name="domain">[('is_field_service', '=', True)]</field>
-        <field name="context">{'default_is_field_service': True, 'default_type': 'opportunity', 'field_service_pipeline': True}</field>
+        <field name="context" eval="{'default_is_field_service': True, 'default_type': 'opportunity', 'field_service_pipeline': True, 'default_team_id': ref('team_field_service'), 'default_stage_id': ref('stage_field_new')}"/>
         <field name="help" type="html"><p class="o_view_nocontent_smiling_face">פתיחת פנייה חדשה ושיבוץ לקבלן</p></field>
     </record>
     <record id="action_field_service_leads_kanban" model="ir.actions.act_window.view">
