@@ -22,6 +22,19 @@ jobs:
       - name: Check browser setup and sample task
         run: |
           docker compose -f .devcontainer/compose.yaml run --rm odoo python3 scripts/pilot.py smoke
+      - name: Check guided form in desktop and mobile Chrome
+        run: |
+          python3 -m pip install --quiet --target "$RUNNER_TEMP/field-ui-python" playwright
+          docker compose -f .devcontainer/compose.yaml run --rm -d --name field-work-ui -p 127.0.0.1:8069:8069 odoo python3 scripts/pilot.py worker
+          trap 'docker rm -f field-work-ui >/dev/null 2>&1 || true' EXIT
+          CHROME_BIN="$(command -v google-chrome)" PYTHONPATH="$RUNNER_TEMP/field-ui-python" python3 scripts/check_field_ui.py
+      - name: Save browser verification screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: field-work-ui
+          path: .local-data/ui-checks/
+          if-no-files-found: ignore
       - name: Show startup errors
         if: failure()
         run: test ! -f .local-data/odoo.log || tail -n 120 .local-data/odoo.log
