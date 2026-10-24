@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="team_field_service" model="crm.team">
+        <field name="name">עבודות שטח</field>
+    </record>
+    <record id="project_field_dispatch" model="project.project">
+        <field name="name">עבודות שטח - שיבוץ</field>
+        <field name="privacy_visibility">employees</field>
+        <field name="company_id" ref="base.main_company"/>
+    </record>
+    <record id="stage_field_new" model="crm.stage">
+        <field name="name">לקוח חדש / פנייה</field><field name="sequence">10</field>
+        <field name="team_id" ref="team_field_service"/><field name="field_dispatch_code">new</field>
+    </record>
+    <record id="stage_field_quote" model="crm.stage">
+        <field name="name">ממתין להצעת מחיר</field><field name="sequence">20</field>
+        <field name="team_id" ref="team_field_service"/><field name="field_dispatch_code">quote</field>
+    </record>
+    <record id="stage_field_sent" model="crm.stage">
+        <field name="name">הצעה נשלחה</field><field name="sequence">30</field>
+        <field name="team_id" ref="team_field_service"/><field name="field_dispatch_code">sent</field>
+    </record>
+    <record id="stage_field_schedule" model="crm.stage">
+        <field name="name">ממתין לתיאום</field><field name="sequence">40</field>
+        <field name="team_id" ref="team_field_service"/><field name="field_dispatch_code">schedule</field>
+    </record>
+    <record id="stage_field_field" model="crm.stage">
+        <field name="name">בביצוע בשטח</field><field name="sequence">50</field>
+        <field name="team_id" ref="team_field_service"/><field name="field_dispatch_code">field</field>
+    </record>
+    <record id="stage_field_completed" model="crm.stage">
+        <field name="name">הושלם וממתין לתשלום</field><field name="sequence">60</field>
+        <field name="team_id" ref="team_field_service"/><field name="field_dispatch_code">completed</field>
+    </record>
+</odoo>
