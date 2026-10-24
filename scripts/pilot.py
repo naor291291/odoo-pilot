@@ -40,7 +40,14 @@ def credentials():
             "password": secrets.token_urlsafe(18),
             "master_password": secrets.token_urlsafe(24),
         }, indent=2))
-    return json.loads(path.read_text())
+    login = json.loads(path.read_text())
+    if "contractors" not in login:
+        login["contractors"] = [
+            {"login": "pilot.contractor.1", "name": "יוסי - קבלן ניסיון", "password": secrets.token_urlsafe(18)},
+            {"login": "pilot.contractor.2", "name": "משה - קבלן ניסיון", "password": secrets.token_urlsafe(18)},
+        ]
+        write_private(path, json.dumps(login, ensure_ascii=False, indent=2))
+    return login
 
 
 def config(path, data_dir, master_password, database):
@@ -105,9 +112,10 @@ def initialize(conf, login):
     ], check=True)
     # Use the ORM to create one task and a generated login. This is idempotent.
     bootstrap = f"""
+from odoo import fields
 admin = env.ref('base.user_admin')
 admin.write({{'login': {login['login']!r}, 'password': {login['password']!r}, 'lang': 'he_IL', 'tz': 'Asia/Jerusalem'}})
-admin.write({{'groups_id': [(4, env.ref('field_work_photos.group_field_reviewer').id)]}})
+admin.write({{'groups_id': [(4, env.ref('field_work_photos.group_field_dispatcher').id)]}})
 Project = env['project.project']
 project = Project.search([('name', '=', 'עבודות שטח - פיילוט')], limit=1)
 if not project:
@@ -115,6 +123,27 @@ if not project:
 Task = env['project.task']
 if not Task.search_count([('project_id', '=', project.id)]):
     Task.create({{'name': 'החלפת ברז במטבח - ניסיון', 'project_id': project.id, 'user_ids': [(6, 0, [admin.id])], 'field_report_required': True}})
+contractors = []
+for details in {login['contractors']!r}:
+    user = env['res.users'].with_context(active_test=False).search([('login', '=', details['login'])], limit=1)
+    if not user:
+        user = env['res.users'].with_context(no_reset_password=True).create({{
+            'name': details['name'], 'login': details['login'], 'password': details['password'],
+            'lang': 'he_IL', 'tz': 'Asia/Jerusalem',
+            'groups_id': [(6, 0, [env.ref('field_work_photos.group_field_contractor').id])],
+        }})
+    contractors.append(user)
+Lead = env['crm.lead']
+if not Lead.search_count([('is_field_service', '=', True)]):
+    customer = env['res.partner'].create({{'name': 'דני - לקוח ניסיון', 'phone': '0500000000'}})
+    Lead.create({{
+        'name': 'החלפת ברז - דוגמת שיבוץ', 'is_field_service': True,
+        'partner_id': customer.id, 'field_quote_number': 'PILOT-001',
+        'field_contractor_id': contractors[0].id, 'field_visit_at': fields.Datetime.now(),
+        'field_site_address': 'רחוב לדוגמה 10, גבעתיים',
+        'field_work_description': 'החלפת הברז במטבח ובדיקת נזילות לאחר ההתקנה.',
+        'stage_id': env.ref('field_work_photos.stage_field_schedule').id,
+    }})
 env.cr.commit()
 """
     subprocess.run([
@@ -168,6 +197,9 @@ def status():
     print("Odoo is ready. Open port 8069 from the Ports tab (keep visibility Private).")
     print("Login:", login["login"])
     print("Password:", login["password"])
+    for contractor in login.get("contractors", []):
+        print("Contractor:", contractor["login"], "Password:", contractor["password"])
+    print("Contractor portal: open /my/field-work in a separate browser session.")
 
 
 def restart():
@@ -223,9 +255,9 @@ def test():
         print(result.stdout)
         if result.returncode:
             raise SystemExit(result.returncode)
-        count = len(re.findall(r"Starting TestFieldWorkPhotos\.test_", result.stdout))
-        if count < 20 or not re.search(r"0 failed, 0 error\(s\)", result.stdout):
-            raise SystemExit("Expected all 20 field-review integration tests to pass; inspect the log.")
+        count = len(re.findall(r"Starting Test(FieldWorkPhotos|FieldDispatch|FieldPortal)\.test_", result.stdout))
+        if count < 45 or not re.search(r"0 failed, 0 error\(s\)", result.stdout):
+            raise SystemExit("Expected all 45 field-review, dispatch and portal tests to pass; inspect the log.")
         print(f"Verified {count} Odoo integration tests.")
 
 
@@ -272,6 +304,21 @@ def smoke():
     })
     if not can_review:
         raise SystemExit("The pilot administrator lacks the field-review role.")
+    lead_count = rpc("/web/dataset/call_kw/crm.lead/search_count", {
+        "model": "crm.lead", "method": "search_count",
+        "args": [[["is_field_service", "=", True]]], "kwargs": {},
+    })
+    if not lead_count:
+        raise SystemExit("The sample dispatch lead was not created.")
+    contractor = login["contractors"][0]
+    portal_session = rpc("/web/session/authenticate", {
+        "db": DATABASE, "login": contractor["login"], "password": contractor["password"],
+    })
+    if not portal_session.get("uid"):
+        raise SystemExit("Generated contractor login did not work.")
+    with opener.open("http://127.0.0.1:8069/my/field-work", timeout=30) as response:
+        if response.status != 200 or "עבודות השטח שלי" not in response.read().decode():
+            raise SystemExit("The contractor portal did not render.")
     restart()
     for attempt in range(120):
         try:
@@ -294,7 +341,7 @@ def smoke():
     })
     if remaining != count:
         raise SystemExit("Pilot tasks changed unexpectedly during restart.")
-    print("PASS: startup, generated login, Hebrew, sample task, reviewer role and restart preserving data.")
+    print("PASS: startup, generated admin and contractor logins, Hebrew, sample task/lead, portal, reviewer role and restart preserving data.")
 
 
 if __name__ == "__main__":

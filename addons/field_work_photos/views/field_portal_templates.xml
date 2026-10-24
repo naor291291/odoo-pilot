@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_field_work_home" inherit_id="portal.portal_my_home" name="עבודות השטח שלי">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t groups="field_work_photos.group_field_contractor" t-call="portal.portal_docs_entry">
+                <t t-set="title">עבודות השטח שלי</t><t t-set="url" t-value="'/my/field-work'"/>
+                <t t-set="text">פרטי עבודה, תמונות ודיווח לבדיקת התפעול</t>
+                <t t-set="placeholder_count" t-value="'field_work_count'"/>
+                <t t-set="config_card" t-value="True"/>
+            </t>
+        </xpath>
+    </template>
+    <template id="portal_field_work_list" name="רשימת עבודות לקבלן">
+        <t t-call="portal.portal_layout">
+            <div class="container py-4" dir="rtl">
+                <h2 class="mb-4">עבודות השטח שלי</h2>
+                <p t-if="not tasks" class="alert alert-info">אין כרגע עבודות ששויכו אליך.</p>
+                <div class="row g-3">
+                    <t t-foreach="tasks" t-as="task">
+                        <div class="col-12 col-md-6"><a t-att-href="'/my/field-work/%s' % task.id" class="card h-100 text-decoration-none text-body shadow-sm">
+                            <div class="card-body">
+                                <h3 class="h5" t-out="task.name"/>
+                                <p class="mb-1" t-out="task.field_customer_name"/>
+                                <p class="mb-2 text-muted" t-out="task.field_site_address"/>
+                                <p class="mb-2"><span t-field="task.field_visit_at"/></p>
+                                <span class="badge text-bg-light border" t-field="task.field_review_state"/>
+                            </div>
+                        </a></div>
+                    </t>
+                </div>
+                <div class="o_portal_pager d-flex justify-content-center mt-4"><t t-call="portal.pager"/></div>
+            </div>
+        </t>
+    </template>
+    <template id="portal_field_work_detail" name="דיווח עבודת שטח">
+        <t t-call="portal.portal_layout">
+            <div class="container py-4" dir="rtl" style="max-width: 900px;">
+                <a href="/my/field-work" class="btn btn-outline-secondary mb-4">חזרה לעבודות שלי</a>
+                <h2 class="mb-3" t-out="task.name"/>
+                <div class="card mb-4"><div class="card-body">
+                    <p><strong>לקוח: </strong><span t-out="task.field_customer_name"/></p>
+                    <p><strong>טלפון: </strong><span t-out="task.field_customer_phone"/></p>
+                    <p><strong>כתובת: </strong><span t-out="task.field_site_address"/></p>
+                    <p><strong>מועד: </strong><span t-field="task.field_visit_at"/></p>
+                    <p class="mb-0" style="white-space: pre-wrap;" t-out="task.field_work_description"/>
+                </div></div>
+                <p><strong>מצב העבודה: </strong><span t-field="task.field_review_state"/></p>
+                <div t-if="error" class="alert alert-danger" role="alert" t-out="error"/>
+                <div t-if="task.field_review_state == 'pending'" class="alert alert-info">העבודה הוגשה וממתינה לאישור. התמונות נעולות בזמן הבדיקה.</div>
+                <div t-if="task.field_review_state == 'approved'" class="alert alert-success">העבודה אושרה על ידי התפעול.</div>
+                <div t-if="task.field_review_state == 'changes_requested'" class="alert alert-warning">
+                    <strong>העבודה הוחזרה לתיקון: </strong><span t-out="task.field_review_note"/>
+                </div>
+                <form t-att-action="'/my/field-work/%s/report' % task.id" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <input type="hidden" name="action" value="upload"/>
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-bold" for="field_before_image">תמונה לפני ביצוע</label>
+                            <img t-if="task.field_before_image" t-att-src="'/my/field-work/%s/photo/before' % task.id" class="img-fluid rounded border d-block mb-3" style="max-height: 320px;" alt="לפני ביצוע"/>
+                            <input t-if="editable" id="field_before_image" name="field_before_image" type="file" accept="image/jpeg,image/png,image/webp" class="form-control"/>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-bold" for="field_after_image">תמונה אחרי ביצוע</label>
+                            <img t-if="task.field_after_image" t-att-src="'/my/field-work/%s/photo/after' % task.id" class="img-fluid rounded border d-block mb-3" style="max-height: 320px;" alt="אחרי ביצוע"/>
+                            <input t-if="editable" id="field_after_image" name="field_after_image" type="file" accept="image/jpeg,image/png,image/webp" class="form-control"/>
+                        </div>
+                    </div>
+                    <t t-if="editable"><p class="text-muted">JPG, PNG או WebP, עד 12MB לתמונה. יש לשמור את התמונות לפני ההגשה.</p><button type="submit" class="btn btn-outline-primary w-100 py-3 mb-3">שמירת התמונות</button></t>
+                </form>
+                <form t-if="editable" t-att-action="'/my/field-work/%s/report' % task.id" method="post">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <input type="hidden" name="action" value="submit"/>
+                    <button type="submit" class="btn btn-primary w-100 py-3">הגשת עבודה לאישור</button>
+                </form>
+            </div>
+        </t>
+    </template>
+</odoo>
