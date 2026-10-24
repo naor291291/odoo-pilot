@@ -14,11 +14,17 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build development container and start PostgreSQL
         run: |
-          docker compose -f .devcontainer/compose.yaml build odoo
+          PILOT_UID="$(id -u)" docker compose -f .devcontainer/compose.yaml build odoo
           docker compose -f .devcontainer/compose.yaml up -d --wait db
       - name: Run real Odoo integration tests
         run: |
-          docker compose -f .devcontainer/compose.yaml run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp odoo python3 scripts/pilot.py test
+          docker compose -f .devcontainer/compose.yaml run --rm odoo python3 scripts/pilot.py test
+      - name: Check browser setup and sample task
+        run: |
+          docker compose -f .devcontainer/compose.yaml run --rm odoo python3 scripts/pilot.py smoke
+      - name: Show startup errors
+        if: failure()
+        run: test ! -f .local-data/odoo.log || tail -n 120 .local-data/odoo.log
       - name: Stop services
         if: always()
         run: docker compose -f .devcontainer/compose.yaml down -v
