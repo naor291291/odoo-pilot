@@ -1,6 +1,7 @@
 """Initialize and run the disposable Odoo pilot inside its dev container."""
 import fcntl
 import json
+import http.cookiejar
 import os
 from pathlib import Path
 import re
@@ -187,9 +188,49 @@ def test():
         print(f"Verified {count} Odoo integration tests.")
 
 
+def smoke():
+    """Exercise the same initialization, login and sample task as Codespaces."""
+    start()
+    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+    for attempt in range(240):
+        try:
+            with opener.open("http://127.0.0.1:8069/web/login", timeout=3) as response:
+                if response.status == 200:
+                    break
+        except (urllib.error.URLError, TimeoutError):
+            pass
+        time.sleep(1)
+    else:
+        raise SystemExit("Pilot did not become ready. Inspect .local-data/odoo.log.")
+
+    def rpc(path, params):
+        payload = json.dumps({"jsonrpc": "2.0", "method": "call", "params": params, "id": 1}).encode()
+        request = urllib.request.Request("http://127.0.0.1:8069" + path, data=payload,
+                                         headers={"Content-Type": "application/json"})
+        with opener.open(request, timeout=30) as response:
+            data = json.load(response)
+        if data.get("error"):
+            raise SystemExit("Odoo RPC failed during the pilot smoke check.")
+        return data.get("result")
+
+    login = credentials()
+    session = rpc("/web/session/authenticate", {
+        "db": DATABASE, "login": login["login"], "password": login["password"],
+    })
+    if not session.get("uid") or session.get("user_context", {}).get("lang") != "he_IL":
+        raise SystemExit("Generated login or Hebrew setup did not work.")
+    count = rpc("/web/dataset/call_kw/project.task/search_count", {
+        "model": "project.task", "method": "search_count",
+        "args": [[["field_report_required", "=", True]]], "kwargs": {},
+    })
+    if not count:
+        raise SystemExit("The sample field task was not created.")
+    print("PASS: pilot starts, generated credentials authenticate, Hebrew is active, sample task exists.")
+
+
 if __name__ == "__main__":
-    commands = {"start": start, "worker": worker, "status": status, "test": test}
+    commands = {"start": start, "worker": worker, "status": status, "test": test, "smoke": smoke}
     command = sys.argv[1] if len(sys.argv) > 1 else "status"
     if command not in commands:
-        raise SystemExit("Usage: python3 scripts/pilot.py [start|status|test]")
+        raise SystemExit("Usage: python3 scripts/pilot.py [start|status|test|smoke]")
     commands[command]()
