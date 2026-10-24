@@ -1,0 +1,24 @@
+name: Odoo 18 integration tests
+on:
+  push:
+    branches: [main, codespaces-setup]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  field-photos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build development container and start PostgreSQL
+        run: |
+          docker compose -f .devcontainer/compose.yaml build odoo
+          docker compose -f .devcontainer/compose.yaml up -d --wait db
+      - name: Run real Odoo integration tests
+        run: |
+          docker compose -f .devcontainer/compose.yaml run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp odoo python3 scripts/pilot.py test
+      - name: Stop services
+        if: always()
+        run: docker compose -f .devcontainer/compose.yaml down -v
