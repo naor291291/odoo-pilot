@@ -268,7 +268,7 @@ def smoke():
         raise SystemExit("The sample field task was not created.")
     can_review = rpc("/web/dataset/call_kw/res.users/has_group", {
         "model": "res.users", "method": "has_group",
-        "args": ["field_work_photos.group_field_reviewer"], "kwargs": {},
+        "args": [[session["uid"]], "field_work_photos.group_field_reviewer"], "kwargs": {},
     })
     if not can_review:
         raise SystemExit("The pilot administrator lacks the field-review role.")
