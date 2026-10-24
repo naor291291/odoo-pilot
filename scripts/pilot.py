@@ -1,0 +1,195 @@
+"""Initialize and run the disposable Odoo pilot inside its dev container."""
+import fcntl
+import json
+import os
+from pathlib import Path
+import re
+import secrets
+import subprocess
+import sys
+import tempfile
+import time
+import urllib.error
+import urllib.request
+
+ROOT = Path(__file__).resolve().parents[1]
+LOCAL = ROOT / ".local-data"
+DATABASE = "odoo_pilot"
+
+
+def prepare_directory():
+    LOCAL.mkdir(mode=0o700, exist_ok=True)
+    LOCAL.chmod(0o700)
+
+
+def write_private(path, content):
+    # Keep generated credentials outside Git and private to the workspace user.
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as stream:
+        stream.write(content)
+    path.chmod(0o600)
+
+
+def credentials():
+    path = LOCAL / "credentials.json"
+    if not path.exists():
+        write_private(path, json.dumps({
+            "login": "admin",
+            "password": secrets.token_urlsafe(18),
+            "master_password": secrets.token_urlsafe(24),
+        }, indent=2))
+    return json.loads(path.read_text())
+
+
+def config(path, data_dir, master_password, database):
+    # Compose's DB is private; no PostgreSQL port is published to the host.
+    values = {
+        "addons_path": str(ROOT / "addons"),
+        "data_dir": str(data_dir),
+        "admin_passwd": master_password,
+        "db_host": os.environ.get("PGHOST", "db"),
+        "db_port": os.environ.get("PGPORT", "5432"),
+        "db_user": os.environ.get("PGUSER", "odoo"),
+        "db_password": os.environ.get("PGPASSWORD", "odoo_pilot_dev_only"),
+        "db_name": database,
+        "dbfilter": "^" + database + "$",
+        "list_db": "False",
+        "proxy_mode": "True",
+        "http_interface": "0.0.0.0",
+        "http_port": "8069",
+        "workers": "0",
+        "max_cron_threads": "0",
+        "limit_time_real": "300",
+    }
+    write_private(path, "[options]\n" + "\n".join(f"{k} = {v}" for k, v in values.items()) + "\n")
+
+
+def wait_for_database():
+    import psycopg2
+    for attempt in range(60):
+        try:
+            with psycopg2.connect(dbname="postgres", connect_timeout=3):
+                return
+        except psycopg2.OperationalError:
+            if attempt == 59:
+                raise
+            time.sleep(1)
+
+
+def installed():
+    import psycopg2
+    with psycopg2.connect(dbname="postgres") as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1 FROM pg_database WHERE datname = %s", (DATABASE,))
+            if not cursor.fetchone():
+                return False
+    with psycopg2.connect(dbname=DATABASE) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT to_regclass('public.ir_module_module')")
+            if not cursor.fetchone()[0]:
+                return False
+            cursor.execute("SELECT state FROM ir_module_module WHERE name = %s", ("field_work_photos",))
+            row = cursor.fetchone()
+            return bool(row and row[0] == "installed")
+
+
+def initialize(conf, login):
+    ready = installed()
+    print("Updating pilot module..." if ready else "Installing Odoo and the field-photo module...", flush=True)
+    subprocess.run([
+        "odoo", "-c", str(conf), "-d", DATABASE,
+        "-u" if ready else "-i", "field_work_photos",
+        "--without-demo=all", "--load-language=he_IL", "--stop-after-init",
+    ], check=True)
+    # Use the ORM to create one task and a generated login. This is idempotent.
+    bootstrap = f"""
+admin = env.ref('base.user_admin')
+admin.write({{'login': {login['login']!r}, 'password': {login['password']!r}, 'lang': 'he_IL', 'tz': 'Asia/Jerusalem'}})
+Project = env['project.project']
+project = Project.search([('name', '=', 'עבודות שטח - פיילוט')], limit=1)
+if not project:
+    project = Project.create({{'name': 'עבודות שטח - פיילוט'}})
+Task = env['project.task']
+if not Task.search_count([('project_id', '=', project.id)]):
+    Task.create({{'name': 'החלפת ברז במטבח - ניסיון', 'project_id': project.id, 'user_ids': [(6, 0, [admin.id])], 'field_report_required': True}})
+env.cr.commit()
+"""
+    subprocess.run([
+        "odoo", "shell", "-c", str(conf), "-d", DATABASE, "--no-http",
+    ], input=bootstrap, text=True, check=True)
+
+
+def worker():
+    prepare_directory()
+    lock = open(LOCAL / "runner.lock", "w")
+    try:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        return
+    login = credentials()
+    conf = LOCAL / "odoo.conf"
+    config(conf, LOCAL / "odoo-data", login["master_password"], DATABASE)
+    wait_for_database()
+    initialize(conf, login)
+    print("Pilot initialized. Run python3 scripts/pilot.py status for login details.", flush=True)
+    # Keep the lock in the runner process until Odoo exits.
+    process = subprocess.Popen(["odoo", "-c", str(conf), "-d", DATABASE])
+    raise SystemExit(process.wait())
+
+
+def start():
+    prepare_directory()
+    with open(LOCAL / "odoo.log", "ab") as log:
+        subprocess.Popen([sys.executable, str(Path(__file__).resolve()), "worker"],
+                         cwd=ROOT, stdin=subprocess.DEVNULL, stdout=log, stderr=log,
+                         start_new_session=True)
+    print("Odoo is starting in the background. First setup can take a few minutes.")
+    print("Run: python3 scripts/pilot.py status")
+    print("Logs: tail -f .local-data/odoo.log")
+
+
+def status():
+    try:
+        with urllib.request.urlopen("http://127.0.0.1:8069/web/login", timeout=4) as response:
+            ready = response.status == 200
+    except (urllib.error.URLError, TimeoutError):
+        ready = False
+    if not ready:
+        print("Odoo is not ready yet. Check: tail -n 60 .local-data/odoo.log")
+        return
+    path = LOCAL / "credentials.json"
+    if not path.exists():
+        print("Odoo responds, but pilot credentials are missing. Check the setup log.")
+        return
+    login = json.loads(path.read_text())
+    print("Odoo is ready. Open port 8069 from the Ports tab (keep visibility Private).")
+    print("Login:", login["login"])
+    print("Password:", login["password"])
+
+
+def test():
+    wait_for_database()
+    with tempfile.TemporaryDirectory(prefix="odoo-pilot-tests-") as directory:
+        folder = Path(directory)
+        conf = folder / "odoo.conf"
+        config(conf, folder / "data", secrets.token_urlsafe(24), "odoo_pilot_tests")
+        result = subprocess.run([
+            "odoo", "-c", str(conf), "-d", "odoo_pilot_tests",
+            "-i", "field_work_photos", "--without-demo=all", "--test-enable",
+            "--test-tags=/field_work_photos", "--stop-after-init", "--log-level=test",
+        ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        print(result.stdout)
+        if result.returncode:
+            raise SystemExit(result.returncode)
+        count = len(re.findall(r"Starting TestFieldWorkPhotos\.test_", result.stdout))
+        if count < 11 or not re.search(r"0 failed, 0 error\(s\)", result.stdout):
+            raise SystemExit("Expected all 11 field-photo integration tests to pass; inspect the log.")
+        print(f"Verified {count} Odoo integration tests.")
+
+
+if __name__ == "__main__":
+    commands = {"start": start, "worker": worker, "status": status, "test": test}
+    command = sys.argv[1] if len(sys.argv) > 1 else "status"
+    if command not in commands:
+        raise SystemExit("Usage: python3 scripts/pilot.py [start|status|test]")
+    commands[command]()
