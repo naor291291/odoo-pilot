@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_task_form_field_work_photos" model="ir.ui.view">
+        <field name="name">project.task.form.field.work.photos</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_enable_field_report" type="object"
+                    string="הפעלת דיווח שטח" invisible="field_report_required"/>
+                <button name="action_finish_field_work" type="object"
+                    string="סיום עבודת שטח" class="oe_highlight"
+                    invisible="not field_report_required or state in ['1_done', '1_canceled']"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="דיווח מהשטח" name="field_work_photos">
+                    <group>
+                        <field name="field_report_required" readonly="1"/>
+                        <field name="field_report_ready" readonly="1" invisible="not field_report_required"/>
+                    </group>
+                    <div class="alert alert-info" role="status" invisible="not field_report_required or field_report_ready">
+                        יש להעלות תמונה לפני ביצוע ותמונה אחרי ביצוע כדי לסיים את העבודה.
+                    </div>
+                    <group invisible="not field_report_required">
+                        <group string="לפני ביצוע">
+                            <field name="field_before_image" widget="image" nolabel="1"
+                                readonly="state == '1_done'"/>
+                        </group>
+                        <group string="אחרי ביצוע">
+                            <field name="field_after_image" widget="image" nolabel="1"
+                                readonly="state == '1_done'"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
