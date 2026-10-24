@@ -17,6 +17,14 @@
                     <field name="field_dispatch_code" invisible="1"/>
                     <field name="field_dispatch_locked" invisible="1"/>
                     <field name="type" invisible="1"/><field name="team_id" invisible="1"/>
+                    <div class="o_field_service_mobile_actions d-md-none">
+                        <button name="action_next_field_stage" string="המשך להצעת מחיר" aria-label="המשך להצעת מחיר" type="object" class="btn btn-primary" invisible="field_dispatch_code != 'new'"/>
+                        <button name="action_next_field_stage" string="המשך — ההצעה נשלחה" aria-label="המשך — ההצעה נשלחה" type="object" class="btn btn-primary" invisible="field_dispatch_code != 'quote'"/>
+                        <button name="action_next_field_stage" string="אישור והמשך לתיאום" aria-label="אישור הצעה והמשך לתיאום" type="object" class="btn btn-primary" invisible="field_dispatch_code != 'sent'"/>
+                        <button name="action_dispatch_field_work" string="שיבוץ ופתיחת משימה" aria-label="המשך — שיבוץ ופתיחת משימה" type="object" class="btn btn-primary" invisible="field_dispatch_code != 'schedule'"/>
+                        <button name="action_open_field_task" string="פתיחת משימת השטח" aria-label="פתיחת משימת השטח" type="object" class="btn btn-primary" invisible="field_task_count == 0 or field_dispatch_code not in ['field', 'completed']"/>
+                        <button name="action_previous_field_stage" string="חזרה" aria-label="חזרה לשלב הקודם" type="object" class="btn btn-outline-secondary" invisible="field_dispatch_code not in ['quote', 'sent', 'schedule']"/>
+                    </div>
                     <div class="o_field_service_hero">
                         <div class="o_field_service_heading">
                             <span class="o_field_service_eyebrow"><i class="fa fa-wrench me-2"/>עבודות שטח</span>

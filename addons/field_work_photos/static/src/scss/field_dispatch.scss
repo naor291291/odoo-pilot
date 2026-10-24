@@ -66,6 +66,12 @@
         .o_field_service_columns { grid-template-columns: 1fr; }
         .o_field_service_sidebar { position: static; }
     }
+    @media (max-width: 767px) {
+        .o_field_service_mobile_actions { display: flex; gap: 8px; position: sticky; top: 0; z-index: 5; background: #f3f6fa; padding: 8px 0 12px; margin-bottom: 8px; }
+        .o_field_service_mobile_actions .btn { min-height: 44px; border-radius: 9px; padding: 10px 14px; }
+        .o_field_service_mobile_actions .btn-primary { flex: 1; background: var(--field-teal); border-color: var(--field-teal); font-weight: 600; }
+        .o_field_service_card .o_form_label { font-size: 13px; }
+    }
     @media (max-width: 575px) {
         .o_form_sheet { padding: 12px; }
         .o_field_service_hero { flex-direction: column; gap: 20px; padding: 20px; }

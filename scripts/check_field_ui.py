@@ -78,6 +78,14 @@ with sync_playwright() as playwright:
     page.set_viewport_size({'width': 390, 'height': 844})
     expect(page.locator('.o_field_service_hero')).to_be_visible()
     page.screenshot(path=str(OUTPUT / 'mobile-quote.png'), full_page=True)
+    mobile_next = page.get_by_role('button', name='המשך — ההצעה נשלחה', exact=True)
+    expect(mobile_next).to_be_in_viewport()
+    page.locator('.o_field_service_main .o_field_service_card').nth(1).scroll_into_view_if_needed()
+    expect(mobile_next).to_be_in_viewport()
+    page.screenshot(path=str(OUTPUT / 'mobile-quote-details.png'), full_page=True)
+    mobile_next.click()
+    expect(page.locator('.modal:visible')).to_contain_text('מספר הצעת מחיר ממורנינג')
+    assert model('crm.lead', 'read', [[lead]], fields=['field_dispatch_code'])[0]['field_dispatch_code'] == 'quote'
     assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), 'Form overflows mobile viewport'
     assert not errors, errors
     context.close()
