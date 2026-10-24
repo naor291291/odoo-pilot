@@ -14,11 +14,11 @@
     <record id="rule_contractor_no_native_tasks" model="ir.rule">
         <field name="name">Field contractor: scoped portal only (tasks)</field>
         <field name="model_id" ref="project.model_project_task"/>
-        <field name="domain_force">[(1, '=', 0)] if user.has_group('field_work_photos.group_field_contractor') else [(1, '=', 1)]</field>
+        <field name="domain_force">[('id', '=', 0)] if user.has_group('field_work_photos.group_field_contractor') else []</field>
     </record>
     <record id="rule_contractor_no_native_projects" model="ir.rule">
         <field name="name">Field contractor: scoped portal only (projects)</field>
         <field name="model_id" ref="project.model_project_project"/>
-        <field name="domain_force">[(1, '=', 0)] if user.has_group('field_work_photos.group_field_contractor') else [(1, '=', 1)]</field>
+        <field name="domain_force">[('id', '=', 0)] if user.has_group('field_work_photos.group_field_contractor') else []</field>
     </record>
 </odoo>

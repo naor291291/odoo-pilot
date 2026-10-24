@@ -256,8 +256,8 @@ def test():
         if result.returncode:
             raise SystemExit(result.returncode)
         count = len(re.findall(r"Starting Test(FieldWorkPhotos|FieldDispatch|FieldPortal)\.test_", result.stdout))
-        if count < 44 or not re.search(r"0 failed, 0 error\(s\)", result.stdout):
-            raise SystemExit("Expected all 44 field-review, dispatch and portal tests to pass; inspect the log.")
+        if count < 45 or not re.search(r"0 failed, 0 error\(s\)", result.stdout):
+            raise SystemExit("Expected all 45 field-review, dispatch and portal tests to pass; inspect the log.")
         print(f"Verified {count} Odoo integration tests.")
 
 

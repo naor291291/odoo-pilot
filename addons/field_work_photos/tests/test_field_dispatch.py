@@ -76,6 +76,10 @@ class TestFieldDispatch(TransactionCase):
         lead.field_quote_number = 'M-2026'
         self.assertEqual(lead.field_dispatch_code, 'sent')
 
+    def test_creating_with_quote_number_advances_stage(self):
+        lead = self.lead(stage_id=self.env.ref('field_work_photos.stage_field_new').id)
+        self.assertEqual(lead.field_dispatch_code, 'sent')
+
     def test_quote_required_before_sent(self):
         with self.assertRaises(ValidationError), self.cr.savepoint():
             self.lead(field_quote_number=False)

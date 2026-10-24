@@ -57,6 +57,9 @@ class CrmLead(models.Model):
                 vals.setdefault('team_id', self.env.ref('field_work_photos.team_field_service').id)
                 vals.setdefault('stage_id', self.env.ref('field_work_photos.stage_field_new').id)
                 vals.setdefault('type', 'opportunity')
+                stage = self.env['crm.stage'].browse(vals['stage_id'])
+                if vals.get('field_quote_number') and stage.field_dispatch_code in ('new', 'quote'):
+                    vals['stage_id'] = self.env.ref('field_work_photos.stage_field_sent').id
             if vals.get('field_task_ids'):
                 raise AccessError('משימת שטח נוצרת באמצעות תהליך השיבוץ בלבד.')
         leads = super().create(vals_list)
