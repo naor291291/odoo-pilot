@@ -20,12 +20,16 @@
     .o_field_service_step { font-size: 17px; color: var(--field-ink); font-weight: 700; display: flex; gap: 5px; margin-bottom: 12px; }
     .o_field_service_step .o_field_widget { width: auto; margin: 0; }
     .o_field_service_progress .o_progressbar { margin-bottom: 8px; }
-    .o_field_service_progress .progress-bar { background: var(--field-teal); }
+    .o_field_service_progress > .o_field_widget { display: block; width: 100%; }
+    .o_field_service_progress .o_progress { flex: 1; min-width: 0; height: 7px; border: 0; border-radius: 999px; background: #e3eaf0; }
+    .o_field_service_progress .o_progress > .bg-primary { background: var(--field-teal) !important; }
+    .o_field_service_progress .o_progressbar_value { font-size: 11px; color: var(--field-muted); padding-inline-start: 6px; }
+    .o_field_service_progress .o_field_service_stage_title { display: block; margin-top: 8px; }
     .o_field_service_stage_title { font-size: 12px; color: var(--field-muted); }
     .o_field_service_steps { overflow-x: auto; padding: 18px 0; }
     .o_field_service_steps .o_field_widget { margin: 0; }
     .o_field_service_steps .o_arrow_button { padding: 10px 17px; font-size: 12px; }
-    .o_field_service_steps .o_arrow_button.btn-primary { background-color: #e0f2f1; color: #086a74; }
+    .o_field_service_steps .o_arrow_button.btn-primary, .o_field_service_steps .o_arrow_button_current { background-color: #e0f2f1; color: #086a74; }
     .o_field_service_notice { display: flex; gap: 14px; align-items: flex-start; border-radius: 12px; padding: 17px 20px; margin: 0 0 20px; line-height: 1.6; }
     .o_field_service_notice > .fa { font-size: 21px; margin-top: 3px; }
     .o_field_service_notice strong { font-size: 14px; }

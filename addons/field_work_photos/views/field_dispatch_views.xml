@@ -5,12 +5,12 @@
         <field name="arch" type="xml">
             <form string="פניית עבודת שטח" class="o_field_service_form">
                 <header>
-                    <button name="action_next_field_stage" string="המשך להצעת מחיר" type="object" class="oe_highlight" icon="fa-arrow-left" invisible="field_dispatch_code != 'new'"/>
-                    <button name="action_next_field_stage" string="המשך — ההצעה נשלחה" type="object" class="oe_highlight" icon="fa-paper-plane-o" invisible="field_dispatch_code != 'quote'"/>
-                    <button name="action_next_field_stage" string="אישור הצעה והמשך לתיאום" type="object" class="oe_highlight" icon="fa-check" invisible="field_dispatch_code != 'sent'"/>
-                    <button name="action_dispatch_field_work" string="המשך — שיבוץ ופתיחת משימה" type="object" class="oe_highlight" icon="fa-calendar-check-o" invisible="field_dispatch_code != 'schedule'"/>
-                    <button name="action_open_field_task" string="פתיחת משימת השטח" type="object" class="oe_highlight" icon="fa-wrench" invisible="field_task_count == 0 or field_dispatch_code != 'field'"/>
-                    <button name="action_previous_field_stage" string="חזרה לשלב הקודם" type="object" icon="fa-arrow-right" invisible="field_dispatch_code not in ['quote', 'sent', 'schedule']"/>
+                    <button name="action_next_field_stage" string="המשך להצעת מחיר" aria-label="המשך להצעת מחיר" type="object" class="oe_highlight" icon="fa-arrow-left" invisible="field_dispatch_code != 'new'"/>
+                    <button name="action_next_field_stage" string="המשך — ההצעה נשלחה" aria-label="המשך — ההצעה נשלחה" type="object" class="oe_highlight" icon="fa-paper-plane-o" invisible="field_dispatch_code != 'quote'"/>
+                    <button name="action_next_field_stage" string="אישור הצעה והמשך לתיאום" aria-label="אישור הצעה והמשך לתיאום" type="object" class="oe_highlight" icon="fa-check" invisible="field_dispatch_code != 'sent'"/>
+                    <button name="action_dispatch_field_work" string="המשך — שיבוץ ופתיחת משימה" aria-label="המשך — שיבוץ ופתיחת משימה" type="object" class="oe_highlight" icon="fa-calendar-check-o" invisible="field_dispatch_code != 'schedule'"/>
+                    <button name="action_open_field_task" string="פתיחת משימת השטח" aria-label="פתיחת משימת השטח" type="object" class="oe_highlight" icon="fa-wrench" invisible="field_task_count == 0 or field_dispatch_code != 'field'"/>
+                    <button name="action_previous_field_stage" string="חזרה לשלב הקודם" aria-label="חזרה לשלב הקודם" type="object" icon="fa-arrow-right" invisible="field_dispatch_code not in ['quote', 'sent', 'schedule']"/>
                 </header>
                 <sheet>
                     <field name="is_field_service" invisible="1"/>
