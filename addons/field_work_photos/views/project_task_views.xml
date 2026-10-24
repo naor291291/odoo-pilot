@@ -9,26 +9,47 @@
                 <button name="action_enable_field_report" type="object"
                     string="הפעלת דיווח שטח" invisible="field_report_required"/>
                 <button name="action_finish_field_work" type="object"
-                    string="סיום עבודת שטח" class="oe_highlight"
-                    invisible="not field_report_required or state in ['1_done', '1_canceled']"/>
+                    string="הגשת עבודה לאישור" class="oe_highlight"
+                    invisible="not field_report_required or state == '1_canceled' or field_review_state not in ['draft', 'changes_requested']"/>
+                <button name="action_approve_field_work" type="object"
+                    string="אישור העבודה" class="oe_highlight"
+                    invisible="not field_report_required or not field_can_review or field_review_state != 'pending'"/>
+                <button name="action_request_field_changes" type="object"
+                    string="החזרה לתיקון"
+                    invisible="not field_report_required or not field_can_review or field_review_state not in ['pending', 'approved']"/>
             </xpath>
             <xpath expr="//notebook" position="inside">
                 <page string="דיווח מהשטח" name="field_work_photos">
                     <group>
                         <field name="field_report_required" readonly="1"/>
+                        <field name="field_can_review" invisible="1"/>
+                        <field name="field_review_state" widget="statusbar" statusbar_visible="draft,pending,changes_requested,approved" readonly="1" invisible="not field_report_required"/>
                         <field name="field_report_ready" readonly="1" invisible="not field_report_required"/>
                     </group>
                     <div class="alert alert-info" role="status" invisible="not field_report_required or field_report_ready">
-                        יש להעלות תמונה לפני ביצוע ותמונה אחרי ביצוע כדי לסיים את העבודה.
+                        יש להעלות תמונה לפני ביצוע ותמונה אחרי ביצוע כדי להגיש את העבודה לאישור.
                     </div>
+                    <div class="alert alert-info" role="status" invisible="not field_report_required or field_review_state != 'pending'">
+                        העבודה הוגשה לבדיקה. התמונות נעולות עד לאישור או להחזרה לתיקון.
+                    </div>
+                    <div class="alert alert-warning" role="status" invisible="not field_report_required or field_review_state != 'changes_requested'">
+                        העבודה הוחזרה לתיקון. יש לקרוא את הסיבה, לעדכן את התמונות ולהגיש מחדש.
+                    </div>
+                    <group invisible="not field_report_required">
+                        <field name="field_review_note" readonly="not field_can_review" placeholder="לפני החזרה לתיקון יש לפרט כאן מה צריך לתקן"/>
+                        <field name="field_submitted_by" readonly="1"/>
+                        <field name="field_submitted_at" readonly="1"/>
+                        <field name="field_approved_by" readonly="1"/>
+                        <field name="field_approved_at" readonly="1"/>
+                    </group>
                     <group invisible="not field_report_required">
                         <group string="לפני ביצוע">
                             <field name="field_before_image" widget="image" nolabel="1"
-                                readonly="state == '1_done'"/>
+                                readonly="field_review_state in ['pending', 'approved']"/>
                         </group>
                         <group string="אחרי ביצוע">
                             <field name="field_after_image" widget="image" nolabel="1"
-                                readonly="state == '1_done'"/>
+                                readonly="field_review_state in ['pending', 'approved']"/>
                         </group>
                     </group>
                 </page>

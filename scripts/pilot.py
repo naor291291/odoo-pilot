@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import re
 import secrets
+import signal
 import subprocess
 import sys
 import tempfile
@@ -106,6 +107,7 @@ def initialize(conf, login):
     bootstrap = f"""
 admin = env.ref('base.user_admin')
 admin.write({{'login': {login['login']!r}, 'password': {login['password']!r}, 'lang': 'he_IL', 'tz': 'Asia/Jerusalem'}})
+admin.write({{'groups_id': [(4, env.ref('field_work_photos.group_field_reviewer').id)]}})
 Project = env['project.project']
 project = Project.search([('name', '=', 'עבודות שטח - פיילוט')], limit=1)
 if not project:
@@ -168,6 +170,45 @@ def status():
     print("Password:", login["password"])
 
 
+def restart():
+    """Restart only this pilot's runner/Odoo, preserving its database and files."""
+    script = str(Path(__file__).resolve())
+    conf = str(LOCAL / "odoo.conf")
+    targets = []
+    for entry in Path("/proc").iterdir():
+        if not entry.name.isdigit() or int(entry.name) == os.getpid():
+            continue
+        try:
+            if entry.stat().st_uid != os.getuid():
+                continue
+            args = (entry / "cmdline").read_bytes().decode().strip("\0").split("\0")
+            is_runner = len(args) >= 3 and args[1:] == [script, "worker"]
+            is_odoo = any(Path(arg).name == "odoo" for arg in args[:2]) and "-c" in args and args[args.index("-c") + 1] == conf
+            if is_runner or is_odoo:
+                targets.append(int(entry.name))
+        except (FileNotFoundError, PermissionError, IndexError, UnicodeError):
+            continue
+    for pid in targets:
+        try:
+            os.kill(pid, signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+    for attempt in range(30):
+        living = []
+        for pid in targets:
+            try:
+                status_text = Path(f"/proc/{pid}/status").read_text()
+                if not re.search(r"^State:\s+Z", status_text, re.MULTILINE):
+                    living.append(pid)
+            except FileNotFoundError:
+                pass
+        if not living:
+            start()
+            return
+        time.sleep(1)
+    raise SystemExit("Pilot is still stopping. Wait and run python3 scripts/pilot.py start.")
+
+
 def test():
     wait_for_database()
     with tempfile.TemporaryDirectory(prefix="odoo-pilot-tests-") as directory:
@@ -183,8 +224,8 @@ def test():
         if result.returncode:
             raise SystemExit(result.returncode)
         count = len(re.findall(r"Starting TestFieldWorkPhotos\.test_", result.stdout))
-        if count < 11 or not re.search(r"0 failed, 0 error\(s\)", result.stdout):
-            raise SystemExit("Expected all 11 field-photo integration tests to pass; inspect the log.")
+        if count < 19 or not re.search(r"0 failed, 0 error\(s\)", result.stdout):
+            raise SystemExit("Expected all 19 field-review integration tests to pass; inspect the log.")
         print(f"Verified {count} Odoo integration tests.")
 
 
@@ -225,12 +266,18 @@ def smoke():
     })
     if not count:
         raise SystemExit("The sample field task was not created.")
-    print("PASS: pilot starts, generated credentials authenticate, Hebrew is active, sample task exists.")
+    can_review = rpc("/web/dataset/call_kw/res.users/has_group", {
+        "model": "res.users", "method": "has_group",
+        "args": ["field_work_photos.group_field_reviewer"], "kwargs": {},
+    })
+    if not can_review:
+        raise SystemExit("The pilot administrator lacks the field-review role.")
+    print("PASS: pilot starts, generated credentials authenticate, Hebrew is active, sample task exists, reviewer role is assigned.")
 
 
 if __name__ == "__main__":
-    commands = {"start": start, "worker": worker, "status": status, "test": test, "smoke": smoke}
+    commands = {"start": start, "worker": worker, "status": status, "restart": restart, "test": test, "smoke": smoke}
     command = sys.argv[1] if len(sys.argv) > 1 else "status"
     if command not in commands:
-        raise SystemExit("Usage: python3 scripts/pilot.py [start|status|test|smoke]")
+        raise SystemExit("Usage: python3 scripts/pilot.py [start|status|restart|test|smoke]")
     commands[command]()
