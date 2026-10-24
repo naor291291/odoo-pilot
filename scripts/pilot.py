@@ -224,8 +224,8 @@ def test():
         if result.returncode:
             raise SystemExit(result.returncode)
         count = len(re.findall(r"Starting TestFieldWorkPhotos\.test_", result.stdout))
-        if count < 19 or not re.search(r"0 failed, 0 error\(s\)", result.stdout):
-            raise SystemExit("Expected all 19 field-review integration tests to pass; inspect the log.")
+        if count < 20 or not re.search(r"0 failed, 0 error\(s\)", result.stdout):
+            raise SystemExit("Expected all 20 field-review integration tests to pass; inspect the log.")
         print(f"Verified {count} Odoo integration tests.")
 
 
@@ -272,7 +272,29 @@ def smoke():
     })
     if not can_review:
         raise SystemExit("The pilot administrator lacks the field-review role.")
-    print("PASS: pilot starts, generated credentials authenticate, Hebrew is active, sample task exists, reviewer role is assigned.")
+    restart()
+    for attempt in range(120):
+        try:
+            with opener.open("http://127.0.0.1:8069/web/login", timeout=3) as response:
+                if response.status == 200:
+                    break
+        except (urllib.error.URLError, TimeoutError):
+            pass
+        time.sleep(1)
+    else:
+        raise SystemExit("Pilot did not restart successfully.")
+    session = rpc("/web/session/authenticate", {
+        "db": DATABASE, "login": login["login"], "password": login["password"],
+    })
+    if not session.get("uid"):
+        raise SystemExit("Generated credentials did not survive restart.")
+    remaining = rpc("/web/dataset/call_kw/project.task/search_count", {
+        "model": "project.task", "method": "search_count",
+        "args": [[["field_report_required", "=", True]]], "kwargs": {},
+    })
+    if remaining != count:
+        raise SystemExit("Pilot tasks changed unexpectedly during restart.")
+    print("PASS: startup, generated login, Hebrew, sample task, reviewer role and restart preserving data.")
 
 
 if __name__ == "__main__":
