@@ -1,0 +1,33 @@
+services:
+  odoo:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    entrypoint: []
+    command: ["sleep", "infinity"]
+    volumes:
+      - ..:/workspaces/odoo-pilot:cached
+    working_dir: /workspaces/odoo-pilot
+    environment:
+      PGHOST: db
+      PGPORT: "5432"
+      PGUSER: odoo
+      PGPASSWORD: odoo_pilot_dev_only
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo_pilot_dev_only
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo -d postgres"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+volumes:
+  postgres-data:
