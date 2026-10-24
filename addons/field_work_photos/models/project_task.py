@@ -1,3 +1,8 @@
+import base64
+import binascii
+from io import BytesIO
+
+from PIL import Image
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 
@@ -44,10 +49,38 @@ class ProjectTask(models.Model):
                     )
 
     def write(self, vals):
+        self._validate_field_image_values(vals)
         if "field_report_required" in vals and not vals["field_report_required"]:
             if any(task.field_report_required for task in self):
                 raise ValidationError("לא ניתן לבטל דרישת תמונות שהופעלה. אפשר לפתוח מחדש עבודה לצורך תיקון.")
         return super().write(vals)
+
+    @staticmethod
+    def _validate_field_image_values(vals):
+        for name in ("field_before_image", "field_after_image"):
+            value = vals.get(name)
+            if not value:
+                continue
+            try:
+                if len(value) > 16 * 1024 * 1024:
+                    raise ValidationError("גודל תמונה מרבי הוא 12MB.")
+                raw = base64.b64decode(value, validate=True)
+                if len(raw) > 12 * 1024 * 1024:
+                    raise ValidationError("גודל תמונה מרבי הוא 12MB.")
+                with Image.open(BytesIO(raw)) as image:
+                    if image.format not in {"JPEG", "PNG", "WEBP"}:
+                        raise ValidationError("יש להעלות תמונת JPG, PNG או WebP.")
+                    if image.width * image.height > 50_000_000:
+                        raise ValidationError("רזולוציית התמונה גדולה מדי. יש להקטין אותה.")
+                    image.verify()
+            except (ValueError, TypeError, OSError, binascii.Error, Image.DecompressionBombError) as exc:
+                raise ValidationError("הקובץ אינו תמונה תקינה. יש להעלות JPG, PNG או WebP.") from exc
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            self._validate_field_image_values(vals)
+        return super().create(vals_list)
 
     def action_enable_field_report(self):
         self.write({"field_report_required": True})
