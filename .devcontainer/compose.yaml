@@ -3,6 +3,8 @@ services:
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
+      args:
+        PILOT_UID: ${PILOT_UID:-1000}
     entrypoint: []
     command: ["sleep", "infinity"]
     volumes:
