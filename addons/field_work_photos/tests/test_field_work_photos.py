@@ -90,3 +90,6 @@ class TestFieldWorkPhotos(TransactionCase):
     def test_invalid_image_is_rejected(self):
         with self.assertRaises(UserError), self.cr.savepoint():
             self.task(field_before_image=base64.b64encode(b"not an image"))
+        task = self.task()
+        with self.assertRaises(UserError), self.cr.savepoint():
+            task.write({"field_after_image": base64.b64encode(b"not an image")})
