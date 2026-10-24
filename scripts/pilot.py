@@ -136,14 +136,16 @@ for details in {login['contractors']!r}:
 Lead = env['crm.lead']
 if not Lead.search_count([('is_field_service', '=', True)]):
     customer = env['res.partner'].create({{'name': 'דני - לקוח ניסיון', 'phone': '0500000000'}})
-    Lead.create({{
+    sample_lead = Lead.create({{
         'name': 'החלפת ברז - דוגמת שיבוץ', 'is_field_service': True,
         'partner_id': customer.id, 'field_quote_number': 'PILOT-001',
         'field_contractor_id': contractors[0].id, 'field_visit_at': fields.Datetime.now(),
         'field_site_address': 'רחוב לדוגמה 10, גבעתיים',
         'field_work_description': 'החלפת הברז במטבח ובדיקת נזילות לאחר ההתקנה.',
-        'stage_id': env.ref('field_work_photos.stage_field_schedule').id,
+        'stage_id': env.ref('field_work_photos.stage_field_new').id,
     }})
+    for _ in range(3):
+        sample_lead.action_next_field_stage()
 env.cr.commit()
 """
     subprocess.run([
@@ -256,8 +258,8 @@ def test():
         if result.returncode:
             raise SystemExit(result.returncode)
         count = len(re.findall(r"Starting Test(FieldWorkPhotos|FieldDispatch|FieldPortal)\.test_", result.stdout))
-        if count < 45 or not re.search(r"0 failed, 0 error\(s\)", result.stdout):
-            raise SystemExit("Expected all 45 field-review, dispatch and portal tests to pass; inspect the log.")
+        if count < 54 or not re.search(r"0 failed, 0 error\(s\)", result.stdout):
+            raise SystemExit("Expected all 54 field-review, dispatch and portal tests to pass; inspect the log.")
         print(f"Verified {count} Odoo integration tests.")
 
 

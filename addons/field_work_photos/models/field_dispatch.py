@@ -34,6 +34,97 @@ class CrmLead(models.Model):
     field_task_ids = fields.One2many('project.task', 'field_service_lead_id', string='משימת שטח', copy=False)
     field_task_count = fields.Integer(compute='_compute_field_task_count')
     field_dispatch_code = fields.Selection(related='stage_id.field_dispatch_code')
+    field_stage_number = fields.Integer(compute='_compute_field_workflow')
+    field_progress = fields.Integer(compute='_compute_field_workflow')
+    field_stage_title = fields.Char(compute='_compute_field_workflow')
+    field_stage_help = fields.Char(compute='_compute_field_workflow')
+    field_missing_fields = fields.Text(compute='_compute_field_workflow')
+    field_dispatch_locked = fields.Boolean(compute='_compute_field_workflow')
+
+    @api.depends('stage_id', 'name', 'partner_id', 'phone', 'field_site_address',
+                 'field_work_description', 'field_quote_number', 'field_contractor_id',
+                 'field_visit_at', 'company_id', 'field_task_ids.field_review_state')
+    def _compute_field_workflow(self):
+        codes = [code for code, label in STAGES]
+        hints = {
+            'new': 'מתחילים בפרטי הלקוח, הטלפון, הכתובת ותיאור העבודה.',
+            'quote': 'לאחר שליחת ההצעה ללקוח, מזינים את מספרה וממשיכים לשלב הבא.',
+            'sent': 'לאחר קבלת אישור להצעה, ממשיכים לתיאום העבודה.',
+            'schedule': 'בוחרים קבלן ומועד. המשך ייצור משימת שטח אחת המקושרת לפנייה.',
+            'field': 'הקבלן מדווח דרך הפורטל. ההשלמה מתבצעת לאחר בדיקת התמונות ואישור העבודה.',
+            'completed': 'דיווח השטח אושר. הפנייה ממתינה לטיפול בתשלום.',
+        }
+        for lead in self:
+            code = lead.field_dispatch_code or 'new'
+            index = codes.index(code) if code in codes else 0
+            missing = lead._field_progress_missing(codes[index + 1]) if index < 4 else []
+            lead.field_stage_number = index + 1
+            lead.field_progress = round((index + 1) / len(codes) * 100)
+            lead.field_stage_title = dict(STAGES).get(code, STAGES[0][1])
+            lead.field_stage_help = hints.get(code)
+            lead.field_missing_fields = '\n'.join('• ' + label for label in missing)
+            lead.field_dispatch_locked = any(t.field_review_state in ('pending', 'approved') for t in lead.field_task_ids)
+
+    def _field_progress_missing(self, target_code):
+        self.ensure_one()
+        codes = [code for code, label in STAGES]
+        index = codes.index(target_code)
+        missing = []
+        if index >= 1:
+            for name, label in (
+                ('name', 'שם העבודה'), ('partner_id', 'לקוח'), ('phone', 'טלפון לתיאום'),
+                ('field_site_address', 'כתובת ביצוע'), ('field_work_description', 'תיאור העבודה לקבלן'),
+            ):
+                value = self[name]
+                if not value or (isinstance(value, str) and not value.strip()):
+                    missing.append(label)
+        if index >= 2 and not (self.field_quote_number or '').strip():
+            missing.append('מספר הצעת מחיר ממורנינג')
+        if index >= 4:
+            user = self.field_contractor_id
+            if not user or not user.active or not user.share or not user.has_group('field_work_photos.group_field_contractor'):
+                missing.append('קבלן פעיל בעל הרשאת פורטל')
+            if not self.field_visit_at:
+                missing.append('מועד ביצוע')
+        return missing
+
+    def _check_field_progress(self, target_code):
+        for lead in self:
+            missing = lead._field_progress_missing(target_code)
+            if missing:
+                raise ValidationError('כדי להמשיך לשלב הבא יש להשלים:\n' + '\n'.join('• ' + label for label in missing))
+
+    def action_next_field_stage(self):
+        self.ensure_one()
+        self._require_dispatcher()
+        if not self.is_field_service:
+            raise ValidationError('הפעולה זמינה לפניות עבודות שטח בלבד.')
+        codes = [code for code, label in STAGES]
+        index = codes.index(self.field_dispatch_code)
+        if index >= 4:
+            return self.action_open_field_task()
+        self._check_field_progress(codes[index + 1])
+        self.write({'stage_id': self.env.ref('field_work_photos.stage_field_' + codes[index + 1]).id})
+        if codes[index + 1] == 'field':
+            return self.action_open_field_task()
+        return True
+
+    def action_previous_field_stage(self):
+        self.ensure_one()
+        self._require_dispatcher()
+        if not self.is_field_service or self.field_dispatch_code not in ('quote', 'sent', 'schedule'):
+            raise ValidationError('ניתן לחזור לשלב קודם רק לפני השיבוץ לשטח.')
+        codes = [code for code, label in STAGES]
+        previous = codes[codes.index(self.field_dispatch_code) - 1]
+        self.write({'stage_id': self.env.ref('field_work_photos.stage_field_' + previous).id})
+        return True
+
+    def _set_field_review_stage(self, code):
+        # Private: only the task review actions call this after changing their
+        # review state. No RPC context flag can bypass the public stage guard.
+        self._require_dispatcher()
+        self.check_access('write')
+        return super().write({'stage_id': self.env.ref('field_work_photos.stage_field_' + code).id})
 
     def _compute_field_task_count(self):
         for lead in self:
@@ -57,14 +148,11 @@ class CrmLead(models.Model):
                 vals.setdefault('team_id', self.env.ref('field_work_photos.team_field_service').id)
                 vals.setdefault('stage_id', self.env.ref('field_work_photos.stage_field_new').id)
                 vals.setdefault('type', 'opportunity')
-                stage = self.env['crm.stage'].browse(vals['stage_id'])
-                if vals.get('field_quote_number') and stage.field_dispatch_code in ('new', 'quote'):
-                    vals['stage_id'] = self.env.ref('field_work_photos.stage_field_sent').id
+                if self.env['crm.stage'].browse(vals['stage_id']).field_dispatch_code != 'new':
+                    raise ValidationError('פניית שטח חדשה מתחילה בשלב לקוח חדש / פנייה. יש להתקדם באמצעות המשך.')
             if vals.get('field_task_ids'):
                 raise AccessError('משימת שטח נוצרת באמצעות תהליך השיבוץ בלבד.')
-        leads = super().create(vals_list)
-        leads.filtered(lambda l: l.is_field_service and l.field_dispatch_code == 'field')._ensure_field_task()
-        return leads
+        return super().create(vals_list)
 
     def write(self, vals):
         service = self.filtered('is_field_service')
@@ -79,14 +167,24 @@ class CrmLead(models.Model):
             self.env.cr.execute('SELECT id FROM crm_lead WHERE id IN %s ORDER BY id FOR UPDATE', [tuple(service.ids)])
             service.invalidate_recordset()
             service.field_task_ids._lock_dispatch_work()
+        forward = self.browse()
+        if 'stage_id' in vals and service:
+            target = self.env['crm.stage'].browse(vals['stage_id']).field_dispatch_code if vals['stage_id'] else False
+            codes = [code for code, label in STAGES]
+            for lead in service:
+                old = lead.field_dispatch_code
+                if old == target:
+                    continue
+                if old not in codes[:4] or target not in codes[:5] or abs(codes.index(target) - codes.index(old)) != 1:
+                    raise ValidationError('לא ניתן לדלג על שלבים. יש להשתמש בכפתור המשך; סיום והחזרה לתיקון מתבצעים מתוך המשימה.')
+                if codes.index(target) > codes.index(old):
+                    forward |= lead
         if DISPATCH_FIELDS.intersection(vals):
             if any(t.field_review_state in ('pending', 'approved') for t in service.field_task_ids):
                 raise ValidationError('יש להחזיר את העבודה לתיקון לפני שינוי פרטי העבודה או השיבוץ.')
         result = super().write(vals)
-        if vals.get('field_quote_number'):
-            service.filtered(lambda l: l.field_dispatch_code in ('new', 'quote')).write({
-                'stage_id': self.env.ref('field_work_photos.stage_field_sent').id,
-            })
+        for lead in forward:
+            lead._check_field_progress(lead.field_dispatch_code)
         service.filtered(lambda l: l.field_dispatch_code == 'field')._ensure_field_task()
         if DISPATCH_FIELDS.intersection(vals):
             for lead in service:
@@ -147,10 +245,11 @@ class CrmLead(models.Model):
     def action_dispatch_field_work(self):
         self.ensure_one()
         self._require_dispatcher()
-        if not self.is_field_service or self.field_dispatch_code not in ('schedule', 'field'):
+        if self.is_field_service and self.field_dispatch_code == 'field':
+            return self.action_open_field_task()
+        if not self.is_field_service or self.field_dispatch_code != 'schedule':
             raise ValidationError('יש להעביר את הפנייה לממתין לתיאום לפני השיבוץ.')
-        self.write({'stage_id': self.env.ref('field_work_photos.stage_field_field').id})
-        return self.action_open_field_task()
+        return self.action_next_field_stage()
 
     def action_open_field_task(self):
         self.ensure_one()
@@ -221,7 +320,7 @@ class ProjectTask(models.Model):
         result = super().action_approve_field_work()
         leads = self.mapped('field_service_lead_id')
         if leads:
-            leads.write({'stage_id': self.env.ref('field_work_photos.stage_field_completed').id})
+            leads._set_field_review_stage('completed')
         return result
 
     def action_request_field_changes(self):
@@ -229,7 +328,7 @@ class ProjectTask(models.Model):
         result = super().action_request_field_changes()
         leads = self.mapped('field_service_lead_id')
         if leads:
-            leads.write({'stage_id': self.env.ref('field_work_photos.stage_field_field').id})
+            leads._set_field_review_stage('field')
         return result
 
     def unlink(self):

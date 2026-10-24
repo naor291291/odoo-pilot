@@ -28,8 +28,9 @@ class TestFieldPortal(HttpCase):
                 'field_work_description': 'Customer-facing description',
                 'description': '<p>INTERNAL-SECRET-NOT-FOR-CONTRACTOR</p>',
                 'expected_revenue': 65432,
-                'stage_id': cls.env.ref('field_work_photos.stage_field_field').id,
             })
+            for _ in range(4):
+                lead.action_next_field_stage()
             cls.leads |= lead
         cls.own_task = cls.leads[0].field_task_ids
         cls.other_task = cls.leads[1].field_task_ids

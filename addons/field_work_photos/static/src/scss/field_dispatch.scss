@@ -1,0 +1,74 @@
+.o_field_service_form {
+    --field-ink: #20334a;
+    --field-muted: #6c7c8e;
+    --field-teal: #087f8c;
+    --field-border: #e4eaf0;
+
+    .o_form_sheet_bg { background: #f3f6fa; }
+    .o_form_sheet { max-width: 1240px !important; background: transparent; border: 0; box-shadow: none; padding: 28px; }
+    .o_form_statusbar { padding: 12px 24px; border-bottom: 1px solid var(--field-border); }
+    .o_form_statusbar .btn-primary { background: var(--field-teal); border-color: var(--field-teal); border-radius: 9px; padding: 10px 18px; font-weight: 600; }
+    .o_form_statusbar .btn-secondary { border-radius: 9px; }
+    .o_field_service_hero { display: flex; gap: 32px; justify-content: space-between; padding: 30px; border: 1px solid var(--field-border); border-radius: 18px; background: #fff; }
+    .o_field_service_heading { flex: 1; min-width: 0; }
+    .o_field_service_eyebrow { display: block; color: var(--field-teal); font-size: 12px; font-weight: 700; letter-spacing: .03em; margin-bottom: 12px; }
+    h1 { color: var(--field-ink); font-size: 30px; font-weight: 700; margin: 0 0 12px; }
+    h1 .o_field_widget { width: 100%; }
+    .o_field_service_subtitle { color: var(--field-muted); line-height: 1.7; max-width: 640px; }
+    .o_field_service_subtitle .o_field_widget { white-space: normal; margin: 0; }
+    .o_field_service_progress { min-width: 185px; align-self: center; padding-inline-start: 28px; border-inline-start: 1px solid var(--field-border); }
+    .o_field_service_step { font-size: 17px; color: var(--field-ink); font-weight: 700; display: flex; gap: 5px; margin-bottom: 12px; }
+    .o_field_service_step .o_field_widget { width: auto; margin: 0; }
+    .o_field_service_progress .o_progressbar { margin-bottom: 8px; }
+    .o_field_service_progress .progress-bar { background: var(--field-teal); }
+    .o_field_service_stage_title { font-size: 12px; color: var(--field-muted); }
+    .o_field_service_steps { overflow-x: auto; padding: 18px 0; }
+    .o_field_service_steps .o_field_widget { margin: 0; }
+    .o_field_service_steps .o_arrow_button { padding: 10px 17px; font-size: 12px; }
+    .o_field_service_steps .o_arrow_button.btn-primary { background-color: #e0f2f1; color: #086a74; }
+    .o_field_service_notice { display: flex; gap: 14px; align-items: flex-start; border-radius: 12px; padding: 17px 20px; margin: 0 0 20px; line-height: 1.6; }
+    .o_field_service_notice > .fa { font-size: 21px; margin-top: 3px; }
+    .o_field_service_notice strong { font-size: 14px; }
+    .o_field_service_notice p { margin: 3px 0 0; }
+    .o_field_service_notice .o_field_widget { display: block; margin: 5px 0 0; white-space: pre-line; }
+    .o_field_service_notice_warning { background: #fff8e9; color: #855d1d; border: 1px solid #f5e4bc; }
+    .o_field_service_notice_ready { background: #edf8f3; color: #23694b; border: 1px solid #d4ebdf; }
+    .o_field_service_columns { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 22px; align-items: start; }
+    .o_field_service_main { display: grid; gap: 20px; min-width: 0; }
+    .o_field_service_card { background: #fff; border: 1px solid var(--field-border); border-radius: 14px; padding: 24px; box-shadow: 0 3px 12px #20334a04; }
+    .o_field_service_card_heading { display: flex; align-items: center; gap: 13px; margin-bottom: 22px; }
+    .o_field_service_icon { flex: 0 0 38px; width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 11px; background: #edf5f7; color: var(--field-teal); font-size: 17px; }
+    .o_field_service_card_heading h2 { font-size: 17px; color: var(--field-ink); font-weight: 650; margin: 0; }
+    .o_field_service_card_heading p { color: var(--field-muted); font-size: 12px; margin: 5px 0 0; }
+    .o_field_service_card .o_inner_group { margin-bottom: 0; }
+    .o_field_service_card .o_field_widget { margin-bottom: 7px; }
+    .o_field_service_card .o_input { background: #f8fafc; border: 1px solid #dfe7ee; border-radius: 7px; padding: 7px 10px; min-height: 37px; }
+    .o_field_service_card .o_input:focus { border-color: var(--field-teal); box-shadow: 0 0 0 3px #087f8c12; }
+    .o_field_service_card .o_input_dropdown .o_input { padding-inline-end: 24px; }
+    .o_field_service_card .o_field_text textarea { min-height: 90px; }
+    .o_field_service_card .o_cell { padding-bottom: 8px; }
+    .o_field_service_card .o_form_label { color: #526479; font-weight: 500; font-size: 12px; }
+    .o_field_service_tip { color: var(--field-muted); font-size: 12px; line-height: 1.8; background: #f6f8fb; border-radius: 8px; padding: 12px 14px; margin-top: 12px; }
+    .o_field_service_sidebar { display: grid; gap: 18px; position: sticky; top: 20px; }
+    .o_field_service_sidebar .o_field_service_card { padding: 22px 18px; }
+    .o_field_service_sidebar_note { display: flex; gap: 10px; padding: 0 10px; color: var(--field-muted); font-size: 12px; line-height: 1.8; }
+    .o_field_service_sidebar_note .fa { margin-top: 4px; color: #92a1b2; }
+    .o_field_service_task_link { border-radius: 8px; padding: 12px; margin-top: 15px; }
+    .o_field_service_task_link .o_field_widget { width: auto; margin: 0; }
+    .o_field_service_notes .note-editable { min-height: 80px; }
+
+    @media (max-width: 991px) {
+        .o_form_sheet { padding: 16px; }
+        .o_field_service_columns { grid-template-columns: 1fr; }
+        .o_field_service_sidebar { position: static; }
+    }
+    @media (max-width: 575px) {
+        .o_form_sheet { padding: 12px; }
+        .o_field_service_hero { flex-direction: column; gap: 20px; padding: 20px; }
+        h1 { font-size: 24px; }
+        .o_field_service_progress { padding-inline-start: 0; border: 0; min-width: 0; align-self: stretch; }
+        .o_field_service_card { padding: 18px; }
+        .o_form_statusbar { padding: 8px 12px; }
+    }
+}
+.o_field_service_kanban .o_field_service_kanban_missing { color: #90651f; margin-top: 12px; font-size: 11px; }
