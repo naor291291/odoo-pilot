@@ -3,43 +3,99 @@
     <record id="view_field_lead_form" model="ir.ui.view">
         <field name="name">crm.lead.field.service.form</field><field name="model">crm.lead</field>
         <field name="arch" type="xml">
-            <form string="פניית עבודת שטח">
+            <form string="פניית עבודת שטח" class="o_field_service_form">
                 <header>
-                    <button name="action_dispatch_field_work" string="שיבוץ ופתיחת משימת שטח" type="object" class="oe_highlight" invisible="field_dispatch_code != 'schedule'"/>
-                    <field name="stage_id" widget="statusbar" domain="[('field_dispatch_code', '!=', False)]" options="{'clickable': True}"/>
+                    <button name="action_next_field_stage" string="המשך להצעת מחיר" aria-label="המשך להצעת מחיר" type="object" class="oe_highlight" icon="fa-arrow-left" invisible="field_dispatch_code != 'new'"/>
+                    <button name="action_next_field_stage" string="המשך — ההצעה נשלחה" aria-label="המשך — ההצעה נשלחה" type="object" class="oe_highlight" icon="fa-paper-plane-o" invisible="field_dispatch_code != 'quote'"/>
+                    <button name="action_next_field_stage" string="אישור הצעה והמשך לתיאום" aria-label="אישור הצעה והמשך לתיאום" type="object" class="oe_highlight" icon="fa-check" invisible="field_dispatch_code != 'sent'"/>
+                    <button name="action_dispatch_field_work" string="המשך — שיבוץ ופתיחת משימה" aria-label="המשך — שיבוץ ופתיחת משימה" type="object" class="oe_highlight" icon="fa-calendar-check-o" invisible="field_dispatch_code != 'schedule'"/>
+                    <button name="action_open_field_task" string="פתיחת משימת השטח" aria-label="פתיחת משימת השטח" type="object" class="oe_highlight" icon="fa-wrench" invisible="field_task_count == 0 or field_dispatch_code != 'field'"/>
+                    <button name="action_previous_field_stage" string="חזרה לשלב הקודם" aria-label="חזרה לשלב הקודם" type="object" icon="fa-arrow-right" invisible="field_dispatch_code not in ['quote', 'sent', 'schedule']"/>
                 </header>
                 <sheet>
-                    <field name="is_field_service" invisible="1"/><field name="field_dispatch_code" invisible="1"/>
+                    <field name="is_field_service" invisible="1"/>
+                    <field name="field_dispatch_code" invisible="1"/>
+                    <field name="field_dispatch_locked" invisible="1"/>
                     <field name="type" invisible="1"/><field name="team_id" invisible="1"/>
-                    <div class="oe_button_box" name="button_box">
-                        <button name="action_open_field_task" type="object" class="oe_stat_button" icon="fa-wrench" invisible="field_task_count == 0">
-                            <field name="field_task_count" widget="statinfo" string="משימת שטח"/>
-                        </button>
+                    <div class="o_field_service_mobile_actions d-md-none">
+                        <button name="action_next_field_stage" string="המשך להצעת מחיר" aria-label="המשך להצעת מחיר" type="object" class="btn btn-primary" invisible="field_dispatch_code != 'new'"/>
+                        <button name="action_next_field_stage" string="המשך — ההצעה נשלחה" aria-label="המשך — ההצעה נשלחה" type="object" class="btn btn-primary" invisible="field_dispatch_code != 'quote'"/>
+                        <button name="action_next_field_stage" string="אישור והמשך לתיאום" aria-label="אישור הצעה והמשך לתיאום" type="object" class="btn btn-primary" invisible="field_dispatch_code != 'sent'"/>
+                        <button name="action_dispatch_field_work" string="שיבוץ ופתיחת משימה" aria-label="המשך — שיבוץ ופתיחת משימה" type="object" class="btn btn-primary" invisible="field_dispatch_code != 'schedule'"/>
+                        <button name="action_open_field_task" string="פתיחת משימת השטח" aria-label="פתיחת משימת השטח" type="object" class="btn btn-primary" invisible="field_task_count == 0 or field_dispatch_code not in ['field', 'completed']"/>
+                        <button name="action_previous_field_stage" string="חזרה" aria-label="חזרה לשלב הקודם" type="object" class="btn btn-outline-secondary" invisible="field_dispatch_code not in ['quote', 'sent', 'schedule']"/>
                     </div>
-                    <div class="oe_title"><h1><field name="name" placeholder="למשל: החלפת ברז במטבח" required="1"/></h1></div>
-                    <group>
-                        <group string="פרטי הלקוח והעבודה">
-                            <field name="partner_id" string="לקוח"/>
-                            <field name="contact_name" string="איש קשר"/>
-                            <field name="phone" string="טלפון לתיאום"/>
-                            <field name="field_site_address" placeholder="רחוב, מספר, עיר ופרטי הגעה"/>
-                            <field name="field_work_description" placeholder="מה צריך לבצע? הטקסט יוצג לקבלן"/>
-                        </group>
-                        <group string="הצעת מחיר ושיבוץ">
-                            <field name="field_quote_number"/>
-                            <field name="field_contractor_id" options="{'no_create': True, 'no_open': True}"/>
-                            <field name="field_visit_at"/>
-                            <field name="user_id" string="אחראי טיפול"/>
-                            <field name="company_id" groups="base.group_multi_company"/>
-                        </group>
-                    </group>
-                    <div class="alert alert-info" role="status" invisible="field_dispatch_code != 'schedule'">
-                        לשיבוץ יש לבחור לקוח וקבלן ולהזין מועד, כתובת ותיאור עבודה. הקבלן יראה את המשימה בפורטל שלו.
+                    <div class="o_field_service_hero">
+                        <div class="o_field_service_heading">
+                            <span class="o_field_service_eyebrow"><i class="fa fa-wrench me-2"/>עבודות שטח</span>
+                            <h1><field name="name" placeholder="שם העבודה, למשל החלפת ברז במטבח" required="1" readonly="field_dispatch_locked"/></h1>
+                            <div class="o_field_service_subtitle"><field name="field_stage_help" nolabel="1" readonly="1"/></div>
+                        </div>
+                        <div class="o_field_service_progress">
+                            <span class="o_field_service_eyebrow">התקדמות הטיפול</span>
+                            <div class="o_field_service_step">שלב <field name="field_stage_number" nolabel="1" readonly="1"/> מתוך 6</div>
+                            <field name="field_progress" widget="progressbar" nolabel="1" readonly="1"/>
+                            <field name="field_stage_title" nolabel="1" readonly="1" class="o_field_service_stage_title"/>
+                        </div>
                     </div>
-                    <div class="alert alert-success" role="status" invisible="field_dispatch_code != 'completed'">
-                        דיווח השטח אושר. העבודה ממתינה לטיפול בתשלום; אישור העבודה אינו אישור קבלת תשלום.
+                    <div class="o_field_service_steps">
+                        <field name="stage_id" widget="statusbar" readonly="1" options="{'clickable': False}" domain="[('field_dispatch_code', '!=', False)]"/>
                     </div>
-                    <notebook><page string="הערות פנימיות"><field name="description" placeholder="הערות פנימיות שאינן מוצגות לקבלן"/></page></notebook>
+                    <div class="o_field_service_notice o_field_service_notice_warning" role="status" invisible="not field_missing_fields or field_dispatch_code in ['field', 'completed']">
+                        <i class="fa fa-list-ul"/>
+                        <div><strong>מה חסר כדי להמשיך?</strong><field name="field_missing_fields" nolabel="1" readonly="1"/></div>
+                    </div>
+                    <div class="o_field_service_notice o_field_service_notice_ready" role="status" invisible="field_missing_fields or field_dispatch_code in ['field', 'completed']">
+                        <i class="fa fa-check-circle"/><div><strong>כל הפרטים לשלב הבא מוכנים</strong><p>אפשר להמשיך באמצעות הכפתור בראש המסך.</p></div>
+                    </div>
+                    <div class="o_field_service_columns">
+                        <div class="o_field_service_main">
+                            <div class="o_field_service_card">
+                                <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-user-o"/></span><div><h2>פרטי הלקוח והעבודה</h2><p>הפרטים שהקבלן צריך כדי להגיע ולבצע את העבודה</p></div></div>
+                                <group>
+                                    <group>
+                                        <field name="partner_id" string="לקוח" readonly="field_dispatch_locked"/>
+                                        <field name="contact_name" string="איש קשר" readonly="field_dispatch_locked"/>
+                                        <field name="phone" string="טלפון לתיאום" placeholder="למשל 0501234567" readonly="field_dispatch_locked"/>
+                                    </group>
+                                    <group>
+                                        <field name="field_site_address" placeholder="רחוב, מספר, עיר ופרטי הגעה" readonly="field_dispatch_locked"/>
+                                        <field name="field_work_description" placeholder="מה צריך לבצע? הטקסט הזה יוצג לקבלן" readonly="field_dispatch_locked"/>
+                                    </group>
+                                </group>
+                            </div>
+                            <div class="o_field_service_card" invisible="field_dispatch_code == 'new'">
+                                <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-file-text-o"/></span><div><h2>הצעת המחיר</h2><p>המסמך שמחבר בין העבודה להצעה שנמסרה ללקוח</p></div></div>
+                                <group><field name="field_quote_number" placeholder="למשל TEST-100"/></group>
+                                <div class="o_field_service_tip" invisible="field_dispatch_code != 'quote'">לאחר שליחת ההצעה ללקוח, הזן את מספרה ולחץ על המשך. הזנת המספר לבדה אינה מקדמת שלב.</div>
+                                <div class="o_field_service_tip" invisible="field_dispatch_code != 'sent'">קיבלת אישור להצעה? לחץ על אישור הצעה והמשך לתיאום כדי לבחור קבלן ומועד.</div>
+                            </div>
+                            <div class="o_field_service_card" invisible="field_dispatch_code not in ['schedule', 'field', 'completed']">
+                                <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-calendar"/></span><div><h2>שיבוץ וביצוע</h2><p>בחר קבלן ומועד, והמערכת תפתח את משימת השטח</p></div></div>
+                                <group>
+                                    <group><field name="field_contractor_id" options="{'no_create': True, 'no_open': True}" readonly="field_dispatch_locked"/></group>
+                                    <group><field name="field_visit_at" readonly="field_dispatch_locked"/></group>
+                                </group>
+                                <div class="o_field_service_tip" invisible="field_dispatch_code != 'field'">המשימה כבר נוצרה. לפתיחת הדיווח, בדיקת התמונות ואישור העבודה השתמש בכפתור משימת השטח.</div>
+                            </div>
+                            <div class="o_field_service_notice o_field_service_notice_ready" role="status" invisible="field_dispatch_code != 'completed'">
+                                <i class="fa fa-check-circle"/><div><strong>העבודה אושרה</strong><p>דיווח השטח נבדק ואושר. השלב הבא הוא טיפול בתשלום.</p></div>
+                            </div>
+                            <div class="o_field_service_card o_field_service_notes">
+                                <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-lock"/></span><div><h2>הערות פנימיות</h2><p>מידע לצוות התפעול בלבד</p></div></div>
+                                <field name="description" placeholder="הוסף כאן הערות פנימיות שאינן מוצגות לקבלן"/>
+                            </div>
+                        </div>
+                        <div class="o_field_service_sidebar">
+                            <div class="o_field_service_card">
+                                <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-clipboard"/></span><div><h2>סיכום הטיפול</h2></div></div>
+                                <group col="1"><field name="user_id" string="אחראי טיפול"/><field name="company_id" groups="base.group_multi_company"/></group>
+                                <button name="action_open_field_task" type="object" class="btn btn-outline-primary w-100 o_field_service_task_link" icon="fa-external-link" invisible="field_task_count == 0">משימת השטח <field name="field_task_count" readonly="1"/></button>
+                                <div class="o_field_service_tip" invisible="field_task_count != 0">משימת השטח תופיע כאן לאחר השלמת השיבוץ.</div>
+                            </div>
+                            <div class="o_field_service_sidebar_note"><i class="fa fa-info-circle"/><p>התקדמות מתבצעת שלב אחר שלב. אפשר לשמור פרטים חלקיים ולהשלים אותם לפני לחיצה על המשך.</p></div>
+                        </div>
+                    </div>
                 </sheet>
                 <chatter/>
             </form>
@@ -55,13 +111,14 @@
     <record id="view_field_lead_kanban" model="ir.ui.view">
         <field name="name">crm.lead.field.service.kanban</field><field name="model">crm.lead</field>
         <field name="arch" type="xml">
-            <kanban default_group_by="stage_id" quick_create="false" group_create="false" group_edit="false" group_delete="false">
-                <field name="name"/><field name="partner_id"/><field name="field_contractor_id"/><field name="field_visit_at"/>
+            <kanban default_group_by="stage_id" quick_create="false" group_create="false" group_edit="false" group_delete="false" records_draggable="false" class="o_field_service_kanban">
+                <field name="name"/><field name="partner_id"/><field name="field_contractor_id"/><field name="field_visit_at"/><field name="field_missing_fields"/>
                 <templates><t t-name="card">
                     <div class="fw-bold fs-5 mb-2"><field name="name"/></div>
                     <div><field name="partner_id"/></div>
                     <div class="text-muted mt-2"><field name="field_contractor_id"/></div>
                     <div class="text-muted"><field name="field_visit_at"/></div>
+                    <div t-if="record.field_missing_fields.raw_value" class="o_field_service_kanban_missing"><i class="fa fa-exclamation-circle me-1"/>יש פרטים להשלמה</div>
                 </t></templates>
             </kanban>
         </field>
@@ -69,7 +126,7 @@
     <record id="action_field_service_leads" model="ir.actions.act_window">
         <field name="name">פניות ושיבוץ עבודות</field><field name="res_model">crm.lead</field>
         <field name="view_mode">kanban,list,form</field><field name="domain">[('is_field_service', '=', True)]</field>
-        <field name="context">{'default_is_field_service': True, 'default_type': 'opportunity', 'field_service_pipeline': True}</field>
+        <field name="context" eval="{'default_is_field_service': True, 'default_type': 'opportunity', 'field_service_pipeline': True, 'default_team_id': ref('team_field_service'), 'default_stage_id': ref('stage_field_new')}"/>
         <field name="help" type="html"><p class="o_view_nocontent_smiling_face">פתיחת פנייה חדשה ושיבוץ לקבלן</p></field>
     </record>
     <record id="action_field_service_leads_kanban" model="ir.actions.act_window.view">

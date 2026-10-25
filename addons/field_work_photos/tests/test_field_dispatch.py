@@ -21,14 +21,18 @@ class TestFieldDispatch(TransactionCase):
         cls.photo = base64.b64encode(stream.getvalue())
 
     def lead(self, **values):
-        return self.env['crm.lead'].with_user(self.ops).create({
+        stage_id = values.pop('stage_id', self.env.ref('field_work_photos.stage_field_schedule').id)
+        target = self.env['crm.stage'].browse(stage_id).field_dispatch_code
+        lead = self.env['crm.lead'].with_user(self.ops).create({
             'name': 'Replace kitchen tap', 'is_field_service': True,
             'partner_id': self.customer.id, 'phone': '0501234567',
             'field_quote_number': 'QUOTE-100', 'field_contractor_id': self.first.id,
             'field_visit_at': fields.Datetime.now(), 'field_site_address': 'Test Street 10',
-            'field_work_description': 'Replace the tap',
-            'stage_id': self.env.ref('field_work_photos.stage_field_schedule').id, **values,
+            'field_work_description': 'Replace the tap', **values,
         })
+        while lead.field_dispatch_code != target:
+            lead.action_next_field_stage()
+        return lead
 
     def dispatch(self):
         lead = self.lead()
@@ -50,13 +54,17 @@ class TestFieldDispatch(TransactionCase):
         lead.write({'stage_id': self.env.ref('field_work_photos.stage_field_field').id})
         self.assertEqual(len(lead.field_task_ids), 1)
 
-    def test_create_in_field_stage_creates_task(self):
-        lead = self.lead(stage_id=self.env.ref('field_work_photos.stage_field_field').id)
-        self.assertEqual(len(lead.field_task_ids), 1)
+    def test_create_cannot_start_in_field_stage(self):
+        with self.assertRaises(ValidationError), self.cr.savepoint():
+            self.env['crm.lead'].with_user(self.ops).create({
+                'name': 'Skip initial steps', 'is_field_service': True,
+                'stage_id': self.env.ref('field_work_photos.stage_field_field').id,
+            })
 
     def test_dispatch_requires_all_details(self):
         for field in ('partner_id', 'field_contractor_id', 'field_visit_at', 'field_site_address', 'field_work_description'):
-            lead = self.lead(**{field: False})
+            lead = self.lead()
+            lead.write({field: False})
             with self.assertRaises(ValidationError), self.cr.savepoint():
                 lead.action_dispatch_field_work()
             self.assertFalse(lead.field_task_ids)
@@ -71,14 +79,18 @@ class TestFieldDispatch(TransactionCase):
         with self.assertRaises(ValidationError), self.cr.savepoint():
             lead.action_dispatch_field_work()
 
-    def test_quote_number_advances_stage(self):
+    def test_quote_number_waits_for_explicit_continue(self):
         lead = self.lead(field_quote_number=False, stage_id=self.env.ref('field_work_photos.stage_field_new').id)
         lead.field_quote_number = 'M-2026'
+        self.assertEqual(lead.field_dispatch_code, 'new')
+        lead.action_next_field_stage()
+        self.assertEqual(lead.field_dispatch_code, 'quote')
+        lead.action_next_field_stage()
         self.assertEqual(lead.field_dispatch_code, 'sent')
 
-    def test_creating_with_quote_number_advances_stage(self):
+    def test_creating_with_quote_number_stays_at_first_step(self):
         lead = self.lead(stage_id=self.env.ref('field_work_photos.stage_field_new').id)
-        self.assertEqual(lead.field_dispatch_code, 'sent')
+        self.assertEqual(lead.field_dispatch_code, 'new')
 
     def test_quote_required_before_sent(self):
         with self.assertRaises(ValidationError), self.cr.savepoint():
@@ -158,3 +170,107 @@ class TestFieldDispatch(TransactionCase):
         lead = self.lead()
         with self.assertRaises(AccessError), self.cr.savepoint():
             lead.with_user(ordinary).write({'field_site_address': 'Unauthorized'})
+
+    def test_next_explains_all_missing_initial_details(self):
+        lead = self.lead(stage_id=self.env.ref('field_work_photos.stage_field_new').id,
+                         phone=False, field_site_address=False, field_work_description=False)
+        with self.assertRaises(ValidationError) as error, self.cr.savepoint():
+            lead.action_next_field_stage()
+        for label in ('טלפון לתיאום', 'כתובת ביצוע', 'תיאור העבודה לקבלן'):
+            self.assertIn(label, str(error.exception))
+        self.assertEqual(lead.field_dispatch_code, 'new')
+
+    def test_direct_stage_skip_cannot_bypass_continue(self):
+        lead = self.lead(stage_id=self.env.ref('field_work_photos.stage_field_new').id)
+        for code in ('sent', 'schedule', 'field', 'completed'):
+            with self.assertRaises(ValidationError), self.cr.savepoint():
+                lead.with_context(field_workflow_internal=True).write({
+                    'stage_id': self.env.ref('field_work_photos.stage_field_' + code).id,
+                })
+        self.assertEqual(lead.field_dispatch_code, 'new')
+        self.assertFalse(lead.field_task_ids)
+
+    def test_next_requires_quote_reference(self):
+        lead = self.lead(stage_id=self.env.ref('field_work_photos.stage_field_quote').id,
+                         field_quote_number=False)
+        with self.assertRaises(ValidationError), self.cr.savepoint():
+            lead.action_next_field_stage()
+        self.assertEqual(lead.field_dispatch_code, 'quote')
+        lead.field_quote_number = 'Q-123'
+        self.assertEqual(lead.field_dispatch_code, 'quote')
+        lead.action_next_field_stage()
+        self.assertEqual(lead.field_dispatch_code, 'sent')
+
+    def test_next_and_previous_preserve_entered_data(self):
+        lead = self.lead(stage_id=self.env.ref('field_work_photos.stage_field_sent').id)
+        lead.action_next_field_stage()
+        self.assertEqual(lead.field_dispatch_code, 'schedule')
+        lead.action_previous_field_stage()
+        self.assertEqual(lead.field_dispatch_code, 'sent')
+        lead.action_previous_field_stage()
+        self.assertEqual(lead.field_dispatch_code, 'quote')
+        self.assertEqual(lead.field_quote_number, 'QUOTE-100')
+        self.assertEqual(lead.field_site_address, 'Test Street 10')
+
+    def test_guidance_tracks_missing_fields_and_progress(self):
+        lead = self.lead(stage_id=self.env.ref('field_work_photos.stage_field_new').id, phone=False)
+        self.assertIn('טלפון לתיאום', lead.field_missing_fields)
+        self.assertEqual(lead.field_stage_number, 1)
+        lead.phone = '0501234567'
+        self.assertFalse(lead.field_missing_fields)
+        lead.action_next_field_stage()
+        self.assertEqual(lead.field_stage_number, 2)
+        self.assertEqual(lead.field_stage_title, 'ממתין להצעת מחיר')
+        self.assertGreater(lead.field_progress, 17)
+
+    def test_batch_transition_with_incomplete_lead_rolls_back(self):
+        stage = self.env.ref('field_work_photos.stage_field_new').id
+        first = self.lead(stage_id=stage)
+        incomplete = self.lead(stage_id=stage, field_site_address=False)
+        with self.assertRaises(ValidationError), self.cr.savepoint():
+            (first | incomplete).write({'stage_id': self.env.ref('field_work_photos.stage_field_quote').id})
+        self.assertEqual(first.field_dispatch_code, 'new')
+        self.assertEqual(incomplete.field_dispatch_code, 'new')
+
+    def test_partial_draft_can_be_saved(self):
+        lead = self.env['crm.lead'].with_user(self.ops).create({'name': 'Draft request', 'is_field_service': True})
+        self.assertEqual(lead.field_dispatch_code, 'new')
+        self.assertIn('לקוח', lead.field_missing_fields)
+        with self.assertRaises(ValidationError), self.cr.savepoint():
+            lead.action_next_field_stage()
+
+    def test_previous_unavailable_after_dispatch(self):
+        lead, task = self.dispatch()
+        with self.assertRaises(ValidationError), self.cr.savepoint():
+            lead.action_previous_field_stage()
+        self.assertEqual(lead.field_task_ids, task)
+
+    def test_form_has_guided_buttons_and_no_stage_drag(self):
+        from lxml import etree
+        form = etree.fromstring(self.env.ref('field_work_photos.view_field_lead_form').arch_db)
+        self.assertTrue(form.xpath('//button[@name="action_next_field_stage"]'))
+        self.assertEqual(form.xpath('//field[@name="stage_id"]')[0].get('readonly'), '1')
+        kanban = etree.fromstring(self.env.ref('field_work_photos.view_field_lead_kanban').arch_db)
+        self.assertEqual(kanban.get('records_draggable'), 'false')
+
+    def test_conversion_cannot_start_midway(self):
+        lead = self.env['crm.lead'].with_user(self.ops).create({'name': 'Ordinary lead'})
+        with self.assertRaises(ValidationError), self.cr.savepoint():
+            lead.write({'is_field_service': True, 'stage_id': self.env.ref('field_work_photos.stage_field_field').id})
+        self.assertFalse(lead.is_field_service)
+
+    def test_copy_starts_new_without_a_linked_task(self):
+        lead, task = self.dispatch()
+        duplicate = lead.copy()
+        self.assertEqual(duplicate.field_dispatch_code, 'new')
+        self.assertFalse(duplicate.field_task_ids)
+
+    def test_action_defaults_to_field_team_and_first_stage(self):
+        from odoo.tools.safe_eval import safe_eval
+        action = self.env.ref('field_work_photos.action_field_service_leads')
+        context = safe_eval(action.context)
+        self.assertEqual(context['default_stage_id'], self.env.ref('field_work_photos.stage_field_new').id)
+        self.assertEqual(context['default_team_id'], self.env.ref('field_work_photos.team_field_service').id)
+        defaults = self.env['crm.lead'].with_user(self.ops).with_context(**context).default_get(['stage_id', 'is_field_service'])
+        self.assertTrue(defaults['is_field_service'])
+        self.assertEqual(defaults['stage_id'], context['default_stage_id'])
