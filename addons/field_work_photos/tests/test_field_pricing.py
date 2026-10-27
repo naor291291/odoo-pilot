@@ -1,6 +1,6 @@
 from odoo import fields
 from odoo.exceptions import AccessError, ValidationError
-from odoo.tests import TransactionCase, tagged, new_test_user
+from odoo.tests import Form, TransactionCase, tagged, new_test_user
 
 
 @tagged('post_install', '-at_install')
@@ -28,6 +28,18 @@ class TestFieldPricing(TransactionCase):
         for _ in range(4):
             lead.action_next_field_stage()
         return lead.field_task_ids
+
+    def test_new_form_onchange_and_partial_draft_save(self):
+        for user in (self.owner, self.ops):
+            Lead = self.env['crm.lead'].with_user(user).with_context(
+                default_is_field_service=True, default_type='opportunity',
+                default_stage_id=self.env.ref('field_work_photos.stage_field_new').id,
+                default_team_id=self.env.ref('field_work_photos.team_field_service').id)
+            with Form(Lead, view='field_work_photos.view_field_lead_form') as form:
+                form.name = 'Partial pricing draft'
+                self.assertEqual(form.field_pricing_currency_id, self.env.ref('base.ILS'))
+            self.assertEqual(form.record.field_dispatch_code, 'new')
+            self.assertEqual(form.record.field_sale_amount, 0)
 
     def test_default_tier_boundaries_and_fractional_shekel(self):
         for amount, rate, cost in [(500, 70, 350), (500.01, 65, 325.01),

@@ -27,7 +27,7 @@ class ResPartner(models.Model):
 class CrmLead(models.Model):
     _inherit = 'crm.lead'
 
-    field_pricing_currency_id = fields.Many2one('res.currency', compute='_compute_field_pricing_currency', string='מטבע תמחור')
+    field_pricing_currency_id = fields.Many2one('res.currency', compute='_compute_field_pricing_currency', default=lambda self: self.env.ref('base.ILS'), string='מטבע תמחור')
 
     def _compute_field_pricing_currency(self):
         for lead in self:
@@ -35,10 +35,10 @@ class CrmLead(models.Model):
 
     field_sale_amount = fields.Monetary(string='סכום עסקה לפני מע״מ', currency_field='field_pricing_currency_id', copy=False)
     field_material_cost = fields.Monetary(string='עלות חומרים לפני מע״מ', currency_field='field_pricing_currency_id', copy=False, groups=FINANCE_GROUP)
-    field_rates_frozen = fields.Boolean(copy=False, groups=FINANCE_GROUP)
-    field_rate_small_snapshot = fields.Float(copy=False, groups=FINANCE_GROUP)
-    field_rate_medium_snapshot = fields.Float(copy=False, groups=FINANCE_GROUP)
-    field_rate_large_snapshot = fields.Float(copy=False, groups=FINANCE_GROUP)
+    field_rates_frozen = fields.Boolean(copy=False, readonly=True, groups=FINANCE_GROUP)
+    field_rate_small_snapshot = fields.Float(copy=False, readonly=True, groups=FINANCE_GROUP)
+    field_rate_medium_snapshot = fields.Float(copy=False, readonly=True, groups=FINANCE_GROUP)
+    field_rate_large_snapshot = fields.Float(copy=False, readonly=True, groups=FINANCE_GROUP)
     field_applied_rate = fields.Float(string='אחוז קבלן מחושב', compute='_compute_field_pricing', compute_sudo=True, groups=FINANCE_GROUP)
     field_contractor_cost = fields.Monetary(string='תשלום צפוי לקבלן', currency_field='field_pricing_currency_id', compute='_compute_field_pricing', compute_sudo=True, groups=FINANCE_GROUP)
     field_gross_profit = fields.Monetary(string='רווח גולמי צפוי', currency_field='field_pricing_currency_id', compute='_compute_field_pricing', compute_sudo=True, groups=FINANCE_GROUP)
@@ -53,7 +53,7 @@ class CrmLead(models.Model):
                  'field_rate_medium_snapshot', 'field_rate_large_snapshot')
     def _compute_field_pricing(self):
         for lead in self:
-            currency = lead.field_pricing_currency_id
+            currency = self.env.ref('base.ILS')
             sale = currency.round(lead.field_sale_amount)
             rate = 0
             if lead.field_execution_type == 'subcontractor' and lead.field_contractor_id:
