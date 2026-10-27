@@ -26,7 +26,7 @@ class TestFieldDispatch(TransactionCase):
         lead = self.env['crm.lead'].with_user(self.ops).create({
             'name': 'Replace kitchen tap', 'is_field_service': True,
             'partner_id': self.customer.id, 'phone': '0501234567',
-            'field_quote_number': 'QUOTE-100', 'field_contractor_id': self.first.id,
+            'field_sale_amount': 1000, 'field_quote_number': 'QUOTE-100', 'field_contractor_id': self.first.id,
             'field_visit_at': fields.Datetime.now(), 'field_site_address': 'Test Street 10',
             'field_work_description': 'Replace the tap', **values,
         })
