@@ -118,3 +118,62 @@ class TestFieldPortal(HttpCase):
         self.assertEqual(response.status_code, 400)
         self.authenticate('admin', 'admin')
         self.assertEqual(self.url_open('/my/field-work').status_code, 404)
+
+    def test_combined_upload_and_submit_uses_selected_files(self):
+        self.own_task.write({'field_before_image': False, 'field_after_image': False})
+        self.login()
+        response = self.url_open(self.detail() + '/report', data={'csrf_token': self.token(), 'action': 'submit'}, files={
+            'field_before_image': ('before.png', self.raw_photo, 'image/png'),
+            'field_after_image': ('after.png', self.raw_photo, 'image/png')})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('נשלחו לבדיקת התפעול', response.text)
+        self.own_task.invalidate_recordset()
+        self.assertEqual(self.own_task.field_review_state, 'pending')
+        self.assertEqual(self.own_task.field_submitted_by, self.first)
+        self.assertTrue(self.own_task.field_before_image and self.own_task.field_after_image)
+
+    def test_combined_submit_can_use_saved_before_and_new_after(self):
+        self.own_task.field_after_image = False
+        self.login()
+        response = self.url_open(self.detail() + '/report', data={'csrf_token': self.token(), 'action': 'submit'}, files={
+            'field_after_image': ('after.png', self.raw_photo, 'image/png')})
+        self.assertEqual(response.status_code, 200)
+        self.own_task.invalidate_recordset()
+        self.assertEqual(self.own_task.field_review_state, 'pending')
+
+    def test_failed_combined_submit_rolls_back_uploaded_photo(self):
+        self.own_task.write({'field_before_image': False, 'field_after_image': False})
+        self.login()
+        response = self.url_open(self.detail() + '/report', data={'csrf_token': self.token(), 'action': 'submit'}, files={
+            'field_before_image': ('before.png', self.raw_photo, 'image/png')})
+        self.assertIn('alert-danger', response.text)
+        self.own_task.invalidate_recordset()
+        self.assertEqual(self.own_task.field_review_state, 'draft')
+        self.assertFalse(self.own_task.field_before_image)
+
+    def test_bad_combined_upload_cannot_submit_existing_report(self):
+        self.login()
+        response = self.url_open(self.detail() + '/report', data={'csrf_token': self.token(), 'action': 'submit'}, files={
+            'field_after_image': ('bad.png', b'bad image', 'image/png')})
+        self.assertIn('alert-danger', response.text)
+        self.own_task.invalidate_recordset()
+        self.assertEqual(self.own_task.field_review_state, 'draft')
+
+    def test_portal_scope_preserves_ownership_and_separates_pending(self):
+        self.own_task.action_finish_field_work()
+        self.login()
+        active = self.url_open('/my/field-work')
+        self.assertNotIn(self.own_task.name, active.text)
+        pending = self.url_open('/my/field-work?scope=pending')
+        self.assertIn(self.own_task.name, pending.text)
+        self.assertNotIn(self.other_task.name, pending.text)
+
+    def test_report_has_one_form_and_contact_links(self):
+        self.login()
+        response = self.url_open(self.detail())
+        page = html.fromstring(response.content)
+        self.assertEqual(len(page.xpath('//form[@data-field-report]')), 1)
+        self.assertTrue(page.xpath('//a[starts-with(@href, "tel:")]'))
+        self.assertIn('google.com/maps/search', response.text)
+        self.assertIn('שמירת התמונות והגשה לאישור', response.text)
+        self.assertIn('שמירה והמשך מאוחר יותר', response.text)

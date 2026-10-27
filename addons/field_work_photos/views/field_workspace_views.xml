@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_field_work_correction" model="ir.ui.view">
+        <field name="name">field.work.correction.form</field><field name="model">field.work.correction</field>
+        <field name="arch" type="xml"><form string="החזרת הדיווח לתיקון" class="o_field_ui">
+            <field name="task_id" invisible="1"/>
+            <p>הסיבה תופיע לקבלן בפורטל. כתוב מה נדרש לעדכן כדי שניתן יהיה לאשר את הביצוע.</p>
+            <group><field name="reason" placeholder="למשל: נדרש צילום קרוב של החיבור לאחר התיקון"/></group>
+            <footer><button name="action_apply" type="object" string="שליחת בקשת תיקון" class="btn-primary"/><button special="cancel" string="ביטול" class="btn-secondary"/></footer>
+        </form></field>
+    </record>
+    <record id="view_field_service_search" model="ir.ui.view">
+        <field name="name">crm.lead.field.service.search</field><field name="model">crm.lead</field>
+        <field name="arch" type="xml"><search string="חיפוש פניות ועבודות">
+            <field name="name"/><field name="partner_id"/><field name="field_contractor_id"/>
+            <filter name="unassigned" string="ממתינות לשיבוץ" domain="[('field_dispatch_code', '=', 'schedule')]"/>
+            <filter name="review" string="ממתינות לאישור ביצוע" domain="[('field_task_ids.field_review_state', '=', 'pending')]"/>
+            <filter name="correction" string="דיווחים לתיקון" domain="[('field_task_ids.field_review_state', '=', 'changes_requested')]"/>
+            <filter name="visit" string="מועד ביצוע" date="field_visit_at"/>
+            <group><filter name="contractor_group" string="קבלן" context="{'group_by': 'field_contractor_id'}"/></group>
+        </search></field>
+    </record>
+    <record id="action_field_service_leads" model="ir.actions.act_window"><field name="search_view_id" ref="view_field_service_search"/></record>
+    <record id="action_field_work_attention" model="ir.actions.act_window">
+        <field name="name">עבודות לטיפול</field><field name="res_model">crm.lead</field>
+        <field name="view_mode">list,form</field><field name="search_view_id" ref="view_field_service_search"/>
+        <field name="view_ids" eval="[(5,0,0),(0,0,{'view_mode':'list','view_id':ref('view_field_lead_list')}),(0,0,{'view_mode':'form','view_id':ref('view_field_lead_form')})]"/>
+        <field name="domain">[('is_field_service', '=', True), '|', ('field_dispatch_code', 'in', ['new', 'quote', 'sent', 'schedule']), ('field_task_ids.field_review_state', 'in', ['pending', 'changes_requested'])]</field>
+        <field name="context" eval="{'default_is_field_service': True, 'default_stage_id': ref('stage_field_new'), 'default_team_id': ref('team_field_service')}"/>
+        <field name="help" type="html"><p class="o_view_nocontent_smiling_face">אין כרגע עבודות שממתינות לטיפול</p><p>אפשר לראות את יתר העבודות דרך פניות ושיבוץ.</p></field>
+    </record>
+    <menuitem id="menu_field_attention" name="לטיפול עכשיו" parent="menu_field_service_root" action="action_field_work_attention" sequence="5"/>
+    <record id="view_field_partner_rates_list" model="ir.ui.view">
+        <field name="name">res.partner.field.rates.list</field><field name="model">res.partner</field>
+        <field name="arch" type="xml"><list string="מחירוני קבלנים" class="o_field_ui" create="false" delete="false" editable="bottom">
+            <field name="name" readonly="1"/><field name="phone" readonly="1"/>
+            <field name="field_rate_small" width="220px"/><field name="field_rate_medium" width="310px"/><field name="field_rate_large" width="250px"/>
+        </list></field>
+    </record>
+    <record id="view_field_partner_rates_form" model="ir.ui.view">
+        <field name="name">res.partner.field.rates.form</field><field name="model">res.partner</field>
+        <field name="arch" type="xml"><form string="מחירון קבלן" create="false" delete="false" class="o_field_ui o_field_rates_form"><sheet>
+            <div class="o_field_panel"><h1><field name="name" readonly="1"/></h1><p>מחירון אישי לביצוע עבודות. כל מדרגה חלה על מלוא סכום העסקה לפני מע״מ.</p>
+                <group><field name="phone" readonly="1"/></group>
+                <group><field name="field_rate_small"/><field name="field_rate_medium"/><field name="field_rate_large"/></group>
+                <div class="o_field_message" role="status">שינוי המחירון משפיע על שיבוצים חדשים. בעבודות שכבר שובצו נשמר המחירון שהיה בתוקף בזמן השיבוץ.</div>
+            </div>
+        </sheet></form></field>
+    </record>
+    <record id="action_field_contractor_rates_list" model="ir.actions.act_window.view">
+        <field name="sequence">1</field><field name="view_mode">list</field><field name="view_id" ref="view_field_partner_rates_list"/><field name="act_window_id" ref="action_field_contractor_rates"/>
+    </record>
+    <record id="action_field_contractor_rates_form" model="ir.actions.act_window.view">
+        <field name="sequence">2</field><field name="view_mode">form</field><field name="view_id" ref="view_field_partner_rates_form"/><field name="act_window_id" ref="action_field_contractor_rates"/>
+    </record>
+</odoo>
