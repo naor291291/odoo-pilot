@@ -132,3 +132,9 @@
     .o_field_report_panel .o_field_image img { max-height: 320px; object-fit: contain; }
     .o_field_service_sidebar { min-width: 0; }
 }
+
+@media (max-width: 767px) {
+    .o_field_service_form .o_field_service_mobile_actions { flex-wrap: wrap; }
+    .o_field_service_form .o_field_service_mobile_actions .btn-primary { flex: 1 1 100%; }
+    .o_field_service_form .o_field_service_mobile_actions .btn-outline-secondary { flex: 1; }
+}

@@ -180,7 +180,9 @@ with sync_playwright() as playwright:
     portal.get_by_role('link', name='החלפת ברז — בדיקת ממשק', exact=False).click()
     submit_report = portal.locator('[data-report-submit]')
     expect(submit_report).to_be_disabled()
-    portal.locator('#field_before_image').set_input_files({'name': 'before.png', 'mimeType': 'image/png', 'buffer': png((200, 50, 20))})
+    with portal.expect_file_chooser() as chooser:
+        portal.get_by_role('button', name='בחירת תמונה לפני ביצוע', exact=True).click()
+    chooser.value.set_files({'name': 'before.png', 'mimeType': 'image/png', 'buffer': png((200, 50, 20))})
     expect(portal.locator('[data-file-status]').first).to_contain_text('עדיין לא נשמרה')
     expect(submit_report).to_be_disabled()
     portal.locator('#field_after_image').set_input_files({'name': 'after.png', 'mimeType': 'image/png', 'buffer': png((30, 100, 220))})
@@ -205,6 +207,7 @@ with sync_playwright() as playwright:
     page.goto(url)
     page.get_by_role('button', name='אישור ביצוע', exact=True).click()
     expect(page.locator('.o_field_report_panel [name="field_report_state"]')).to_contain_text('אושר')
+    page.locator('.o_field_report_panel').scroll_into_view_if_needed()
     page.screenshot(path=str(OUTPUT / 'workspace-approved-desktop.png'), full_page=True)
     assert model('crm.lead', 'read', [[lead]], fields=['field_dispatch_code'])[0]['field_dispatch_code'] == 'completed'
     portal.goto('http://127.0.0.1:8069/my/field-work?scope=completed')

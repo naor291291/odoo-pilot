@@ -13,6 +13,7 @@
                     <button name="action_approve_field_report" string="אישור ביצוע" aria-label="אישור ביצוע" type="object" class="oe_highlight" invisible="field_report_state != 'pending' or not field_report_can_review"/>
                     <button name="action_return_field_report" string="החזרה לתיקון" aria-label="החזרה לתיקון" type="object" invisible="field_report_state not in ['pending','approved'] or not field_report_can_review"/>
                     <button name="action_previous_field_stage" string="חזרה לשלב הקודם" aria-label="חזרה לשלב הקודם" type="object" icon="fa-arrow-right" invisible="field_dispatch_code not in ['quote', 'sent', 'schedule']"/>
+                    <button name="action_save_field_draft" string="שמירת טיוטה" aria-label="שמירת טיוטה" type="object" invisible="field_dispatch_code not in ['new','quote','sent','schedule']"/>
                 </header>
                 <sheet>
                     <field name="is_field_service" invisible="1"/>
@@ -29,6 +30,7 @@
                         <button name="action_submit_field_report" string="הגשת הדיווח לאישור" aria-label="הגשת הדיווח לאישור" type="object" class="btn btn-primary" invisible="field_task_count == 0 or field_report_state not in ['draft','changes_requested']"/>
                         <button name="action_approve_field_report" string="אישור ביצוע" aria-label="אישור ביצוע" type="object" class="btn btn-primary" invisible="field_report_state != 'pending' or not field_report_can_review"/>
                         <button name="action_return_field_report" string="החזרה לתיקון" aria-label="החזרה לתיקון" type="object" class="btn btn-outline-secondary" invisible="field_report_state not in ['pending','approved'] or not field_report_can_review"/>
+                        <button name="action_save_field_draft" string="שמירת טיוטה" aria-label="שמירת טיוטה" type="object" class="btn btn-outline-secondary" invisible="field_dispatch_code not in ['new','quote','sent','schedule']"/>
                         <button name="action_previous_field_stage" string="חזרה" aria-label="חזרה לשלב הקודם" type="object" class="btn btn-outline-secondary" invisible="field_dispatch_code not in ['quote', 'sent', 'schedule']"/>
                     </div>
                     <div class="o_field_service_hero">

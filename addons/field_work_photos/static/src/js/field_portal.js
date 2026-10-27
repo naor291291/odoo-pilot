@@ -26,6 +26,13 @@ function setupFieldReports() {
             const error = slot.querySelector('[data-file-error]');
             const clear = slot.querySelector('[data-clear-photo]');
             if (!input) continue;
+            const select = slot.querySelector('[data-select-photo]');
+            if (select) {
+                input.classList.add('visually-hidden');
+                input.tabIndex = -1;
+                select.hidden = false;
+                select.addEventListener('click', () => input.click());
+            }
             input.addEventListener('change', () => {
                 if (previews.has(slot)) URL.revokeObjectURL(previews.get(slot));
                 previews.delete(slot);
@@ -56,7 +63,7 @@ function setupFieldReports() {
             clear.addEventListener('click', () => {
                 input.value = '';
                 input.dispatchEvent(new Event('change'));
-                input.focus();
+                (select || input).focus();
             });
         }
         form.addEventListener('submit', event => {

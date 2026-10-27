@@ -71,6 +71,7 @@
                                     <img t-att-src="'/my/field-work/%s/photo/%s' % (task.id, photo[0]) if photo[2] else None" t-att-alt="photo[1]" t-att-hidden="not photo[2]" class="o_field_photo_preview"/>
                                     <p t-if="not photo[2]" data-photo-placeholder="1" class="o_field_photo_placeholder">עדיין לא נשמרה תמונה</p>
                                     <input t-if="editable" t-att-id="'field_%s_image' % photo[0]" t-att-name="'field_%s_image' % photo[0]" type="file" accept="image/jpeg,image/png,image/webp" class="form-control" t-att-aria-describedby="'photo-status-%s photo-error-%s' % (photo[0], photo[0])"/>
+                                    <button t-if="editable" type="button" data-select-photo="1" class="btn btn-outline-primary" t-att-aria-label="'בחירת תמונה %s' % photo[1]" hidden="hidden">בחירת תמונה מהמצלמה או מהגלריה</button>
                                     <p t-att-id="'photo-status-%s' % photo[0]" data-file-status="1" class="o_field_help" t-out="'נשמרה במערכת' if photo[2] else 'בחר תמונה מהמצלמה או מהגלריה'"/>
                                     <p t-att-id="'photo-error-%s' % photo[0]" data-file-error="1" class="o_field_inline_error" role="alert" hidden="hidden"/>
                                     <button t-if="editable" type="button" data-clear-photo="1" class="btn btn-link" hidden="hidden">ביטול הבחירה החדשה</button>

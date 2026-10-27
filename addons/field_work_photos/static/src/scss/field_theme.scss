@@ -12,8 +12,11 @@
     p { overflow-wrap: anywhere; }
     label, .o_form_label { font-size: 14px; font-weight: 600; }
     input, textarea, select, .form-control { font-size: 16px; }
-    .btn { min-height: 44px; padding: 10px 18px; border-radius: 9px; white-space: normal; }
+    .btn { font-size: 16px; min-height: 44px; padding: 10px 18px; border-radius: 9px; white-space: normal; }
     .btn-primary { background: var(--field-teal); border-color: var(--field-teal); color: #fff; }
+    .btn-outline-primary { color: var(--field-teal); border-color: var(--field-teal); }
+    .btn-outline-primary:hover { color: #fff; background: var(--field-teal); border-color: var(--field-teal); }
+    .btn-link { color: var(--field-teal); }
     .btn-primary:hover { background: #075e67; border-color: #075e67; }
     a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible {
         outline: 3px solid var(--field-teal); outline-offset: 3px;
@@ -23,13 +26,14 @@
     .o_field_eyebrow { margin-bottom: 8px; font-weight: 600; }
     .o_field_message { background: #edf5f7; border-inline-start: 4px solid var(--field-teal); padding: 16px; border-radius: 8px; margin: 16px 0; }
     .o_field_message p { margin: 6px 0 0; }
+    .o_field_message.alert-danger { background: #fff0f1; border-color: #a21c2b; color: #842029; }
     .o_field_message_warning { background: #fff6e5; border-color: #936000; color: #704a00; }
     .o_field_message_success { background: #eaf6ef; border-color: #23694b; color: #205c43; }
     .o_field_inline_error { color: #a21c2b; font-size: 14px; }
     .o_field_photo_grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin: 20px 0; }
     .o_field_photo_grid > div { min-width: 0; }
     .o_field_photo_preview { display: block; width: 100%; max-height: 320px; object-fit: contain; background: #f3f6fa; border-radius: 8px; margin: 12px 0; }
-    .o_field_photo_preview[hidden], [data-clear-photo][hidden], [data-file-error][hidden], [data-photo-placeholder][hidden] { display: none !important; }
+    .o_field_photo_preview[hidden], [data-clear-photo][hidden], [data-select-photo][hidden], [data-file-error][hidden], [data-photo-placeholder][hidden] { display: none !important; }
     .o_field_photo_placeholder { background: #f3f6fa; padding: 28px 16px; text-align: center; border: 1px dashed #8b9bad; border-radius: 8px; }
     .o_field_status { display: inline-block; padding: 4px 10px; background: #e7eff3; border-radius: 20px; font-size: 14px; color: #254c60; }
     @media (max-width: 575px) {

@@ -20,7 +20,10 @@
                     <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-line-chart"/></span><div><h3>עלות ורווחיות</h3><p>תחזית לבעלים · ₪ לפני מע״מ</p></div></div>
                     <field name="field_low_margin" invisible="1"/>
                     <field name="field_rates_frozen" invisible="1"/>
-                    <div class="alert alert-danger" role="alert" invisible="not field_low_margin">
+                    <div class="alert alert-danger" role="alert" invisible="field_gross_profit &gt;= 0">
+                        <strong>הפסד צפוי בעבודה</strong><p>מחיר העסקה אינו מכסה את החומרים ואת התשלום לקבלן. בדוק את הסכומים לפני המשך הטיפול.</p>
+                    </div>
+                    <div class="alert alert-warning" role="status" invisible="not field_low_margin or field_gross_profit &lt; 0">
                         <strong>הרווח הגולמי נמוך מ־35%</strong><div>בדוק את סכום העסקה, החומרים ומחירון הקבלן.</div>
                     </div>
                     <div class="alert alert-info" invisible="field_sale_amount &gt; 0">הזן סכום עסקה כדי לחשב רווחיות.</div>
@@ -29,6 +32,7 @@
                         <div class="o_field_pricing_row">
                             <label for="field_material_cost"/>
                             <field name="field_material_cost" nolabel="1" readonly="field_dispatch_locked"/>
+                            <p class="o_field_inline_error" role="status" invisible="field_sale_amount &lt;= 0 or field_material_cost &lt;= field_sale_amount">עלות החומרים גבוהה ממחיר העסקה. בדוק שלא הוזנו ספרות נוספות בטעות.</p>
                         </div>
                         <div class="o_field_pricing_row" invisible="field_execution_type != 'subcontractor'">
                             <label for="field_applied_rate"/>
@@ -47,6 +51,7 @@
                             <field name="field_gross_margin" nolabel="1" class="o_field_pricing_number"/>
                         </div>
                     </div>
+                    <p class="o_field_help">רווח צפוי = מחיר ללקוח פחות עלות החומרים והתשלום לקבלן.</p>
                     <div class="o_field_service_tip" invisible="field_execution_type != 'direct'">בעבודה ישירה נלקחת בחשבון עלות חומרים בלבד. שכר עובדים והוצאות נוספות אינם נכללים.</div>
                     <div class="o_field_service_tip" invisible="field_execution_type != 'subcontractor' or not field_rates_frozen">אחוזי המחירון נשמרו בעת השיבוץ. שינוי כרטיס הקבלן ישפיע על עבודות חדשות.</div>
                 </div>

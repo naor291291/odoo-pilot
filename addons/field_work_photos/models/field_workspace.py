@@ -64,6 +64,13 @@ class CrmLead(models.Model):
         self._workspace_task()
         return self._field_workspace_action()
 
+    def action_save_field_draft(self):
+        self.ensure_one()
+        self._require_dispatcher()
+        self.check_access('write')
+        return {'type': 'ir.actions.client', 'tag': 'display_notification',
+                'params': {'title': 'נשמר', 'message': 'פרטי העבודה נשמרו.', 'type': 'success', 'sticky': False}}
+
     def action_submit_field_report(self):
         self._workspace_task().action_finish_field_work()
         return True
