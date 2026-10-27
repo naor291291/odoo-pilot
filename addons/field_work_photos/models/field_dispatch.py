@@ -9,7 +9,7 @@ STAGES = [
 ]
 DISPATCH_FIELDS = {
     'field_contractor_id', 'field_visit_at', 'field_site_address',
-    'field_work_description', 'partner_id', 'contact_name', 'phone', 'name',
+    'field_work_description', 'field_execution_type', 'field_worker_id', 'partner_id', 'contact_name', 'phone', 'name',
 }
 
 
@@ -27,6 +27,13 @@ class CrmLead(models.Model):
         'res.users', string='קבלן מבצע', copy=False, tracking=True,
         domain=lambda self: [("share", "=", True), ("active", "=", True), ("groups_id", "in", self.env.ref("field_work_photos.group_field_contractor").ids)],
     )
+    field_execution_type = fields.Selection(
+        [('subcontractor', 'קבלן משנה'), ('direct', 'עבודה ישירה')],
+        string='סוג ביצוע', default='subcontractor', required=True, tracking=True)
+    field_worker_id = fields.Many2one(
+        'res.users', string='מבצע פנימי', copy=False, tracking=True,
+        domain=lambda self: [('share', '=', False), ('active', '=', True),
+                             ('groups_id', 'in', self.env.ref('field_work_photos.group_field_dispatcher').ids)])
     field_visit_at = fields.Datetime(string='מועד ביצוע', copy=False, tracking=True)
     field_site_address = fields.Char(string='כתובת ביצוע', tracking=True)
     field_work_description = fields.Text(string='תיאור העבודה לקבלן', tracking=True)
@@ -43,14 +50,14 @@ class CrmLead(models.Model):
 
     @api.depends('stage_id', 'name', 'partner_id', 'phone', 'field_site_address',
                  'field_work_description', 'field_quote_number', 'field_contractor_id',
-                 'field_visit_at', 'company_id', 'field_task_ids.field_review_state')
+                 'field_visit_at', 'company_id', 'field_execution_type', 'field_worker_id', 'field_task_ids.field_review_state')
     def _compute_field_workflow(self):
         codes = [code for code, label in STAGES]
         hints = {
             'new': 'מתחילים בפרטי הלקוח, הטלפון, הכתובת ותיאור העבודה.',
             'quote': 'לאחר שליחת ההצעה ללקוח, מזינים את מספרה וממשיכים לשלב הבא.',
             'sent': 'לאחר קבלת אישור להצעה, ממשיכים לתיאום העבודה.',
-            'schedule': 'בוחרים קבלן ומועד. המשך ייצור משימת שטח אחת המקושרת לפנייה.',
+            'schedule': 'בוחרים סוג ביצוע, מבצע ומועד. המשך ייצור משימת שטח אחת המקושרת לפנייה.',
             'field': 'הקבלן מדווח דרך הפורטל. ההשלמה מתבצעת לאחר בדיקת התמונות ואישור העבודה.',
             'completed': 'דיווח השטח אושר. הפנייה ממתינה לטיפול בתשלום.',
         }
@@ -82,8 +89,13 @@ class CrmLead(models.Model):
             missing.append('מספר הצעת מחיר ממורנינג')
         if index >= 4:
             user = self.field_contractor_id
-            if not user or not user.active or not user.share or not user.has_group('field_work_photos.group_field_contractor'):
-                missing.append('קבלן פעיל בעל הרשאת פורטל')
+            if self.field_execution_type == 'subcontractor':
+                if not user or not user.active or not user.share or not user.has_group('field_work_photos.group_field_contractor'):
+                    missing.append('קבלן פעיל בעל הרשאת פורטל')
+            else:
+                worker = self.field_worker_id
+                if not worker or not worker.active or worker.share or not worker.has_group('field_work_photos.group_field_dispatcher'):
+                    missing.append('מבצע פנימי פעיל בעל הרשאת עבודות שטח')
             if not self.field_visit_at:
                 missing.append('מועד ביצוע')
         return missing
@@ -199,7 +211,7 @@ class CrmLead(models.Model):
 
     @api.constrains('is_field_service', 'stage_id', 'field_contractor_id', 'field_visit_at',
                     'field_site_address', 'field_work_description', 'partner_id', 'contact_name',
-                    'phone', 'field_quote_number', 'company_id', 'name')
+                    'phone', 'field_quote_number', 'company_id', 'name', 'field_execution_type', 'field_worker_id')
     def _check_field_dispatch(self):
         for lead in self.filtered('is_field_service'):
             code = lead.field_dispatch_code
@@ -214,10 +226,14 @@ class CrmLead(models.Model):
             if code == 'completed' and not (lead.field_task_ids and all(t.field_review_state == 'approved' for t in lead.field_task_ids)):
                 raise ValidationError('הפנייה תושלם רק לאחר אישור דיווח השטח.')
             if code in ('field', 'completed'):
-                contractor = lead.field_contractor_id
+                contractor = lead.field_contractor_id if lead.field_execution_type == 'subcontractor' else self.env['res.users']
                 existing_assignment = bool(lead.field_task_ids and lead.field_task_ids.field_contractor_id == contractor)
-                if not contractor or (not existing_assignment and (not contractor.active or not contractor.share or not contractor.has_group('field_work_photos.group_field_contractor'))):
+                if lead.field_execution_type == 'subcontractor' and (not contractor or (not existing_assignment and (not contractor.active or not contractor.share or not contractor.has_group('field_work_photos.group_field_contractor')))):
                     raise ValidationError('יש לבחור קבלן פעיל בעל הרשאת פורטל קבלנים.')
+                if lead.field_execution_type == 'direct':
+                    worker = lead.field_worker_id
+                    if not worker or not worker.active or worker.share or not worker.has_group('field_work_photos.group_field_dispatcher'):
+                        raise ValidationError('יש לבחור מבצע פנימי פעיל בעל הרשאת עבודות שטח.')
                 if not lead.field_visit_at or not (lead.field_site_address or '').strip() or not (lead.field_work_description or '').strip():
                     raise ValidationError('יש להזין מועד ביצוע, כתובת ותיאור עבודה לפני השיבוץ.')
                 if not lead.partner_id:
@@ -230,7 +246,8 @@ class CrmLead(models.Model):
         self.ensure_one()
         return {
             'name': self.name,
-            'field_contractor_id': self.field_contractor_id.id,
+            'field_contractor_id': self.field_contractor_id.id if self.field_execution_type == 'subcontractor' else False,
+            'user_ids': [(6, 0, self.field_worker_id.ids if self.field_execution_type == 'direct' else [])],
             'field_visit_at': self.field_visit_at,
             'field_site_address': self.field_site_address,
             'field_work_description': self.field_work_description,
@@ -245,7 +262,7 @@ class CrmLead(models.Model):
                     **lead._field_task_values(), 'name': lead.name,
                     'project_id': self.env.ref('field_work_photos.project_field_dispatch').id,
                     'field_service_lead_id': lead.id, 'field_report_required': True,
-                    'company_id': lead.company_id.id, 'user_ids': [(5, 0, 0)],
+                    'company_id': lead.company_id.id,
                 })
 
     def action_dispatch_field_work(self):

@@ -50,7 +50,23 @@ with sync_playwright() as playwright:
     }])
     page = context.new_page()
     errors = []
-    page.on('pageerror', lambda error: errors.append(str(error)))
+    def record_page_error(error):
+        errors.append(str(error))
+        print('BROWSER PAGE ERROR:', str(error), flush=True)
+
+    def record_console_error(message):
+        if message.type != 'error':
+            return
+        print('BROWSER CONSOLE ERROR:', message.text, flush=True)
+        for argument in message.args:
+            try:
+                detail = argument.evaluate('value => value instanceof Error ? [value.stack, value.cause?.stack].filter(Boolean).join("\\nCaused by: ") : String(value)')
+                print(detail, flush=True)
+            except Exception:
+                pass
+
+    page.on('pageerror', record_page_error)
+    page.on('console', record_console_error)
     page.goto(f'http://127.0.0.1:8069/odoo/action-{action}/new')
     expect(page.locator('.o_field_service_hero')).to_be_visible(timeout=60000)
     page.locator('.o_field_service_heading [name="name"] input').fill('טיוטה — בדיקת ממשק')

@@ -23,7 +23,7 @@ class TestFieldPortal(HttpCase):
         for contractor, name in ((cls.first, 'First contractor private work'), (cls.second, 'Second contractor secret work')):
             lead = cls.env['crm.lead'].create({
                 'name': name, 'is_field_service': True, 'partner_id': cls.customer.id,
-                'field_quote_number': 'PORTAL-Q', 'field_contractor_id': contractor.id,
+                'field_sale_amount': 1000, 'field_quote_number': 'PORTAL-Q', 'field_contractor_id': contractor.id,
                 'field_visit_at': fields.Datetime.now(), 'field_site_address': 'Portal Street',
                 'field_work_description': 'Customer-facing description',
                 'description': '<p>INTERNAL-SECRET-NOT-FOR-CONTRACTOR</p>',

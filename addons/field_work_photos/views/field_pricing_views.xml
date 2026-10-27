@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_field_lead_pricing" model="ir.ui.view">
+        <field name="name">crm.lead.field.pricing</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="view_field_lead_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='field_quote_number']" position="after">
+                <field name="field_pricing_currency_id" invisible="1"/>
+                <field name="field_sale_amount" readonly="field_dispatch_locked"/>
+                <div class="text-muted">הסכום ועלות החומרים מוזנים לפני מע״מ ובשקלים.</div>
+            </xpath>
+            <xpath expr="//field[@name='field_contractor_id']/.." position="before">
+                <group><field name="field_execution_type" readonly="field_dispatch_locked"/></group>
+            </xpath>
+            <xpath expr="//field[@name='field_contractor_id']" position="attributes">
+                <attribute name="invisible">field_execution_type != 'subcontractor'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='field_contractor_id']" position="after">
+                <field name="field_worker_id" options="{'no_create': True}" invisible="field_execution_type != 'direct'" readonly="field_dispatch_locked"/>
+            </xpath>
+            <xpath expr="//div[hasclass('o_field_service_sidebar')]/div[1]" position="after">
+                <div class="o_field_service_card" groups="field_work_photos.group_field_finance">
+                    <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-line-chart"/></span><div><h2>תמחור ורווחיות</h2><p>תחזית לבעלים · ₪ לפני מע״מ</p></div></div>
+                    <field name="field_low_margin" invisible="1"/>
+                    <field name="field_rates_frozen" invisible="1"/>
+                    <div class="alert alert-danger" role="alert" invisible="not field_low_margin">
+                        <strong>הרווח הגולמי נמוך מ־35%</strong><div>בדוק את סכום העסקה, החומרים ומחירון הקבלן.</div>
+                    </div>
+                    <div class="alert alert-info" invisible="field_sale_amount &gt; 0">הזן סכום עסקה כדי לחשב רווחיות.</div>
+                    <div class="alert alert-info" invisible="field_execution_type != 'subcontractor' or field_contractor_id">בחר קבלן כדי לחשב את התשלום והרווחיות לפי המחירון שלו.</div>
+                    <group col="1">
+                        <field name="field_contractor_id" string="קבלן לחישוב התמחור" options="{'no_create': True, 'no_open': True}" invisible="field_execution_type != 'subcontractor'" readonly="field_dispatch_locked"/>
+                        <field name="field_material_cost" readonly="field_dispatch_locked"/>
+                        <field name="field_applied_rate" invisible="field_execution_type != 'subcontractor'"/>
+                        <field name="field_contractor_cost" invisible="field_execution_type != 'subcontractor' or not field_contractor_id"/>
+                        <field name="field_gross_profit" invisible="field_execution_type == 'subcontractor' and not field_contractor_id"/>
+                        <field name="field_gross_margin" invisible="field_execution_type == 'subcontractor' and not field_contractor_id"/>
+                    </group>
+                    <div class="o_field_service_tip" invisible="field_execution_type != 'direct'">בעבודה ישירה נלקחת בחשבון עלות חומרים בלבד. שכר עובדים והוצאות נוספות אינם נכללים.</div>
+                    <div class="o_field_service_tip" invisible="field_execution_type != 'subcontractor' or not field_rates_frozen">אחוזי המחירון נשמרו בעת השיבוץ. שינוי כרטיס הקבלן ישפיע על עבודות חדשות.</div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_partner_field_rates" model="ir.ui.view">
+        <field name="name">res.partner.field.contractor.rates</field><field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml"><xpath expr="//notebook" position="inside">
+            <page string="מחירון קבלן" groups="field_work_photos.group_field_finance">
+                <p>אחוז מסכום העסקה לפני מע״מ, לפי מדרגה אחת החלה על כל הסכום. שינוי ישפיע על שיבוצים חדשים בלבד.</p>
+                <group><field name="field_rate_small"/><field name="field_rate_medium"/><field name="field_rate_large"/></group>
+            </page>
+        </xpath></field>
+    </record>
+    <record id="action_field_contractor_rates" model="ir.actions.act_window">
+        <field name="name">מחירוני קבלנים</field><field name="res_model">res.partner</field><field name="view_mode">list,form</field>
+        <field name="domain" eval="[('user_ids.groups_id', 'in', [ref('group_field_contractor')])]"/>
+    </record>
+    <menuitem id="menu_field_contractor_rates" name="מחירוני קבלנים" parent="menu_field_service_root" action="action_field_contractor_rates" sequence="30" groups="field_work_photos.group_field_finance"/>
+</odoo>

@@ -51,7 +51,7 @@
                     <div class="o_field_service_columns">
                         <div class="o_field_service_main">
                             <div class="o_field_service_card">
-                                <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-user-o"/></span><div><h2>פרטי הלקוח והעבודה</h2><p>הפרטים שהקבלן צריך כדי להגיע ולבצע את העבודה</p></div></div>
+                                <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-user-o"/></span><div><h2>פרטי הלקוח והעבודה</h2><p>הפרטים שהמבצע צריך כדי להגיע ולבצע את העבודה</p></div></div>
                                 <group>
                                     <group>
                                         <field name="partner_id" string="לקוח" readonly="field_dispatch_locked"/>
@@ -71,7 +71,7 @@
                                 <div class="o_field_service_tip" invisible="field_dispatch_code != 'sent'">קיבלת אישור להצעה? לחץ על אישור הצעה והמשך לתיאום כדי לבחור קבלן ומועד.</div>
                             </div>
                             <div class="o_field_service_card" invisible="field_dispatch_code not in ['schedule', 'field', 'completed']">
-                                <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-calendar"/></span><div><h2>שיבוץ וביצוע</h2><p>בחר קבלן ומועד, והמערכת תפתח את משימת השטח</p></div></div>
+                                <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-calendar"/></span><div><h2>שיבוץ וביצוע</h2><p>בחר סוג ביצוע, מבצע ומועד, והמערכת תפתח את משימת השטח</p></div></div>
                                 <group>
                                     <group><field name="field_contractor_id" options="{'no_create': True, 'no_open': True}" readonly="field_dispatch_locked"/></group>
                                     <group><field name="field_visit_at" readonly="field_dispatch_locked"/></group>
