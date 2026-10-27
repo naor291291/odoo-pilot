@@ -58,6 +58,7 @@
         background: #f8fafc;
         border: 1px solid #dfe7ee;
         border-radius: 7px;
+        /*rtl:ignore*/
         direction: ltr;
     }
     .o_field_service_card .o_field_monetary > div:focus-within {
@@ -81,7 +82,13 @@
     .o_field_pricing_row { min-width: 0; }
     .o_field_pricing_row .o_form_label { display: block; white-space: normal; margin-bottom: 6px; }
     .o_field_pricing_row > .o_field_widget { display: block; width: 100%; min-width: 0; margin-bottom: 0; }
-    .o_field_pricing_number { direction: ltr; unicode-bidi: isolate; text-align: left; }
+    .o_field_pricing_number {
+        /*rtl:ignore*/
+        direction: ltr;
+        unicode-bidi: isolate;
+        /*rtl:ignore*/
+        text-align: left;
+    }
 
     .o_field_service_card .o_field_text textarea { min-height: 90px; }
     .o_field_service_card .o_cell { padding-bottom: 8px; }
