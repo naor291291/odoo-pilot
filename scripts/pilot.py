@@ -115,7 +115,9 @@ def initialize(conf, login):
 from odoo import fields
 admin = env.ref('base.user_admin')
 admin.write({{'login': {login['login']!r}, 'password': {login['password']!r}, 'lang': 'he_IL', 'tz': 'Asia/Jerusalem'}})
-admin.write({{'groups_id': [(4, env.ref('field_work_photos.group_field_dispatcher').id)]}})
+# base.user_admin is noupdate in existing databases, so XML alone cannot grant
+# the new owner role during an upgrade. This pilot login is always the owner.
+admin.write({{'groups_id': [(4, env.ref('field_work_photos.group_field_finance').id)]}})
 Project = env['project.project']
 project = Project.search([('name', '=', 'עבודות שטח - פיילוט')], limit=1)
 if not project:
@@ -306,6 +308,14 @@ def smoke():
     })
     if not can_review:
         raise SystemExit("The pilot administrator lacks the field-review role.")
+    def has_owner_role(uid):
+        return rpc("/web/dataset/call_kw/res.users/has_group", {
+            "model": "res.users", "method": "has_group",
+            "args": [[uid], "field_work_photos.group_field_finance"], "kwargs": {},
+        })
+
+    if not has_owner_role(session["uid"]):
+        raise SystemExit("The pilot administrator lacks the pricing-owner role.")
     lead_count = rpc("/web/dataset/call_kw/crm.lead/search_count", {
         "model": "crm.lead", "method": "search_count",
         "args": [[["is_field_service", "=", True]]], "kwargs": {},
@@ -321,6 +331,18 @@ def smoke():
     with opener.open("http://127.0.0.1:8069/my/field-work", timeout=30) as response:
         if response.status != 200 or "עבודות השטח שלי" not in response.read().decode():
             raise SystemExit("The contractor portal did not render.")
+    # Reproduce an existing pilot from before the pricing role was introduced.
+    # The next initialization must restore ownership without relying on XML
+    # updates to base.user_admin, whose external ID is marked noupdate.
+    subprocess.run([
+        "odoo", "shell", "-c", str(LOCAL / "odoo.conf"), "-d", DATABASE, "--no-http",
+    ], input="""
+admin = env.ref('base.user_admin')
+admin.write({'groups_id': [(3, env.ref('field_work_photos.group_field_finance').id)]})
+env['ir.model.data'].search([('module', '=', 'base'), ('name', '=', 'user_admin')]).write({'noupdate': True})
+assert not admin.has_group('field_work_photos.group_field_finance')
+env.cr.commit()
+""", text=True, check=True)
     restart()
     for attempt in range(120):
         try:
@@ -337,13 +359,15 @@ def smoke():
     })
     if not session.get("uid"):
         raise SystemExit("Generated credentials did not survive restart.")
+    if not has_owner_role(session["uid"]):
+        raise SystemExit("Restart did not restore the pricing-owner role for the existing pilot administrator.")
     remaining = rpc("/web/dataset/call_kw/project.task/search_count", {
         "model": "project.task", "method": "search_count",
         "args": [[["field_report_required", "=", True]]], "kwargs": {},
     })
     if remaining != count:
         raise SystemExit("Pilot tasks changed unexpectedly during restart.")
-    print("PASS: startup, generated admin and contractor logins, Hebrew, sample task/lead, portal, reviewer role and restart preserving data.")
+    print("PASS: startup, generated admin and contractor logins, Hebrew, sample task/lead, portal, reviewer/owner roles and restart restoring existing-admin ownership while preserving data.")
 
 
 if __name__ == "__main__":
