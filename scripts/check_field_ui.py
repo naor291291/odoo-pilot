@@ -103,7 +103,53 @@ with sync_playwright() as playwright:
     expect(page.locator('.modal:visible')).to_contain_text('מספר הצעת מחיר ממורנינג')
     assert model('crm.lead', 'read', [[lead]], fields=['field_dispatch_code'])[0]['field_dispatch_code'] == 'quote'
     assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), 'Form overflows mobile viewport'
+    # Reproduce the narrow RTL pricing card from the reported screenshot.
+    # Check focus borders and label/input geometry, then save an actual amount.
+    contractor = model('res.users', 'search', [[['login', '=', login['contractors'][0]['login']]]])[0]
+    model('crm.lead', 'write', [[lead], {
+        'field_contractor_id': contractor, 'field_sale_amount': 12354,
+        'field_material_cost': 100,
+    }])
+    page.goto(url)
+    pricing = page.locator('.o_field_pricing_card')
+    material = pricing.locator('[name="field_material_cost"] input')
+    for width in (1440, 1100, 390):
+        page.set_viewport_size({'width': width, 'height': 1000})
+        material.scroll_into_view_if_needed()
+        material.click()
+        expect(material).to_be_focused()
+        geometry = material.evaluate("""input => {
+            const widget = input.closest('.o_field_monetary');
+            const card = input.closest('.o_field_pricing_card').getBoundingClientRect();
+            const label = input.closest('.o_field_pricing_row').querySelector('label').getBoundingClientRect();
+            const box = input.getBoundingClientRect();
+            const frames = [...widget.querySelectorAll('*')].filter(element => {
+                const rect = element.getBoundingClientRect();
+                const style = getComputedStyle(element);
+                return rect.width > 0 && rect.height > 0 &&
+                    ['borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth']
+                        .some(edge => parseFloat(style[edge]) > 0);
+            });
+            return {
+                frames: frames.length, above: label.bottom <= box.top,
+                contained: box.left >= card.left && box.right <= card.right,
+                width: box.width,
+            };
+        }""")
+        assert geometry['frames'] == 1, f'Duplicate monetary borders at {width}px: {geometry}'
+        assert geometry['above'] and geometry['contained'] and geometry['width'] > 150, geometry
+        assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), 'Pricing form overflows viewport'
+        page.screenshot(path=str(OUTPUT / f'pricing-focused-{width}.png'), full_page=True)
+    material.fill('11000')
+    material.press('Tab')
+    page.locator('.o_form_button_save').click()
+    expect(page.locator('.o_form_button_save')).to_be_hidden()
+    saved = model('crm.lead', 'read', [[lead]], fields=['field_material_cost', 'field_gross_profit'])[0]
+    assert saved['field_material_cost'] == 11000 and saved['field_gross_profit'] == -4823, saved
+    profit = pricing.locator('[name="field_gross_profit"]')
+    assert profit.evaluate('element => getComputedStyle(element).direction') == 'ltr', 'Negative amount uses RTL ordering'
+    expect(profit).to_contain_text('-4,823.00')
     assert not errors, errors
     context.close()
     browser.close()
-print('PASS: real Chrome rendered new draft, desktop/mobile forms, missing-field dialog and Continue action; no JS errors.')
+print('PASS: real Chrome rendered new draft, desktop/mobile forms, missing-field dialog Continue action, focused pricing input geometry, amount saving and negative values; no JS errors.')

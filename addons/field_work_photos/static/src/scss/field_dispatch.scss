@@ -49,6 +49,40 @@
     .o_field_service_card .o_input { background: #f8fafc; border: 1px solid #dfe7ee; border-radius: 7px; padding: 7px 10px; min-height: 37px; }
     .o_field_service_card .o_input:focus { border-color: var(--field-teal); box-shadow: 0 0 0 3px #087f8c12; }
     .o_field_service_card .o_input_dropdown .o_input { padding-inline-end: 24px; }
+    // MonetaryField has an input plus an absolute currency/ghost span carrying
+    // the same o_input class. Put the frame on their shared wrapper only.
+    .o_field_service_card .o_field_monetary > div {
+        min-width: 0;
+        min-height: 37px;
+        padding: 7px 10px;
+        background: #f8fafc;
+        border: 1px solid #dfe7ee;
+        border-radius: 7px;
+        direction: ltr;
+    }
+    .o_field_service_card .o_field_monetary > div:focus-within {
+        border-color: var(--field-teal);
+        box-shadow: 0 0 0 3px #087f8c12;
+    }
+    .o_field_service_card .o_field_monetary .o_input {
+        min-width: 0;
+        min-height: 0;
+        padding: 0;
+        background: transparent;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
+    .o_field_service_card .o_field_monetary > div > .o_input.position-absolute {
+        inset-inline: 10px;
+        width: auto !important;
+    }
+    .o_field_pricing_fields { display: grid; gap: 14px; min-width: 0; }
+    .o_field_pricing_row { min-width: 0; }
+    .o_field_pricing_row .o_form_label { display: block; white-space: normal; margin-bottom: 6px; }
+    .o_field_pricing_row > .o_field_widget { display: block; width: 100%; min-width: 0; margin-bottom: 0; }
+    .o_field_pricing_number { direction: ltr; unicode-bidi: isolate; text-align: left; }
+
     .o_field_service_card .o_field_text textarea { min-height: 90px; }
     .o_field_service_card .o_cell { padding-bottom: 8px; }
     .o_field_service_card .o_form_label { color: #526479; font-weight: 500; font-size: 12px; }
