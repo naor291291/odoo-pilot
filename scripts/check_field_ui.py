@@ -218,6 +218,8 @@ with sync_playwright() as playwright:
     expect(page.locator('.o_list_view')).to_be_visible()
     for rate in ('field_rate_small', 'field_rate_medium', 'field_rate_large'):
         expect(page.locator(f'th[data-name="{rate}"]')).to_be_visible()
+        title = page.locator(f'th[data-name="{rate}"] .text-truncate')
+        assert title.evaluate('(el) => el.scrollWidth <= el.clientWidth'), f'{rate} heading is truncated'
     page.screenshot(path=str(OUTPUT / 'contractor-rates-desktop.png'), full_page=True)
     attention_action = model('ir.model.data', 'search_read', [[['module', '=', 'field_work_photos'], ['name', '=', 'action_field_work_attention']]], fields=['res_id'])[0]['res_id']
     page.goto(f'http://127.0.0.1:8069/odoo/action-{attention_action}')
