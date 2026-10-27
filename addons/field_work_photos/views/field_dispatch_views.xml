@@ -117,7 +117,7 @@
     </record>
     <record id="view_field_lead_list" model="ir.ui.view">
         <field name="name">crm.lead.field.service.list</field><field name="model">crm.lead</field>
-        <field name="arch" type="xml"><list string="פניות עבודות שטח">
+        <field name="arch" type="xml"><list string="פניות עבודות שטח" class="o_field_ui">
             <field name="name"/><field name="partner_id"/><field name="stage_id"/>
             <field name="field_contractor_id"/><field name="field_visit_at"/><field name="field_attention_label" string="הטיפול הבא"/>
         </list></field>
@@ -125,7 +125,7 @@
     <record id="view_field_lead_kanban" model="ir.ui.view">
         <field name="name">crm.lead.field.service.kanban</field><field name="model">crm.lead</field>
         <field name="arch" type="xml">
-            <kanban default_group_by="stage_id" quick_create="false" group_create="false" group_edit="false" group_delete="false" records_draggable="false" class="o_field_service_kanban">
+            <kanban default_group_by="stage_id" quick_create="false" group_create="false" group_edit="false" group_delete="false" records_draggable="false" class="o_field_service_kanban o_field_ui">
                 <field name="name"/><field name="partner_id"/><field name="field_contractor_id"/><field name="field_visit_at"/><field name="field_missing_fields"/><field name="field_attention_label"/>
                 <templates><t t-name="card">
                     <div class="fw-bold fs-5 mb-2"><field name="name"/></div>

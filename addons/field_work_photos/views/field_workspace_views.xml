@@ -32,7 +32,7 @@
     <menuitem id="menu_field_attention" name="לטיפול עכשיו" parent="menu_field_service_root" action="action_field_work_attention" sequence="5"/>
     <record id="view_field_partner_rates_list" model="ir.ui.view">
         <field name="name">res.partner.field.rates.list</field><field name="model">res.partner</field>
-        <field name="arch" type="xml"><list string="מחירוני קבלנים" create="false" delete="false" editable="bottom">
+        <field name="arch" type="xml"><list string="מחירוני קבלנים" class="o_field_ui" create="false" delete="false" editable="bottom">
             <field name="name" readonly="1"/><field name="phone" readonly="1"/>
             <field name="field_rate_small"/><field name="field_rate_medium"/><field name="field_rate_large"/>
         </list></field>

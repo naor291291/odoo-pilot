@@ -213,6 +213,18 @@ with sync_playwright() as playwright:
     portal.goto('http://127.0.0.1:8069/my/field-work?scope=completed')
     expect(portal.get_by_role('link', name='החלפת ברז — בדיקת ממשק', exact=False)).to_be_visible()
     contractor_context.close()
+    rates_action = model('ir.model.data', 'search_read', [[['module', '=', 'field_work_photos'], ['name', '=', 'action_field_contractor_rates']]], fields=['res_id'])[0]['res_id']
+    page.goto(f'http://127.0.0.1:8069/odoo/action-{rates_action}')
+    expect(page.locator('.o_list_view')).to_be_visible()
+    for rate in ('field_rate_small', 'field_rate_medium', 'field_rate_large'):
+        expect(page.locator(f'th[data-name="{rate}"]')).to_be_visible()
+    page.screenshot(path=str(OUTPUT / 'contractor-rates-desktop.png'), full_page=True)
+    attention_action = model('ir.model.data', 'search_read', [[['module', '=', 'field_work_photos'], ['name', '=', 'action_field_work_attention']]], fields=['res_id'])[0]['res_id']
+    page.goto(f'http://127.0.0.1:8069/odoo/action-{attention_action}')
+    expect(page.locator('.o_list_view')).to_be_visible()
+    expect(page.locator('.o_data_row').filter(has_text='טיוטה — בדיקת ממשק')).to_be_visible()
+    expect(page.locator('.o_data_row').filter(has_text='החלפת ברז — בדיקת ממשק')).to_have_count(0)
+    page.screenshot(path=str(OUTPUT / 'attention-queue-desktop.png'), full_page=True)
     assert not errors, errors
     context.close()
     browser.close()
