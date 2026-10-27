@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_field_work_correction,Field work correction,model_field_work_correction,field_work_photos.group_field_reviewer,1,1,1,1

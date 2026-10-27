@@ -8,20 +8,16 @@
             <xpath expr="//field[@name='field_quote_number']" position="after">
                 <field name="field_pricing_currency_id" invisible="1"/>
                 <field name="field_sale_amount" readonly="field_dispatch_locked"/>
+                <field name="field_execution_type" readonly="field_dispatch_locked"/>
+                <field name="field_contractor_id" id="pricing_contractor" string="קבלן מבצע" options="{'no_create': True, 'no_open': True}" invisible="field_execution_type != 'subcontractor'" readonly="field_dispatch_locked"/>
                 <div class="text-muted">הסכום ועלות החומרים מוזנים לפני מע״מ ובשקלים.</div>
             </xpath>
-            <xpath expr="//field[@name='field_contractor_id']/.." position="before">
-                <group><field name="field_execution_type" readonly="field_dispatch_locked"/></group>
-            </xpath>
-            <xpath expr="//field[@name='field_contractor_id']" position="attributes">
-                <attribute name="invisible">field_execution_type != 'subcontractor'</attribute>
-            </xpath>
-            <xpath expr="//field[@name='field_contractor_id']" position="after">
+            <xpath expr="//div[hasclass('o_field_service_main')]/div[hasclass('o_field_service_card')][3]//field[@name='field_contractor_id']" position="replace">
                 <field name="field_worker_id" options="{'no_create': True}" invisible="field_execution_type != 'direct'" readonly="field_dispatch_locked"/>
             </xpath>
-            <xpath expr="//div[hasclass('o_field_service_sidebar')]/div[1]" position="after">
-                <div class="o_field_service_card o_field_pricing_card" groups="field_work_photos.group_field_finance">
-                    <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-line-chart"/></span><div><h2>תמחור ורווחיות</h2><p>תחזית לבעלים · ₪ לפני מע״מ</p></div></div>
+            <xpath expr="//field[@name='field_quote_number']/ancestor::div[hasclass('o_field_service_card')][1]" position="inside">
+                <div class="o_field_pricing_card" groups="field_work_photos.group_field_finance">
+                    <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-line-chart"/></span><div><h3>עלות ורווחיות</h3><p>תחזית לבעלים · ₪ לפני מע״מ</p></div></div>
                     <field name="field_low_margin" invisible="1"/>
                     <field name="field_rates_frozen" invisible="1"/>
                     <div class="alert alert-danger" role="alert" invisible="not field_low_margin">
@@ -30,10 +26,6 @@
                     <div class="alert alert-info" invisible="field_sale_amount &gt; 0">הזן סכום עסקה כדי לחשב רווחיות.</div>
                     <div class="alert alert-info" invisible="field_execution_type != 'subcontractor' or field_contractor_id">בחר קבלן כדי לחשב את התשלום והרווחיות לפי המחירון שלו.</div>
                     <div class="o_field_pricing_fields">
-                        <div class="o_field_pricing_row" invisible="field_execution_type != 'subcontractor'">
-                            <label for="pricing_contractor" string="קבלן לחישוב התמחור"/>
-                            <field name="field_contractor_id" id="pricing_contractor" nolabel="1" options="{'no_create': True, 'no_open': True}" readonly="field_dispatch_locked"/>
-                        </div>
                         <div class="o_field_pricing_row">
                             <label for="field_material_cost"/>
                             <field name="field_material_cost" nolabel="1" readonly="field_dispatch_locked"/>

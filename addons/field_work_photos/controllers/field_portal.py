@@ -1,4 +1,6 @@
 import base64
+import re
+from urllib.parse import urlencode
 
 from werkzeug.exceptions import NotFound
 
@@ -41,20 +43,34 @@ class FieldWorkPortal(CustomerPortal):
         return values
 
     @http.route(['/my/field-work', '/my/field-work/page/<int:page>'], type='http', auth='user', website=True, methods=['GET'])
-    def field_work_list(self, page=1, **kw):
+    def field_work_list(self, page=1, scope='active', **kw):
         domain = self._task_domain()
         Task = request.env['project.task'].sudo()
-        pager = portal_pager(url='/my/field-work', total=Task.search_count(domain), page=page, step=20)
-        tasks = Task.search(domain, order='field_visit_at, id', limit=20, offset=pager['offset'])
-        return request.render('field_work_photos.portal_field_work_list', {'tasks': tasks, 'pager': pager, 'page_name': 'field_work'})
+        scopes = {
+            'active': [('field_review_state', 'in', ['draft', 'changes_requested']), ('state', '!=', '1_canceled')],
+            'pending': [('field_review_state', '=', 'pending'), ('state', '!=', '1_canceled')],
+            'completed': ['|', ('field_review_state', '=', 'approved'), ('state', '=', '1_canceled')],
+        }
+        scope = scope if scope in scopes else 'active'
+        counts = {key: Task.search_count(domain + value) for key, value in scopes.items()}
+        pager = portal_pager(url='/my/field-work', total=counts[scope], page=page, step=20, url_args={'scope': scope})
+        tasks = Task.search(domain + scopes[scope], order='field_approved_at desc, id desc' if scope == 'completed' else 'field_visit_at, id', limit=20, offset=pager['offset'])
+        return request.render('field_work_photos.portal_field_work_list', {
+            'tasks': tasks, 'pager': pager, 'page_name': 'field_work', 'scope': scope, 'counts': counts})
 
     @http.route('/my/field-work/<int:task_id>', type='http', auth='user', website=True, methods=['GET'])
-    def field_work_detail(self, task_id, **kw):
-        return self._render_task(self._task(task_id))
+    def field_work_detail(self, task_id, notice=None, **kw):
+        return self._render_task(self._task(task_id), notice=notice)
 
-    def _render_task(self, task, error=None):
+    def _render_task(self, task, error=None, notice=None):
+        messages = {'saved': 'התמונות נשמרו. אפשר לחזור לעבודה ולהגיש בהמשך.',
+                    'submitted': 'הדיווח והתמונות נשלחו לבדיקת התפעול.'}
+        message = messages.get(notice) if notice != 'submitted' or task.field_review_state == 'pending' else None
         return request.render('field_work_photos.portal_field_work_detail', {
-            'task': task, 'page_name': 'field_work', 'error': error,
+            'task': task, 'page_name': 'field_work', 'error': error, 'notice': message,
+            'saved_count': int(bool(task.field_before_image)) + int(bool(task.field_after_image)),
+            'phone_url': 'tel:' + re.sub(r'[^0-9+]', '', task.field_customer_phone or ''),
+            'navigation_url': 'https://www.google.com/maps/search/?' + urlencode({'api': 1, 'query': task.field_site_address or ''}),
             'editable': task.field_review_state in ('draft', 'changes_requested') and task.state != '1_canceled',
         })
 
@@ -63,27 +79,27 @@ class FieldWorkPortal(CustomerPortal):
         task = self._task(task_id, lock=True)
         try:
             with request.env.cr.savepoint():
-                if action == 'upload':
-                    if task.field_review_state not in ('draft', 'changes_requested') or task.state == '1_canceled':
-                        raise UserError('התמונות נעולות. יש לפנות למנהלת התפעול.')
-                    values = {}
-                    for name in ('field_before_image', 'field_after_image'):
-                        upload = request.httprequest.files.get(name)
-                        if upload and upload.filename:
-                            raw = upload.read(12 * 1024 * 1024 + 1)
-                            if len(raw) > 12 * 1024 * 1024:
-                                raise UserError('גודל תמונה מרבי הוא 12MB.')
-                            values[name] = base64.b64encode(raw)
-                    if not values:
-                        raise UserError('יש לבחור תמונה להעלאה.')
-                    task.write(values)
-                elif action == 'submit':
-                    task.action_finish_field_work()
-                else:
+                if action not in ('upload', 'submit'):
                     raise NotFound()
+                if task.field_review_state not in ('draft', 'changes_requested') or task.state == '1_canceled':
+                    raise UserError('התמונות נעולות. יש לפנות למנהלת התפעול.')
+                values = {}
+                for name in ('field_before_image', 'field_after_image'):
+                    upload = request.httprequest.files.get(name)
+                    if upload and upload.filename:
+                        raw = upload.read(12 * 1024 * 1024 + 1)
+                        if len(raw) > 12 * 1024 * 1024:
+                            raise UserError('גודל תמונה מרבי הוא 12MB.')
+                        values[name] = base64.b64encode(raw)
+                if values:
+                    task.write(values)
+                elif action == 'upload':
+                    raise UserError('יש לבחור תמונה להעלאה.')
+                if action == 'submit':
+                    task.action_finish_field_work()
         except UserError as error:
             return self._render_task(task, str(error))
-        return request.redirect('/my/field-work/%s' % task.id, code=303)
+        return request.redirect('/my/field-work/%s?notice=%s' % (task.id, 'submitted' if action == 'submit' else 'saved'), code=303)
 
     @http.route('/my/field-work/<int:task_id>/photo/<string:kind>', type='http', auth='user', website=True, methods=['GET'])
     def field_work_photo(self, task_id, kind, **kw):

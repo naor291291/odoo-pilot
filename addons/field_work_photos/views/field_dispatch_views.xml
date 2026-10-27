@@ -3,26 +3,32 @@
     <record id="view_field_lead_form" model="ir.ui.view">
         <field name="name">crm.lead.field.service.form</field><field name="model">crm.lead</field>
         <field name="arch" type="xml">
-            <form string="פניית עבודת שטח" class="o_field_service_form">
+            <form string="פניית עבודת שטח" class="o_field_service_form o_field_ui">
                 <header>
                     <button name="action_next_field_stage" string="המשך להצעת מחיר" aria-label="המשך להצעת מחיר" type="object" class="oe_highlight" icon="fa-arrow-left" invisible="field_dispatch_code != 'new'"/>
-                    <button name="action_next_field_stage" string="המשך — ההצעה נשלחה" aria-label="המשך — ההצעה נשלחה" type="object" class="oe_highlight" icon="fa-paper-plane-o" invisible="field_dispatch_code != 'quote'"/>
+                    <button name="action_next_field_stage" string="אישור פרטי ההצעה והמשך" aria-label="אישור פרטי ההצעה והמשך" type="object" class="oe_highlight" icon="fa-paper-plane-o" invisible="field_dispatch_code != 'quote'"/>
                     <button name="action_next_field_stage" string="אישור הצעה והמשך לתיאום" aria-label="אישור הצעה והמשך לתיאום" type="object" class="oe_highlight" icon="fa-check" invisible="field_dispatch_code != 'sent'"/>
                     <button name="action_dispatch_field_work" string="המשך — שיבוץ ופתיחת משימה" aria-label="המשך — שיבוץ ופתיחת משימה" type="object" class="oe_highlight" icon="fa-calendar-check-o" invisible="field_dispatch_code != 'schedule'"/>
-                    <button name="action_open_field_task" string="פתיחת משימת השטח" aria-label="פתיחת משימת השטח" type="object" class="oe_highlight" icon="fa-wrench" invisible="field_task_count == 0 or field_dispatch_code != 'field'"/>
+                    <button name="action_submit_field_report" string="הגשת הדיווח לאישור" aria-label="הגשת הדיווח לאישור" type="object" class="oe_highlight" invisible="field_task_count == 0 or field_report_state not in ['draft','changes_requested']"/>
+                    <button name="action_approve_field_report" string="אישור ביצוע" aria-label="אישור ביצוע" type="object" class="oe_highlight" invisible="field_report_state != 'pending' or not field_report_can_review"/>
+                    <button name="action_return_field_report" string="החזרה לתיקון" aria-label="החזרה לתיקון" type="object" invisible="field_report_state not in ['pending','approved'] or not field_report_can_review"/>
                     <button name="action_previous_field_stage" string="חזרה לשלב הקודם" aria-label="חזרה לשלב הקודם" type="object" icon="fa-arrow-right" invisible="field_dispatch_code not in ['quote', 'sent', 'schedule']"/>
                 </header>
                 <sheet>
                     <field name="is_field_service" invisible="1"/>
                     <field name="field_dispatch_code" invisible="1"/>
                     <field name="field_dispatch_locked" invisible="1"/>
+                    <field name="field_report_state" invisible="1"/>
+                    <field name="field_report_can_review" invisible="1"/>
                     <field name="type" invisible="1"/><field name="team_id" invisible="1"/>
                     <div class="o_field_service_mobile_actions d-md-none">
                         <button name="action_next_field_stage" string="המשך להצעת מחיר" aria-label="המשך להצעת מחיר" type="object" class="btn btn-primary" invisible="field_dispatch_code != 'new'"/>
-                        <button name="action_next_field_stage" string="המשך — ההצעה נשלחה" aria-label="המשך — ההצעה נשלחה" type="object" class="btn btn-primary" invisible="field_dispatch_code != 'quote'"/>
+                        <button name="action_next_field_stage" string="אישור פרטי ההצעה והמשך" aria-label="אישור פרטי ההצעה והמשך" type="object" class="btn btn-primary" invisible="field_dispatch_code != 'quote'"/>
                         <button name="action_next_field_stage" string="אישור והמשך לתיאום" aria-label="אישור הצעה והמשך לתיאום" type="object" class="btn btn-primary" invisible="field_dispatch_code != 'sent'"/>
                         <button name="action_dispatch_field_work" string="שיבוץ ופתיחת משימה" aria-label="המשך — שיבוץ ופתיחת משימה" type="object" class="btn btn-primary" invisible="field_dispatch_code != 'schedule'"/>
-                        <button name="action_open_field_task" string="פתיחת משימת השטח" aria-label="פתיחת משימת השטח" type="object" class="btn btn-primary" invisible="field_task_count == 0 or field_dispatch_code not in ['field', 'completed']"/>
+                        <button name="action_submit_field_report" string="הגשת הדיווח לאישור" aria-label="הגשת הדיווח לאישור" type="object" class="btn btn-primary" invisible="field_task_count == 0 or field_report_state not in ['draft','changes_requested']"/>
+                        <button name="action_approve_field_report" string="אישור ביצוע" aria-label="אישור ביצוע" type="object" class="btn btn-primary" invisible="field_report_state != 'pending' or not field_report_can_review"/>
+                        <button name="action_return_field_report" string="החזרה לתיקון" aria-label="החזרה לתיקון" type="object" class="btn btn-outline-secondary" invisible="field_report_state not in ['pending','approved'] or not field_report_can_review"/>
                         <button name="action_previous_field_stage" string="חזרה" aria-label="חזרה לשלב הקודם" type="object" class="btn btn-outline-secondary" invisible="field_dispatch_code not in ['quote', 'sent', 'schedule']"/>
                     </div>
                     <div class="o_field_service_hero">
@@ -30,12 +36,6 @@
                             <span class="o_field_service_eyebrow"><i class="fa fa-wrench me-2"/>עבודות שטח</span>
                             <h1><field name="name" placeholder="שם העבודה, למשל החלפת ברז במטבח" required="1" readonly="field_dispatch_locked"/></h1>
                             <div class="o_field_service_subtitle"><field name="field_stage_help" nolabel="1" readonly="1"/></div>
-                        </div>
-                        <div class="o_field_service_progress">
-                            <span class="o_field_service_eyebrow">התקדמות הטיפול</span>
-                            <div class="o_field_service_step">שלב <field name="field_stage_number" nolabel="1" readonly="1"/> מתוך 6</div>
-                            <field name="field_progress" widget="progressbar" nolabel="1" readonly="1"/>
-                            <field name="field_stage_title" nolabel="1" readonly="1" class="o_field_service_stage_title"/>
                         </div>
                     </div>
                     <div class="o_field_service_steps">
@@ -76,21 +76,33 @@
                                     <group><field name="field_contractor_id" options="{'no_create': True, 'no_open': True}" readonly="field_dispatch_locked"/></group>
                                     <group><field name="field_visit_at" readonly="field_dispatch_locked"/></group>
                                 </group>
-                                <div class="o_field_service_tip" invisible="field_dispatch_code != 'field'">המשימה כבר נוצרה. לפתיחת הדיווח, בדיקת התמונות ואישור העבודה השתמש בכפתור משימת השטח.</div>
+                                <div class="o_field_service_tip" invisible="field_dispatch_code != 'field'">העבודה שובצה. הדיווח והתמונות מופיעים בהמשך הכרטיס, ללא מעבר למסך אחר.</div>
                             </div>
                             <div class="o_field_service_notice o_field_service_notice_ready" role="status" invisible="field_dispatch_code != 'completed'">
                                 <i class="fa fa-check-circle"/><div><strong>העבודה אושרה</strong><p>דיווח השטח נבדק ואושר. השלב הבא הוא טיפול בתשלום.</p></div>
                             </div>
-                            <div class="o_field_service_card o_field_service_notes">
-                                <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-lock"/></span><div><h2>הערות פנימיות</h2><p>מידע לצוות התפעול בלבד</p></div></div>
-                                <field name="description" placeholder="הוסף כאן הערות פנימיות שאינן מוצגות לקבלן"/>
+                            <div class="o_field_service_card o_field_report_panel" invisible="field_task_count == 0">
+                                <div class="o_field_service_card_heading"><div><h2>דיווח ובדיקת הביצוע</h2><p>התמונות, מצב הבדיקה ופעולות האישור נמצאים בכרטיס העבודה הזה</p></div></div>
+                                <field name="field_report_state" widget="badge"/>
+                                <div class="o_field_message" role="status" invisible="field_report_state != 'pending'">הדיווח ממתין לבדיקה. בדוק את שתי התמונות ואשר ביצוע או החזר לתיקון.</div>
+                                <div class="o_field_message o_field_message_warning" role="status" invisible="field_report_state != 'changes_requested'"><strong>מה נדרש לתקן?</strong><field name="field_report_note" nolabel="1"/></div>
+                                <div class="o_field_photo_grid">
+                                    <div><label for="field_report_before_image" string="לפני ביצוע"/><field name="field_report_before_image" widget="image" nolabel="1" readonly="field_task_count == 0 or field_report_state in ['pending','approved']"/></div>
+                                    <div><label for="field_report_after_image" string="אחרי ביצוע"/><field name="field_report_after_image" widget="image" nolabel="1" readonly="field_task_count == 0 or field_report_state in ['pending','approved']"/></div>
+                                </div>
+                                <group><field name="field_report_submitted_at"/><field name="field_report_approved_at"/></group>
                             </div>
+                            <details class="o_field_service_card o_field_service_notes">
+                                <summary>הערות פנימיות · לצוות התפעול בלבד</summary>
+                                <field name="description" placeholder="הוסף כאן הערות פנימיות שאינן מוצגות לקבלן"/>
+                            </details>
                         </div>
                         <div class="o_field_service_sidebar">
                             <div class="o_field_service_card">
                                 <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-clipboard"/></span><div><h2>סיכום הטיפול</h2></div></div>
                                 <group col="1"><field name="user_id" string="אחראי טיפול"/><field name="company_id" groups="base.group_multi_company"/></group>
-                                <button name="action_open_field_task" type="object" class="btn btn-outline-primary w-100 o_field_service_task_link" icon="fa-external-link" invisible="field_task_count == 0">משימת השטח <field name="field_task_count" readonly="1"/></button>
+                                <field name="field_task_count" invisible="1"/>
+                                <p invisible="field_task_count == 0">השיבוץ והדיווח מנוהלים בכרטיס העבודה הזה.</p>
                                 <div class="o_field_service_tip" invisible="field_task_count != 0">משימת השטח תופיע כאן לאחר השלמת השיבוץ.</div>
                             </div>
                             <div class="o_field_service_sidebar_note"><i class="fa fa-info-circle"/><p>התקדמות מתבצעת שלב אחר שלב. אפשר לשמור פרטים חלקיים ולהשלים אותם לפני לחיצה על המשך.</p></div>
@@ -105,20 +117,20 @@
         <field name="name">crm.lead.field.service.list</field><field name="model">crm.lead</field>
         <field name="arch" type="xml"><list string="פניות עבודות שטח">
             <field name="name"/><field name="partner_id"/><field name="stage_id"/>
-            <field name="field_contractor_id"/><field name="field_visit_at"/><field name="field_site_address"/>
+            <field name="field_contractor_id"/><field name="field_visit_at"/><field name="field_attention_label" string="הטיפול הבא"/>
         </list></field>
     </record>
     <record id="view_field_lead_kanban" model="ir.ui.view">
         <field name="name">crm.lead.field.service.kanban</field><field name="model">crm.lead</field>
         <field name="arch" type="xml">
             <kanban default_group_by="stage_id" quick_create="false" group_create="false" group_edit="false" group_delete="false" records_draggable="false" class="o_field_service_kanban">
-                <field name="name"/><field name="partner_id"/><field name="field_contractor_id"/><field name="field_visit_at"/><field name="field_missing_fields"/>
+                <field name="name"/><field name="partner_id"/><field name="field_contractor_id"/><field name="field_visit_at"/><field name="field_missing_fields"/><field name="field_attention_label"/>
                 <templates><t t-name="card">
                     <div class="fw-bold fs-5 mb-2"><field name="name"/></div>
                     <div><field name="partner_id"/></div>
                     <div class="text-muted mt-2"><field name="field_contractor_id"/></div>
                     <div class="text-muted"><field name="field_visit_at"/></div>
-                    <div t-if="record.field_missing_fields.raw_value" class="o_field_service_kanban_missing"><i class="fa fa-exclamation-circle me-1"/>יש פרטים להשלמה</div>
+                    <div class="o_field_service_kanban_missing"><field name="field_attention_label"/></div>
                 </t></templates>
             </kanban>
         </field>

@@ -5,27 +5,29 @@
             <t groups="field_work_photos.group_field_contractor" t-call="portal.portal_docs_entry">
                 <t t-set="title">עבודות השטח שלי</t><t t-set="url" t-value="'/my/field-work'"/>
                 <t t-set="text">פרטי עבודה, תמונות ודיווח לבדיקת התפעול</t>
-                <t t-set="placeholder_count" t-value="'field_work_count'"/>
-                <t t-set="config_card" t-value="True"/>
+                <t t-set="placeholder_count" t-value="'field_work_count'"/><t t-set="config_card" t-value="True"/>
             </t>
         </xpath>
     </template>
     <template id="portal_field_work_list" name="רשימת עבודות לקבלן">
         <t t-call="portal.portal_layout">
-            <div class="container py-4" dir="rtl">
-                <h2 class="mb-4">עבודות השטח שלי</h2>
-                <p t-if="not tasks" class="alert alert-info">אין כרגע עבודות ששויכו אליך.</p>
-                <div class="row g-3">
+            <div class="container o_field_ui o_field_portal py-4" dir="rtl">
+                <header class="o_field_panel o_field_portal_heading"><p class="o_field_eyebrow">עבודות שטח</p><h1>עבודות השטח שלי</h1><p>בחר עבודה לצפייה בפרטים, לתיעוד ולשליחת הדיווח לבדיקה.</p></header>
+                <nav class="o_field_tabs" aria-label="סינון העבודות">
+                    <a t-att-href="'/my/field-work?scope=active'" t-att-class="'active' if scope == 'active' else ''" t-att-aria-current="'page' if scope == 'active' else None">לביצוע <span t-out="counts['active']"/></a>
+                    <a href="/my/field-work?scope=pending" t-att-class="'active' if scope == 'pending' else ''" t-att-aria-current="'page' if scope == 'pending' else None">בבדיקה <span t-out="counts['pending']"/></a>
+                    <a href="/my/field-work?scope=completed" t-att-class="'active' if scope == 'completed' else ''" t-att-aria-current="'page' if scope == 'completed' else None">הסתיימו <span t-out="counts['completed']"/></a>
+                </nav>
+                <div t-if="not tasks" class="o_field_panel"><h2>אין כרגע עבודות ברשימה הזאת</h2><p>עבודות חדשות יופיעו כאן לאחר שיבוץ על ידי התפעול.</p></div>
+                <div class="o_field_job_grid">
                     <t t-foreach="tasks" t-as="task">
-                        <div class="col-12 col-md-6"><a t-att-href="'/my/field-work/%s' % task.id" class="card h-100 text-decoration-none text-body shadow-sm">
-                            <div class="card-body">
-                                <h3 class="h5" t-out="task.name"/>
-                                <p class="mb-1" t-out="task.field_customer_name"/>
-                                <p class="mb-2 text-muted" t-out="task.field_site_address"/>
-                                <p class="mb-2"><span t-field="task.field_visit_at"/></p>
-                                <span class="badge text-bg-light border" t-field="task.field_review_state"/>
-                            </div>
-                        </a></div>
+                        <a t-att-href="'/my/field-work/%s' % task.id" class="o_field_panel o_field_job_link">
+                            <span class="o_field_status" t-out="'בוטלה' if task.state == '1_canceled' else dict(task._fields['field_review_state'].selection).get(task.field_review_state)"/>
+                            <h2 t-out="task.name"/><p t-out="task.field_customer_name"/>
+                            <p t-out="task.field_site_address"/><p><span t-field="task.field_visit_at"/></p>
+                            <strong t-if="task.field_review_state == 'changes_requested'">נדרש עדכון הדיווח</strong>
+                            <span class="o_field_job_cta">פתיחת העבודה ←</span>
+                        </a>
                     </t>
                 </div>
                 <div class="o_portal_pager d-flex justify-content-center mt-4"><t t-call="portal.pager"/></div>
@@ -34,44 +36,53 @@
     </template>
     <template id="portal_field_work_detail" name="דיווח עבודת שטח">
         <t t-call="portal.portal_layout">
-            <div class="container py-4" dir="rtl" style="max-width: 900px;">
-                <a href="/my/field-work" class="btn btn-outline-secondary mb-4">חזרה לעבודות שלי</a>
-                <h2 class="mb-3" t-out="task.name"/>
-                <div class="card mb-4"><div class="card-body">
-                    <p><strong>לקוח: </strong><span t-out="task.field_customer_name"/></p>
-                    <p><strong>טלפון: </strong><span t-out="task.field_customer_phone"/></p>
-                    <p><strong>כתובת: </strong><span t-out="task.field_site_address"/></p>
-                    <p><strong>מועד: </strong><span t-field="task.field_visit_at"/></p>
-                    <p class="mb-0" style="white-space: pre-wrap;" t-out="task.field_work_description"/>
-                </div></div>
-                <p><strong>מצב העבודה: </strong><span t-field="task.field_review_state"/></p>
-                <div t-if="error" class="alert alert-danger" role="alert" t-out="error"/>
-                <div t-if="task.field_review_state == 'pending'" class="alert alert-info">העבודה הוגשה וממתינה לאישור. התמונות נעולות בזמן הבדיקה.</div>
-                <div t-if="task.field_review_state == 'approved'" class="alert alert-success">העבודה אושרה על ידי התפעול.</div>
-                <div t-if="task.field_review_state == 'changes_requested'" class="alert alert-warning">
-                    <strong>העבודה הוחזרה לתיקון: </strong><span t-out="task.field_review_note"/>
-                </div>
-                <form t-att-action="'/my/field-work/%s/report' % task.id" method="post" enctype="multipart/form-data">
+            <div class="container o_field_ui o_field_portal py-4" dir="rtl">
+                <a href="/my/field-work" class="o_field_back">→ חזרה לעבודות שלי</a>
+                <header class="o_field_panel o_field_portal_heading">
+                    <p class="o_field_eyebrow">עבודת שטח</p><h1 t-out="task.name"/>
+                    <span class="o_field_status" t-out="'בוטלה' if task.state == '1_canceled' else dict(task._fields['field_review_state'].selection).get(task.field_review_state)"/>
+                </header>
+                <div t-if="error" class="alert alert-danger o_field_message" role="alert"><strong t-out="error"/><p>הקבצים שנבחרו בבקשה הזאת לא נשמרו. בדוק ובחר אותם מחדש.</p></div>
+                <div t-if="notice and not error" class="o_field_message o_field_message_success" role="status" t-out="notice"/>
+                <section class="o_field_panel">
+                    <h2>פרטי העבודה</h2>
+                    <dl class="o_field_job_details">
+                        <div><dt>לקוח</dt><dd t-out="task.field_customer_name"/></div>
+                        <div><dt>מועד ביצוע</dt><dd><span t-field="task.field_visit_at"/></dd></div>
+                        <div><dt>כתובת</dt><dd t-out="task.field_site_address"/></div>
+                        <div><dt>טלפון</dt><dd><bdi t-out="task.field_customer_phone"/></dd></div>
+                    </dl>
+                    <div class="o_field_contact_actions"><a t-if="task.field_customer_phone" t-att-href="phone_url" class="btn btn-outline-primary">חיוג ללקוח</a><a t-if="task.field_site_address" t-att-href="navigation_url" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary">ניווט לכתובת</a></div>
+                    <p class="o_field_work_description" t-out="task.field_work_description"/>
+                </section>
+                <div t-if="task.field_review_state == 'pending'" class="o_field_message" role="status">הדיווח ממתין לבדיקת התפעול. התמונות נעולות בזמן הבדיקה.</div>
+                <div t-if="task.field_review_state == 'approved'" class="o_field_message o_field_message_success" role="status">הביצוע אושר על ידי התפעול.</div>
+                <div t-if="task.field_review_state == 'changes_requested'" class="o_field_message o_field_message_warning" role="status"><strong>מה צריך לתקן?</strong><p t-out="task.field_review_note"/></div>
+                <form t-att-action="'/my/field-work/%s/report' % task.id" method="post" enctype="multipart/form-data" data-field-report="1" class="o_field_report_form">
                     <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                    <input type="hidden" name="action" value="upload"/>
-                    <div class="row g-3 mb-4">
-                        <div class="col-12 col-md-6">
-                            <label class="form-label fw-bold" for="field_before_image">תמונה לפני ביצוע</label>
-                            <img t-if="task.field_before_image" t-att-src="'/my/field-work/%s/photo/before' % task.id" class="img-fluid rounded border d-block mb-3" style="max-height: 320px;" alt="לפני ביצוע"/>
-                            <input t-if="editable" id="field_before_image" name="field_before_image" type="file" accept="image/jpeg,image/png,image/webp" class="form-control"/>
+                    <section class="o_field_panel">
+                        <h2>תיעוד הביצוע</h2>
+                        <p data-report-summary="1" role="status" aria-live="polite"><t t-out="saved_count"/> מתוך 2 תמונות נשמרו</p>
+                        <div class="o_field_photo_grid">
+                            <t t-foreach="[('before', 'לפני ביצוע', task.field_before_image), ('after', 'אחרי ביצוע', task.field_after_image)]" t-as="photo">
+                                <div class="o_field_photo_slot" t-att-data-saved="'1' if photo[2] else '0'" t-att-data-saved-src="'/my/field-work/%s/photo/%s' % (task.id, photo[0]) if photo[2] else ''">
+                                    <label t-if="editable" t-att-for="'field_%s_image' % photo[0]" class="form-label" t-out="photo[1]"/>
+                                    <h3 t-else="" t-out="photo[1]"/>
+                                    <img t-att-src="'/my/field-work/%s/photo/%s' % (task.id, photo[0]) if photo[2] else None" t-att-alt="photo[1]" t-att-hidden="not photo[2]" class="o_field_photo_preview"/>
+                                    <p t-if="not photo[2]" data-photo-placeholder="1" class="o_field_photo_placeholder">עדיין לא נשמרה תמונה</p>
+                                    <input t-if="editable" t-att-id="'field_%s_image' % photo[0]" t-att-name="'field_%s_image' % photo[0]" type="file" accept="image/jpeg,image/png,image/webp" class="form-control" t-att-aria-describedby="'photo-status-%s photo-error-%s' % (photo[0], photo[0])"/>
+                                    <p t-att-id="'photo-status-%s' % photo[0]" data-file-status="1" class="o_field_help" t-out="'נשמרה במערכת' if photo[2] else 'בחר תמונה מהמצלמה או מהגלריה'"/>
+                                    <p t-att-id="'photo-error-%s' % photo[0]" data-file-error="1" class="o_field_inline_error" role="alert" hidden="hidden"/>
+                                    <button t-if="editable" type="button" data-clear-photo="1" class="btn btn-link" hidden="hidden">ביטול הבחירה החדשה</button>
+                                </div>
+                            </t>
                         </div>
-                        <div class="col-12 col-md-6">
-                            <label class="form-label fw-bold" for="field_after_image">תמונה אחרי ביצוע</label>
-                            <img t-if="task.field_after_image" t-att-src="'/my/field-work/%s/photo/after' % task.id" class="img-fluid rounded border d-block mb-3" style="max-height: 320px;" alt="אחרי ביצוע"/>
-                            <input t-if="editable" id="field_after_image" name="field_after_image" type="file" accept="image/jpeg,image/png,image/webp" class="form-control"/>
-                        </div>
+                        <p t-if="editable" class="o_field_help">JPG, PNG או WebP, עד 12MB לתמונה. התמונות שנבחרו יישמרו עם הפעולה שתבחר.</p>
+                    </section>
+                    <div t-if="editable" class="o_field_portal_actions">
+                        <button type="submit" name="action" value="submit" class="btn btn-primary" data-report-submit="1">שמירת התמונות והגשה לאישור</button>
+                        <button type="submit" name="action" value="upload" class="btn btn-outline-secondary" data-report-save="1">שמירה והמשך מאוחר יותר</button>
                     </div>
-                    <t t-if="editable"><p class="text-muted">JPG, PNG או WebP, עד 12MB לתמונה. יש לשמור את התמונות לפני ההגשה.</p><button type="submit" class="btn btn-outline-primary w-100 py-3 mb-3">שמירת התמונות</button></t>
-                </form>
-                <form t-if="editable" t-att-action="'/my/field-work/%s/report' % task.id" method="post">
-                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                    <input type="hidden" name="action" value="submit"/>
-                    <button type="submit" class="btn btn-primary w-100 py-3">הגשת עבודה לאישור</button>
                 </form>
             </div>
         </t>
