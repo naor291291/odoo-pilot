@@ -236,6 +236,7 @@ with sync_playwright() as playwright:
         'name': 'ביקור המשך — בדיקת ממשק', 'is_field_service': True, 'partner_id': customer,
         'phone': '0500000000', 'field_site_address': 'רחוב הביקור 5',
         'field_work_description': 'בדיקת ביקור שלא הושלם', 'field_quote_number': 'UI-FOLLOWUP',
+        'field_sale_amount': 1000,
         'field_contractor_id': login_contractor, 'field_visit_at': datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S'),
     }])
     for _ in range(4):
