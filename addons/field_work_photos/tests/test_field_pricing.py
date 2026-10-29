@@ -179,6 +179,7 @@ class TestFieldPricing(TransactionCase):
         lead = self.lead()
         task = self.dispatch(lead)
         task.write({'field_before_image': base64.b64encode(stream.getvalue()), 'field_after_image': base64.b64encode(stream.getvalue())})
+        task.write({'field_visit_summary': 'העבודה בוצעה ונבדקה'})
         task.action_finish_field_work()
         for name in ('field_sale_amount', 'field_material_cost'):
             with self.assertRaises(ValidationError), self.cr.savepoint():

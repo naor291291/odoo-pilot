@@ -105,6 +105,7 @@ class TestFieldDispatch(TransactionCase):
     def test_pending_assignment_and_details_are_locked(self):
         lead, task = self.dispatch()
         task.write({'field_before_image': self.photo, 'field_after_image': self.photo})
+        task.write({'field_visit_summary': 'העבודה בוצעה ונבדקה'})
         task.action_finish_field_work()
         for values in ({'field_contractor_id': self.second.id}, {'field_site_address': 'Changed'}):
             with self.assertRaises(ValidationError), self.cr.savepoint():
@@ -113,6 +114,7 @@ class TestFieldDispatch(TransactionCase):
     def test_review_moves_lead_and_return_reopens_it(self):
         lead, task = self.dispatch()
         task.write({'field_before_image': self.photo, 'field_after_image': self.photo})
+        task.write({'field_visit_summary': 'העבודה בוצעה ונבדקה'})
         task.action_finish_field_work()
         task.action_approve_field_work()
         self.assertEqual(lead.field_dispatch_code, 'completed')

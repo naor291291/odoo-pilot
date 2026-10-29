@@ -30,6 +30,7 @@ class TestFieldWorkspace(TransactionCase):
             result = lead.action_next_field_stage()
         self.assertEqual(result['res_model'], 'crm.lead')
         self.assertEqual(result['res_id'], lead.id)
+        lead.field_task_ids.write({'field_visit_summary': 'הוחלף הברז ונבדק'})
         return lead
 
     def test_report_review_and_completion_stay_in_same_workspace(self):

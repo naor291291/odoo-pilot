@@ -10,8 +10,9 @@
                     <button name="action_next_field_stage" string="אישור הצעה והמשך לתיאום" aria-label="אישור הצעה והמשך לתיאום" type="object" class="oe_highlight" icon="fa-check" invisible="field_dispatch_code != 'sent'"/>
                     <button name="action_dispatch_field_work" string="המשך — שיבוץ ופתיחת משימה" aria-label="המשך — שיבוץ ופתיחת משימה" type="object" class="oe_highlight" icon="fa-calendar-check-o" invisible="field_dispatch_code != 'schedule'"/>
                     <button name="action_submit_field_report" string="הגשת הדיווח לאישור" aria-label="הגשת הדיווח לאישור" type="object" class="oe_highlight" invisible="field_task_count == 0 or field_report_state not in ['draft','changes_requested']"/>
-                    <button name="action_approve_field_report" string="אישור ביצוע" aria-label="אישור ביצוע" type="object" class="oe_highlight" invisible="field_report_state != 'pending' or not field_report_can_review"/>
-                    <button name="action_return_field_report" string="החזרה לתיקון" aria-label="החזרה לתיקון" type="object" invisible="field_report_state not in ['pending','approved'] or not field_report_can_review"/>
+                    <button name="action_approve_field_report" string="אישור ביצוע" aria-label="אישור ביצוע" type="object" class="oe_highlight" invisible="field_report_state != 'pending' or not field_report_can_review or field_visit_result in ['followup','not_done']"/>
+                    <button name="action_return_field_report" string="החזרה לתיקון" aria-label="החזרה לתיקון" type="object" invisible="field_report_state not in ['pending','approved'] or not field_report_can_review or field_visit_result in ['followup','not_done']"/>
+                    <button name="action_return_field_report" string="החזרה להמשך טיפול" aria-label="החזרה להמשך טיפול" type="object" invisible="field_report_state != 'pending' or not field_report_can_review or field_visit_result not in ['followup','not_done']"/>
                     <button name="action_previous_field_stage" string="חזרה לשלב הקודם" aria-label="חזרה לשלב הקודם" type="object" icon="fa-arrow-right" invisible="field_dispatch_code not in ['quote', 'sent', 'schedule']"/>
                     <button name="action_save_field_draft" string="שמירת טיוטה" aria-label="שמירת טיוטה" type="object" invisible="field_dispatch_code not in ['new','quote','sent','schedule']"/>
                 </header>
@@ -20,7 +21,7 @@
                     <field name="field_dispatch_code" invisible="1"/>
                     <field name="field_dispatch_locked" invisible="1"/>
                     <field name="field_report_state" invisible="1"/>
-                    <field name="field_report_can_review" invisible="1"/>
+                    <field name="field_report_can_review" invisible="1"/><field name="field_visit_result" invisible="1"/>
                     <field name="type" invisible="1"/><field name="team_id" invisible="1"/>
                     <div class="o_field_service_mobile_actions d-md-none">
                         <button name="action_next_field_stage" string="המשך להצעת מחיר" aria-label="המשך להצעת מחיר" type="object" class="btn btn-primary" invisible="field_dispatch_code != 'new'"/>
@@ -28,8 +29,9 @@
                         <button name="action_next_field_stage" string="אישור והמשך לתיאום" aria-label="אישור הצעה והמשך לתיאום" type="object" class="btn btn-primary" invisible="field_dispatch_code != 'sent'"/>
                         <button name="action_dispatch_field_work" string="שיבוץ ופתיחת משימה" aria-label="המשך — שיבוץ ופתיחת משימה" type="object" class="btn btn-primary" invisible="field_dispatch_code != 'schedule'"/>
                         <button name="action_submit_field_report" string="הגשת הדיווח לאישור" aria-label="הגשת הדיווח לאישור" type="object" class="btn btn-primary" invisible="field_task_count == 0 or field_report_state not in ['draft','changes_requested']"/>
-                        <button name="action_approve_field_report" string="אישור ביצוע" aria-label="אישור ביצוע" type="object" class="btn btn-primary" invisible="field_report_state != 'pending' or not field_report_can_review"/>
-                        <button name="action_return_field_report" string="החזרה לתיקון" aria-label="החזרה לתיקון" type="object" class="btn btn-outline-secondary" invisible="field_report_state not in ['pending','approved'] or not field_report_can_review"/>
+                        <button name="action_approve_field_report" string="אישור ביצוע" aria-label="אישור ביצוע" type="object" class="btn btn-primary" invisible="field_report_state != 'pending' or not field_report_can_review or field_visit_result in ['followup','not_done']"/>
+                        <button name="action_return_field_report" string="החזרה לתיקון" aria-label="החזרה לתיקון" type="object" class="btn btn-outline-secondary" invisible="field_report_state not in ['pending','approved'] or not field_report_can_review or field_visit_result in ['followup','not_done']"/>
+                    <button name="action_return_field_report" string="החזרה להמשך טיפול" aria-label="החזרה להמשך טיפול" type="object" class="btn btn-outline-secondary" invisible="field_report_state != 'pending' or not field_report_can_review or field_visit_result not in ['followup','not_done']"/>
                         <button name="action_save_field_draft" string="שמירת טיוטה" aria-label="שמירת טיוטה" type="object" class="btn btn-outline-secondary" invisible="field_dispatch_code not in ['new','quote','sent','schedule']"/>
                         <button name="action_previous_field_stage" string="חזרה" aria-label="חזרה לשלב הקודם" type="object" class="btn btn-outline-secondary" invisible="field_dispatch_code not in ['quote', 'sent', 'schedule']"/>
                     </div>
@@ -61,6 +63,8 @@
                                         <field name="phone" string="טלפון לתיאום" placeholder="למשל 0501234567" readonly="field_dispatch_locked"/>
                                     </group>
                                     <group>
+                                        <field name="field_site_unit" placeholder="למשל: קומה 2, דירה 6" readonly="field_dispatch_locked"/>
+                                        <field name="field_access_instructions" placeholder="כניסה, חניה או תיאום עם איש הקשר" readonly="field_dispatch_locked"/>
                                         <field name="field_site_address" placeholder="רחוב, מספר, עיר ופרטי הגעה" readonly="field_dispatch_locked"/>
                                         <field name="field_work_description" placeholder="מה צריך לבצע? הטקסט הזה יוצג לקבלן" readonly="field_dispatch_locked"/>
                                     </group>
@@ -86,12 +90,24 @@
                             <div class="o_field_service_card o_field_report_panel" invisible="field_task_count == 0">
                                 <div class="o_field_service_card_heading"><div><h2>דיווח ובדיקת הביצוע</h2><p>התמונות, מצב הבדיקה ופעולות האישור נמצאים בכרטיס העבודה הזה</p></div></div>
                                 <field name="field_report_state" widget="badge"/>
-                                <div class="o_field_message" role="status" invisible="field_report_state != 'pending'">הדיווח ממתין לבדיקה. בדוק את שתי התמונות ואשר ביצוע או החזר לתיקון.</div>
+                                <div class="o_field_message" role="status" invisible="field_report_state != 'pending'">הדיווח ממתין לבדיקה. בדוק את תוצאת הביקור, הסיכום והתמונות. ביקור שלא הושלם יש להחזיר להמשך טיפול.</div>
                                 <div class="o_field_message o_field_message_warning" role="status" invisible="field_report_state != 'changes_requested'"><strong>מה נדרש לתקן?</strong><field name="field_report_note" nolabel="1"/></div>
+                                <group>
+                                    <field name="field_visit_result" readonly="field_report_state in ['pending','approved']"/>
+                                    <field name="field_visit_summary" readonly="field_report_state in ['pending','approved']"/>
+                                    <field name="field_visit_reason" readonly="field_report_state in ['pending','approved']" invisible="field_visit_result not in ['followup','not_done']"/>
+                                    <field name="field_visit_notes" readonly="field_report_state in ['pending','approved']"/>
+                                </group>
                                 <div class="o_field_photo_grid">
                                     <div><label for="field_report_before_image" string="לפני ביצוע"/><field name="field_report_before_image" widget="image" nolabel="1" readonly="field_task_count == 0 or field_report_state in ['pending','approved']"/></div>
                                     <div><label for="field_report_after_image" string="אחרי ביצוע"/><field name="field_report_after_image" widget="image" nolabel="1" readonly="field_task_count == 0 or field_report_state in ['pending','approved']"/></div>
                                 </div>
+                                <field name="field_extra_photo_ids" nolabel="1" readonly="1">
+                                    <kanban create="false" edit="false" delete="false" class="o_field_extra_gallery">
+                                        <field name="kind"/><field name="image"/>
+                                        <templates><t t-name="card"><field name="image" widget="image" options="{'size': [200, 160]}"/><div><field name="kind"/></div></t></templates>
+                                    </kanban>
+                                </field>
                                 <group><field name="field_report_submitted_at"/><field name="field_report_approved_at"/></group>
                             </div>
                             <details class="o_field_service_card o_field_service_notes">

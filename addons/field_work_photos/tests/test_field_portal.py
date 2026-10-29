@@ -34,7 +34,7 @@ class TestFieldPortal(HttpCase):
             cls.leads |= lead
         cls.own_task = cls.leads[0].field_task_ids
         cls.other_task = cls.leads[1].field_task_ids
-        cls.own_task.write({'field_before_image': base64.b64encode(cls.raw_photo), 'field_after_image': base64.b64encode(cls.raw_photo)})
+        cls.own_task.write({'field_visit_summary': 'הוחלף הברז ונבדק', 'field_before_image': base64.b64encode(cls.raw_photo), 'field_after_image': base64.b64encode(cls.raw_photo)})
         cls.other_task.write({'field_before_image': base64.b64encode(cls.raw_photo)})
 
     def login(self):
@@ -175,5 +175,104 @@ class TestFieldPortal(HttpCase):
         self.assertEqual(len(page.xpath('//form[@data-field-report]')), 1)
         self.assertTrue(page.xpath('//a[starts-with(@href, "tel:")]'))
         self.assertIn('google.com/maps/search', response.text)
-        self.assertIn('שמירת התמונות והגשה לאישור', response.text)
+        self.assertIn('שליחת דיווח לבדיקה', response.text)
         self.assertIn('שמירה והמשך מאוחר יותר', response.text)
+
+    def test_gallery_uploads_five_per_kind_in_one_submission(self):
+        self.own_task.write({'field_before_image': False, 'field_after_image': False})
+        self.login()
+        files = [(f'field_{kind}_image', (f'{kind}-{n}.png', self.raw_photo, 'image/png'))
+                 for kind in ('before', 'after') for n in range(5)]
+        response = self.url_open(self.detail() + '/report', data={
+            'csrf_token': self.token(), 'action': 'submit', 'field_visit_result': 'completed',
+            'field_visit_summary': 'הוחלף ונבדק מכל הזוויות'}, files=files)
+        self.assertNotIn('alert-danger', response.text)
+        self.own_task.invalidate_recordset()
+        self.assertEqual(self.own_task.field_review_state, 'pending')
+        self.assertEqual(len(self.own_task.field_extra_photo_ids), 8)
+        self.assertEqual(len(self.own_task._field_gallery('before')), 5)
+        photo = self.own_task.field_extra_photo_ids[:1]
+        image = self.url_open(self.detail() + '/photo/%s/%s' % (photo.kind, photo.id))
+        self.assertEqual(image.status_code, 200)
+        self.assertEqual(image.headers['Cache-Control'], 'private, no-store')
+
+    def test_gallery_foreign_photo_and_removal_are_scoped_to_task(self):
+        self.other_task._update_field_gallery({'before': [base64.b64encode(self.raw_photo)], 'after': []}, [])
+        photo = self.other_task.field_extra_photo_ids[:1]
+        self.login()
+        self.assertEqual(self.url_open(self.detail() + '/photo/before/%s' % photo.id).status_code, 404)
+        response = self.url_open(self.detail() + '/report', data={
+            'csrf_token': self.token(), 'action': 'upload', 'remove_photo': 'before:%s' % photo.id})
+        self.assertIn('alert-danger', response.text)
+        self.assertTrue(photo.exists())
+
+    def test_failed_report_rolls_back_deletion_and_text_updates(self):
+        self.login()
+        response = self.url_open(self.detail() + '/report', data={
+            'csrf_token': self.token(), 'action': 'submit', 'remove_photo': 'before:0',
+            'field_visit_summary': 'טקסט שנשאר לתיקון בטופס'})
+        self.assertIn('alert-danger', response.text)
+        self.assertIn('טקסט שנשאר לתיקון בטופס', response.text)
+        self.own_task.invalidate_recordset()
+        self.assertTrue(self.own_task.field_before_image)
+        self.assertEqual(self.own_task.field_visit_summary, 'הוחלף הברז ונבדק')
+        self.assertEqual(self.own_task.field_review_state, 'draft')
+
+    def test_incomplete_report_without_photos_requires_reason_and_stays_open(self):
+        self.own_task.write({'field_before_image': False, 'field_after_image': False})
+        self.login()
+        payload = {'csrf_token': self.token(), 'action': 'submit', 'field_visit_result': 'not_done', 'field_visit_reason': ''}
+        response = self.url_open(self.detail() + '/report', data=payload)
+        self.assertIn('alert-danger', response.text)
+        payload['field_visit_reason'] = 'הלקוח לא נמצא. נדרש ביקור נוסף.'
+        response = self.url_open(self.detail() + '/report', data=payload)
+        self.assertIn('נשלחו לבדיקת התפעול', response.text)
+        self.own_task.invalidate_recordset()
+        self.assertEqual(self.own_task.field_review_state, 'pending')
+        self.assertEqual(self.own_task.field_visit_result, 'not_done')
+        self.assertEqual(self.leads[0].field_dispatch_code, 'field')
+        self.assertNotIn('data-report-submit', response.text)
+
+    def test_save_partial_report_and_reject_excess_images_atomically(self):
+        self.login()
+        response = self.url_open(self.detail() + '/report', data={
+            'csrf_token': self.token(), 'action': 'upload', 'field_visit_summary': '', 'field_visit_notes': 'טיוטה מהשטח'})
+        self.assertNotIn('alert-danger', response.text)
+        self.own_task.invalidate_recordset()
+        self.assertEqual(self.own_task.field_visit_notes, 'טיוטה מהשטח')
+        files = [('field_before_image', ('photo.png', self.raw_photo, 'image/png')) for _ in range(5)]
+        response = self.url_open(self.detail() + '/report', data={
+            'csrf_token': self.token(), 'action': 'upload', 'field_visit_notes': 'לא לשמור'}, files=files)
+        self.assertIn('alert-danger', response.text)
+        self.own_task.invalidate_recordset()
+        self.assertEqual(len(self.own_task._field_gallery('before')), 1)
+        self.assertEqual(self.own_task.field_visit_notes, 'טיוטה מהשטח')
+
+    def test_saved_photo_removal_and_new_image_use_single_transaction(self):
+        self.login()
+        response = self.url_open(self.detail() + '/report', data={
+            'csrf_token': self.token(), 'action': 'upload', 'remove_photo': 'before:0'}, files={
+                'field_before_image': ('bad.png', b'invalid image', 'image/png')})
+        self.assertIn('alert-danger', response.text)
+        self.own_task.invalidate_recordset()
+        self.assertTrue(self.own_task.field_before_image)
+        response = self.url_open(self.detail() + '/report', data={
+            'csrf_token': self.token(), 'action': 'upload', 'remove_photo': 'before:0'}, files={
+                'field_before_image': ('new.png', self.raw_photo, 'image/png')})
+        self.assertNotIn('alert-danger', response.text)
+        self.own_task.invalidate_recordset()
+        self.assertEqual(len(self.own_task._field_gallery('before')), 1)
+
+    def test_site_details_are_displayed_and_foreign_extra_access_revoked(self):
+        self.leads[0].write({'contact_name': 'איש קשר באתר', 'field_site_unit': 'קומה 4 דירה 8',
+                             'field_access_instructions': 'כניסה דרך החניון'})
+        self.own_task._update_field_gallery({'before': [base64.b64encode(self.raw_photo)], 'after': []}, [])
+        photo = self.own_task.field_extra_photo_ids[:1]
+        url = self.detail() + '/photo/before/%s' % photo.id
+        self.login()
+        response = self.url_open(self.detail())
+        for text in ('איש קשר באתר', 'קומה 4 דירה 8', 'כניסה דרך החניון'):
+            self.assertIn(text, response.text)
+        self.assertEqual(self.url_open(url).status_code, 200)
+        self.leads[0].write({'field_contractor_id': self.second.id})
+        self.assertEqual(self.url_open(url).status_code, 404)

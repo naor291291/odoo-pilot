@@ -166,6 +166,7 @@ with sync_playwright() as playwright:
     page.get_by_role('button', name='המשך — שיבוץ ופתיחת משימה', exact=True).click()
     expect(page.locator('.o_field_report_panel')).to_be_visible()
     task = model('crm.lead', 'read', [[lead]], fields=['field_workspace_task_id'])[0]['field_workspace_task_id'][0]
+    login_contractor = model('project.task', 'read', [[task]], fields=['field_contractor_id'])[0]['field_contractor_id'][0]
     contractor_context = browser.new_context(viewport={'width': 390, 'height': 844}, locale='he-IL')
     response = contractor_context.request.post('http://127.0.0.1:8069/web/session/authenticate', data={
         'jsonrpc': '2.0', 'method': 'call', 'id': 1,
@@ -181,19 +182,37 @@ with sync_playwright() as playwright:
     submit_report = portal.locator('[data-report-submit]')
     expect(submit_report).to_be_disabled()
     with portal.expect_file_chooser() as chooser:
-        portal.get_by_role('button', name='בחירת תמונה לפני ביצוע', exact=True).click()
-    chooser.value.set_files({'name': 'before.png', 'mimeType': 'image/png', 'buffer': png((200, 50, 20))})
-    expect(portal.locator('[data-file-status]').first).to_contain_text('עדיין לא נשמרה')
+        portal.get_by_role('button', name='הוספת תמונות לפני ביצוע', exact=True).click()
+    chooser.value.set_files([{'name': f'before-{n}.png', 'mimeType': 'image/png', 'buffer': png((200, 50, 20))} for n in range(2)])
+    expect(portal.locator('[data-new-photos]').first).to_contain_text('עדיין לא נשמרה')
+    portal.locator('#field_visit_summary').fill('הוחלף הברז ונבדקו כל החיבורים')
     expect(submit_report).to_be_disabled()
-    portal.locator('#field_after_image').set_input_files({'name': 'after.png', 'mimeType': 'image/png', 'buffer': png((30, 100, 220))})
+    portal.locator('#field_after_image').set_input_files([{'name': f'after-{n}.png', 'mimeType': 'image/png', 'buffer': png((30, 100, 220))} for n in range(2)])
     expect(submit_report).to_be_enabled()
-    expect(portal.locator('.o_field_photo_preview')).to_have_count(2)
+    expect(portal.locator('.o_field_gallery_image')).to_have_count(4)
+    portal.locator('[data-new-photos] .o_field_photo_zoom').first.click()
+    expect(portal.locator('[data-photo-dialog]')).to_be_visible()
+    portal.get_by_role('button', name='סגירת התמונה', exact=True).click()
+    expect(portal.locator('[data-photo-dialog]')).not_to_be_visible()
+    # Reject an over-limit batch without losing the already selected files.
+    portal.locator('#field_before_image').set_input_files([{'name': f'excess-{n}.png', 'mimeType': 'image/png', 'buffer': png((50, 60, 70))} for n in range(4)])
+    expect(portal.locator('#photo-error-before')).to_contain_text('עד 5')
+    expect(portal.locator('.o_field_gallery_image')).to_have_count(4)
+    portal.locator('[data-report-save]').click()
+    expect(portal.get_by_text('הדיווח והתמונות נשמרו. אפשר לחזור לעבודה ולהגיש בהמשך.', exact=True)).to_be_visible()
+    expect(portal.locator('[data-photo-key]')).to_have_count(4)
+    portal.locator('[data-kind="before"] [name="remove_photo"]').first.check()
+    portal.locator('#field_before_image').set_input_files([{'name': f'replacement-{n}.png', 'mimeType': 'image/png', 'buffer': png((90, 80, 30))} for n in range(3)])
+    expect(portal.locator('[data-report-summary]')).to_contain_text('4 תמונות לפני · 2 תמונות אחרי')
     assert portal.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), 'Portal overflows mobile viewport'
     portal.screenshot(path=str(OUTPUT / 'portal-mobile-selected.png'), full_page=True)
     submit_report.click()
     expect(portal.get_by_text('הדיווח והתמונות נשלחו לבדיקת התפעול.', exact=True)).to_be_visible()
     expect(portal.locator('input[type="file"]')).to_have_count(0)
+    gallery_data = model('project.task', 'read', [[task]], fields=['field_extra_photo_ids', 'field_visit_summary'])[0]
+    assert len(gallery_data['field_extra_photo_ids']) == 4, gallery_data
     page.goto(url)
+    expect(page.locator('.o_field_report_panel [name="field_visit_summary"]')).to_contain_text('הוחלף הברז')
     page.get_by_role('button', name='החזרה לתיקון', exact=True).click()
     dialog = page.locator('.modal:visible')
     dialog.locator('[name="reason"] textarea').fill('צילום קרוב יותר של החיבור')
@@ -212,6 +231,36 @@ with sync_playwright() as playwright:
     assert model('crm.lead', 'read', [[lead]], fields=['field_dispatch_code'])[0]['field_dispatch_code'] == 'completed'
     portal.goto('http://127.0.0.1:8069/my/field-work?scope=completed')
     expect(portal.get_by_role('link', name='החלפת ברז — בדיקת ממשק', exact=False)).to_be_visible()
+    # An incomplete visit has no photo requirement and cannot be approved as done.
+    followup_lead = model('crm.lead', 'create', [{
+        'name': 'ביקור המשך — בדיקת ממשק', 'is_field_service': True, 'partner_id': customer,
+        'phone': '0500000000', 'field_site_address': 'רחוב הביקור 5',
+        'field_work_description': 'בדיקת ביקור שלא הושלם', 'field_quote_number': 'UI-FOLLOWUP',
+        'field_contractor_id': login_contractor, 'field_visit_at': datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S'),
+    }])
+    for _ in range(4):
+        model('crm.lead', 'action_next_field_stage', [[followup_lead]])
+    followup_task = model('crm.lead', 'read', [[followup_lead]], fields=['field_workspace_task_id'])[0]['field_workspace_task_id'][0]
+    portal.goto(f'http://127.0.0.1:8069/my/field-work/{followup_task}')
+    portal.locator('#field_visit_result').select_option('not_done')
+    expect(portal.locator('[data-report-submit]')).to_be_disabled()
+    portal.locator('#field_visit_reason').fill('הלקוח לא נמצא בבית. נדרש תיאום ביקור נוסף.')
+    expect(portal.locator('[data-report-submit]')).to_be_enabled()
+    portal.screenshot(path=str(OUTPUT / 'portal-mobile-incomplete.png'), full_page=True)
+    portal.locator('[data-report-submit]').click()
+    expect(portal.get_by_text('הדיווח והתמונות נשלחו לבדיקת התפעול.', exact=True)).to_be_visible()
+    page.goto(f'http://127.0.0.1:8069/odoo/action-{action}/{followup_lead}')
+    expect(page.get_by_role('button', name='אישור ביצוע', exact=True)).to_have_count(0)
+    expect(page.locator('.o_field_report_panel [name="field_visit_reason"]')).to_contain_text('הלקוח לא נמצא')
+    page.locator('.o_field_report_panel').scroll_into_view_if_needed()
+    page.screenshot(path=str(OUTPUT / 'workspace-incomplete-desktop.png'), full_page=True)
+    page.get_by_role('button', name='החזרה להמשך טיפול', exact=True).click()
+    dialog = page.locator('.modal:visible')
+    dialog.locator('[name="reason"] textarea').fill('תאם ביקור נוסף עם הלקוח')
+    dialog.get_by_role('button', name='שליחת בקשת תיקון', exact=True).click()
+    expect(page.locator('.modal:visible')).to_have_count(0)
+    assert model('crm.lead', 'read', [[followup_lead]], fields=['field_dispatch_code'])[0]['field_dispatch_code'] == 'field'
+    assert model('project.task', 'read', [[followup_task]], fields=['field_review_state'])[0]['field_review_state'] == 'changes_requested'
     contractor_context.close()
     rates_action = model('ir.model.data', 'search_read', [[['module', '=', 'field_work_photos'], ['name', '=', 'action_field_contractor_rates']]], fields=['res_id'])[0]['res_id']
     page.goto(f'http://127.0.0.1:8069/odoo/action-{rates_action}')

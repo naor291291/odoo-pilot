@@ -12,6 +12,11 @@ class CrmLead(models.Model):
     field_report_note = fields.Text(related='field_workspace_task_id.field_review_note')
     field_report_submitted_at = fields.Datetime(related='field_workspace_task_id.field_submitted_at')
     field_report_approved_at = fields.Datetime(related='field_workspace_task_id.field_approved_at')
+    field_visit_result = fields.Selection(related='field_workspace_task_id.field_visit_result', readonly=False)
+    field_visit_summary = fields.Text(related='field_workspace_task_id.field_visit_summary', readonly=False)
+    field_visit_reason = fields.Text(related='field_workspace_task_id.field_visit_reason', readonly=False)
+    field_visit_notes = fields.Text(related='field_workspace_task_id.field_visit_notes', readonly=False)
+    field_extra_photo_ids = fields.One2many(related='field_workspace_task_id.field_extra_photo_ids', readonly=True)
     field_report_can_review = fields.Boolean(compute='_compute_workspace_reviewer')
     field_attention_label = fields.Char(compute='_compute_field_attention')
 
@@ -26,13 +31,13 @@ class CrmLead(models.Model):
         for lead in self:
             lead.field_report_can_review = allowed
 
-    @api.depends('field_missing_fields', 'field_dispatch_code', 'field_report_state')
+    @api.depends('field_missing_fields', 'field_dispatch_code', 'field_report_state', 'field_visit_result')
     def _compute_field_attention(self):
         for lead in self:
             if lead.field_report_state == 'pending':
-                label = 'ממתינה לבדיקת דיווח'
+                label = 'ממתינה לבדיקת דיווח' if lead.field_visit_result in (False, 'completed') else 'ביקור שלא הושלם — נדרש טיפול'
             elif lead.field_report_state == 'changes_requested':
-                label = 'ממתינה לתיקון הדיווח'
+                label = 'ממתינה להמשך טיפול' if lead.field_visit_result in ('followup', 'not_done') else 'ממתינה לתיקון הדיווח'
             elif lead.field_dispatch_code == 'completed':
                 label = 'הביצוע אושר'
             elif lead.field_missing_fields:
@@ -90,15 +95,15 @@ class CrmLead(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        protected = {'field_workspace_task_id', 'field_report_state', 'field_report_note', 'field_report_submitted_at', 'field_report_approved_at'}
-        if any(protected.intersection(vals) or vals.get('field_report_before_image') or vals.get('field_report_after_image') for vals in vals_list):
+        protected = {'field_workspace_task_id', 'field_report_state', 'field_report_note', 'field_report_submitted_at', 'field_report_approved_at', 'field_extra_photo_ids'}
+        if any(protected.intersection(vals) or vals.get('field_report_before_image') or vals.get('field_report_after_image') or any(vals.get(n) for n in ('field_visit_result', 'field_visit_summary', 'field_visit_reason', 'field_visit_notes')) for vals in vals_list):
             raise AccessError('דיווח שטח ניתן לעדכן רק לאחר שיבוץ הפנייה.')
         return super().create(vals_list)
 
     def write(self, vals):
-        if {'field_workspace_task_id', 'field_report_state', 'field_report_note', 'field_report_submitted_at', 'field_report_approved_at'}.intersection(vals):
+        if {'field_workspace_task_id', 'field_report_state', 'field_report_note', 'field_report_submitted_at', 'field_report_approved_at', 'field_extra_photo_ids'}.intersection(vals):
             raise AccessError('מצב הדיווח ופרטי האישור מתעדכנים באמצעות פעולות התהליך בלבד.')
-        if {'field_report_before_image', 'field_report_after_image'}.intersection(vals):
+        if {'field_report_before_image', 'field_report_after_image', 'field_visit_result', 'field_visit_summary', 'field_visit_reason', 'field_visit_notes'}.intersection(vals):
             for lead in self:
                 lead._workspace_task()
         return super().write(vals)

@@ -4,7 +4,7 @@
         <field name="name">field.work.correction.form</field><field name="model">field.work.correction</field>
         <field name="arch" type="xml"><form string="החזרת הדיווח לתיקון" class="o_field_ui">
             <field name="task_id" invisible="1"/>
-            <p>הסיבה תופיע לקבלן בפורטל. כתוב מה נדרש לעדכן כדי שניתן יהיה לאשר את הביצוע.</p>
+            <p>ההנחיה תופיע לקבלן בפורטל. פרט מה צריך לתקן או לתאם לביקור הבא; העבודה תישאר פתוחה.</p>
             <group><field name="reason" placeholder="למשל: נדרש צילום קרוב של החיבור לאחר התיקון"/></group>
             <footer><button name="action_apply" type="object" string="שליחת בקשת תיקון" class="btn-primary"/><button special="cancel" string="ביטול" class="btn-secondary"/></footer>
         </form></field>

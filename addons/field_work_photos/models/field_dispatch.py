@@ -9,7 +9,7 @@ STAGES = [
 ]
 DISPATCH_FIELDS = {
     'field_contractor_id', 'field_visit_at', 'field_site_address',
-    'field_work_description', 'field_execution_type', 'field_worker_id', 'partner_id', 'contact_name', 'phone', 'name',
+    'field_work_description', 'field_site_unit', 'field_access_instructions', 'field_execution_type', 'field_worker_id', 'partner_id', 'contact_name', 'phone', 'name',
 }
 
 
@@ -37,6 +37,8 @@ class CrmLead(models.Model):
     field_visit_at = fields.Datetime(string='מועד ביצוע', copy=False, tracking=True)
     field_site_address = fields.Char(string='כתובת ביצוע', tracking=True)
     field_work_description = fields.Text(string='תיאור העבודה לקבלן', tracking=True)
+    field_site_unit = fields.Char(string='דירה / קומה', tracking=True)
+    field_access_instructions = fields.Text(string='הוראות כניסה והגעה', tracking=True)
     field_quote_number = fields.Char(string='מספר הצעת מחיר ממורנינג', copy=False, tracking=True)
     field_task_ids = fields.One2many('project.task', 'field_service_lead_id', string='משימת שטח', copy=False)
     field_task_count = fields.Integer(compute='_compute_field_task_count')
@@ -251,7 +253,10 @@ class CrmLead(models.Model):
             'field_visit_at': self.field_visit_at,
             'field_site_address': self.field_site_address,
             'field_work_description': self.field_work_description,
-            'field_customer_name': self.contact_name or self.partner_id.name,
+            'field_customer_name': self.partner_id.name,
+            'field_site_contact': self.contact_name,
+            'field_site_unit': self.field_site_unit,
+            'field_access_instructions': self.field_access_instructions,
             'field_customer_phone': self.phone or self.partner_id.phone or self.partner_id.mobile,
         }
 
@@ -295,6 +300,9 @@ class ProjectTask(models.Model):
     field_visit_at = fields.Datetime(string='מועד ביצוע', readonly=True, copy=False)
     field_site_address = fields.Char(string='כתובת ביצוע', readonly=True, copy=False)
     field_work_description = fields.Text(string='תיאור העבודה לקבלן', readonly=True, copy=False)
+    field_site_contact = fields.Char(string='איש קשר בשטח', readonly=True, copy=False)
+    field_site_unit = fields.Char(string='דירה / קומה', readonly=True, copy=False)
+    field_access_instructions = fields.Text(string='הוראות כניסה והגעה', readonly=True, copy=False)
     field_customer_name = fields.Char(string='שם לקוח', readonly=True, copy=False)
     field_customer_phone = fields.Char(string='טלפון לקוח', readonly=True, copy=False)
 
@@ -328,7 +336,7 @@ class ProjectTask(models.Model):
         return super().write(vals)
 
     def write(self, vals):
-        protected = DISPATCH_FIELDS | {'field_service_lead_id', 'field_customer_name', 'field_customer_phone', 'project_id', 'company_id', 'user_ids', 'name', 'active'}
+        protected = DISPATCH_FIELDS | {'field_service_lead_id', 'field_customer_name', 'field_customer_phone', 'field_site_contact', 'project_id', 'company_id', 'user_ids', 'name', 'active'}
         if 'field_service_lead_id' in vals or (protected.intersection(vals) and self.filtered('field_service_lead_id')):
             raise AccessError('יש לעדכן פרטי עבודה ושיבוץ דרך הפנייה המקורית.')
         self._lock_dispatch_work()
