@@ -62,13 +62,14 @@ class FieldWorkPortal(CustomerPortal):
     def field_work_detail(self, task_id, notice=None, **kw):
         return self._render_task(self._task(task_id), notice=notice)
 
-    def _render_task(self, task, error=None, notice=None):
-        messages = {'saved': 'התמונות נשמרו. אפשר לחזור לעבודה ולהגיש בהמשך.',
+    def _render_task(self, task, error=None, notice=None, report_values=None):
+        messages = {'saved': 'הדיווח והתמונות נשמרו. אפשר לחזור לעבודה ולהגיש בהמשך.',
                     'submitted': 'הדיווח והתמונות נשלחו לבדיקת התפעול.'}
         message = messages.get(notice) if notice != 'submitted' or task.field_review_state == 'pending' else None
         return request.render('field_work_photos.portal_field_work_detail', {
             'task': task, 'page_name': 'field_work', 'error': error, 'notice': message,
-            'saved_count': int(bool(task.field_before_image)) + int(bool(task.field_after_image)),
+            'galleries': {kind: task._field_gallery(kind) for kind in ('before', 'after')},
+            'report': report_values or {name: task[name] or '' for name in ('field_visit_result', 'field_visit_summary', 'field_visit_reason', 'field_visit_notes')},
             'phone_url': 'tel:' + re.sub(r'[^0-9+]', '', task.field_customer_phone or ''),
             'navigation_url': 'https://www.google.com/maps/search/?' + urlencode({'api': 1, 'query': task.field_site_address or ''}),
             'editable': task.field_review_state in ('draft', 'changes_requested') and task.state != '1_canceled',
@@ -83,32 +84,43 @@ class FieldWorkPortal(CustomerPortal):
                     raise NotFound()
                 if task.field_review_state not in ('draft', 'changes_requested') or task.state == '1_canceled':
                     raise UserError('התמונות נעולות. יש לפנות למנהלת התפעול.')
-                values = {}
-                for name in ('field_before_image', 'field_after_image'):
-                    upload = request.httprequest.files.get(name)
-                    if upload and upload.filename:
+                values = {name: kw[name] for name in ('field_visit_result', 'field_visit_summary', 'field_visit_reason', 'field_visit_notes') if name in kw}
+                if 'field_visit_result' in values and values['field_visit_result'] not in ('', 'completed', 'followup', 'not_done'):
+                    raise UserError('יש לבחור תוצאת ביקור תקינה.')
+                uploads = {'before': [], 'after': []}
+                for kind in uploads:
+                    files = request.httprequest.files.getlist('field_%s_image' % kind)
+                    if len(files) > 5:
+                        raise UserError('אפשר להעלות עד 5 תמונות בכל אזור.')
+                    for upload in files:
+                        if not upload.filename:
+                            continue
                         raw = upload.read(12 * 1024 * 1024 + 1)
                         if len(raw) > 12 * 1024 * 1024:
                             raise UserError('גודל תמונה מרבי הוא 12MB.')
-                        values[name] = base64.b64encode(raw)
+                        uploads[kind].append(base64.b64encode(raw))
+                removals = request.httprequest.form.getlist('remove_photo')
+                task._update_field_gallery(uploads, removals)
                 if values:
                     task.write(values)
-                elif action == 'upload':
-                    raise UserError('יש לבחור תמונה להעלאה.')
                 if action == 'submit':
                     task.action_finish_field_work()
         except UserError as error:
-            return self._render_task(task, str(error))
+            return self._render_task(task, str(error), report_values={name: kw.get(name, task[name] or '') for name in ('field_visit_result', 'field_visit_summary', 'field_visit_reason', 'field_visit_notes')})
         return request.redirect('/my/field-work/%s?notice=%s' % (task.id, 'submitted' if action == 'submit' else 'saved'), code=303)
 
-    @http.route('/my/field-work/<int:task_id>/photo/<string:kind>', type='http', auth='user', website=True, methods=['GET'])
-    def field_work_photo(self, task_id, kind, **kw):
+    @http.route(['/my/field-work/<int:task_id>/photo/<string:kind>', '/my/field-work/<int:task_id>/photo/<string:kind>/<int:photo_id>'], type='http', auth='user', website=True, methods=['GET'])
+    def field_work_photo(self, task_id, kind, photo_id=0, **kw):
         task = self._task(task_id)
         name = {'before': 'field_before_image', 'after': 'field_after_image'}.get(kind)
-        if not name or not task[name]:
+        if not name:
+            raise NotFound()
+        photo = task.field_extra_photo_ids.filtered(lambda p: p.id == photo_id and p.kind == kind) if photo_id else False
+        image_value = photo.image if photo else (task[name] if not photo_id else False)
+        if not image_value:
             raise NotFound()
         # Odoo's image field re-encodes valid images; do not trust client MIME.
-        raw = base64.b64decode(task[name])
+        raw = base64.b64decode(image_value)
         from PIL import Image
         from io import BytesIO
         with Image.open(BytesIO(raw)) as image:

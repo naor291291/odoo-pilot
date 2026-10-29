@@ -13,7 +13,7 @@
                     invisible="not field_report_required or state == '1_canceled' or field_review_state not in ['draft', 'changes_requested']"/>
                 <button name="action_approve_field_work" type="object"
                     string="אישור העבודה" class="oe_highlight"
-                    invisible="not field_report_required or not field_can_review or field_review_state != 'pending'"/>
+                    invisible="not field_report_required or not field_can_review or field_review_state != 'pending' or field_visit_result in ['followup','not_done']"/>
                 <button name="action_request_field_changes" type="object"
                     string="החזרה לתיקון"
                     invisible="not field_report_required or not field_can_review or field_review_state not in ['pending', 'approved']"/>
@@ -26,15 +26,21 @@
                         <field name="field_review_state" widget="statusbar" statusbar_visible="draft,pending,changes_requested,approved" readonly="1" invisible="not field_report_required"/>
                         <field name="field_report_ready" readonly="1" invisible="not field_report_required"/>
                     </group>
-                    <div class="alert alert-info" role="status" invisible="not field_report_required or field_report_ready">
+                    <div class="alert alert-info" role="status" invisible="not field_report_required or field_report_ready or field_visit_result in ['followup','not_done']">
                         יש להעלות תמונה לפני ביצוע ותמונה אחרי ביצוע כדי להגיש את העבודה לאישור.
                     </div>
-                    <div class="alert alert-info" role="status" invisible="not field_report_required or field_review_state != 'pending'">
+                    <div class="alert alert-info" role="status" invisible="not field_report_required or field_review_state != 'pending' or field_visit_result in ['followup','not_done']">
                         העבודה הוגשה לבדיקה. התמונות נעולות עד לאישור או להחזרה לתיקון.
                     </div>
                     <div class="alert alert-warning" role="status" invisible="not field_report_required or field_review_state != 'changes_requested'">
                         העבודה הוחזרה לתיקון. יש לקרוא את הסיבה, לעדכן את התמונות ולהגיש מחדש.
                     </div>
+                    <group invisible="not field_report_required or not field_service_lead_id">
+                        <field name="field_visit_result" readonly="field_review_state in ['pending','approved']"/>
+                        <field name="field_visit_summary" readonly="field_review_state in ['pending','approved']"/>
+                        <field name="field_visit_reason" readonly="field_review_state in ['pending','approved']"/>
+                        <field name="field_visit_notes" readonly="field_review_state in ['pending','approved']"/>
+                    </group>
                     <group invisible="not field_report_required">
                         <field name="field_review_note" readonly="not field_can_review" placeholder="לפני החזרה לתיקון יש לפרט כאן מה צריך לתקן"/>
                         <field name="field_submitted_by" readonly="1"/>
@@ -52,6 +58,9 @@
                                 readonly="field_review_state in ['pending', 'approved']"/>
                         </group>
                     </group>
+                    <field name="field_extra_photo_ids" readonly="field_review_state in ['pending','approved']" invisible="not field_report_required">
+                        <list editable="bottom"><field name="kind"/><field name="image" widget="image" options="{'size':[100,100]}"/></list>
+                    </field>
                 </page>
             </xpath>
         </field>

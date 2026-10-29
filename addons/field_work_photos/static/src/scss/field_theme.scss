@@ -67,3 +67,23 @@
     }
 }
 .o_field_rates_form .o_field_panel { max-width: 900px; }
+
+.o_field_ui {
+    [data-visit-reason][hidden] { display: none !important; }
+    .o_field_gallery_items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 12px 0; }
+    .o_field_gallery_item { min-width: 0; border: 1px solid var(--field-border); border-radius: 10px; padding: 10px; }
+    .o_field_gallery_image { display: block; width: 100%; height: 150px; object-fit: contain; background: #f3f6fa; border-radius: 6px; }
+    .o_field_photo_zoom { display: block; width: 100%; padding: 0; border: 0; background: transparent; }
+    .o_field_photo_remove { display: flex; gap: 8px; align-items: center; min-height: 44px; margin: 8px 0; }
+    .o_field_photo_remove input { width: 20px; height: 20px; flex-shrink: 0; }
+    .o_field_photo_marked { border-color: #a21c2b; background: #fff0f1; }
+    .o_field_photo_marked img { opacity: 0.4; }
+    .o_field_photo_dialog { border: 0; border-radius: 12px; padding: 16px; max-width: 95vw; max-height: 95vh; }
+    .o_field_photo_dialog::backdrop { background: rgba(0, 0, 0, 0.7); }
+    .o_field_photo_dialog img { display: block; max-width: 85vw; max-height: 75vh; margin-top: 12px; object-fit: contain; }
+    .o_field_extra_gallery .o_kanban_record { min-width: 180px; }
+    @media (max-width: 575px) {
+        .o_field_gallery_image { height: 120px; }
+        .o_field_gallery_item { padding: 6px; }
+    }
+}

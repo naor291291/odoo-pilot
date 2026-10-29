@@ -29,7 +29,7 @@ class ProjectTask(models.Model):
     )
     field_review_state = fields.Selection([
         ("draft", "בביצוע"), ("pending", "ממתין לאישור"),
-        ("approved", "אושר"), ("changes_requested", "הוחזר לתיקון"),
+        ("approved", "אושר"), ("changes_requested", "לעדכון / המשך טיפול"),
     ], string="מצב בדיקת העבודה", default="draft", required=True, copy=False, tracking=True, index=True)
     field_review_note = fields.Text(string="סיבת החזרה לתיקון", copy=False, tracking=True)
     field_submitted_by = fields.Many2one("res.users", string="הוגש על ידי", readonly=True, copy=False)
@@ -49,12 +49,12 @@ class ProjectTask(models.Model):
         for task in self:
             task.field_report_ready = bool(task.field_before_image and task.field_after_image)
 
-    @api.constrains("state", "field_report_required", "field_before_image", "field_after_image", "field_review_state")
+    @api.constrains("state", "field_report_required", "field_before_image", "field_after_image", "field_review_state", "field_visit_result")
     def _check_field_work_photos(self):
         for task in self:
             if not task.field_report_required:
                 continue
-            if task.state == "1_done" or task.field_review_state in ("pending", "approved"):
+            if (task.state == "1_done" or task.field_review_state in ("pending", "approved")) and task.field_visit_result not in ("followup", "not_done"):
                 missing = []
                 if not task.field_before_image:
                     missing.append("לפני ביצוע")
@@ -65,6 +65,8 @@ class ProjectTask(models.Model):
                         "לא ניתן להגיש או לאשר את העבודה ללא תמונות: %s."
                         % " ו".join(missing)
                     )
+            if task.field_visit_result in ("followup", "not_done") and (task.state == "1_done" or task.field_review_state == "approved"):
+                raise ValidationError("ביקור שלא הושלם אינו יכול להיחשב עבודה שהושלמה.")
             if task.state == "1_done" and task.field_review_state != "approved":
                 raise ValidationError("יש להגיש את העבודה ולקבל אישור לפני סימונה כהושלמה.")
             if task.field_review_state == "approved" and task.state != "1_done":
