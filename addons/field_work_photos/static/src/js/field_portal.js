@@ -88,6 +88,7 @@ function setupFieldReports() {
             // Keep the ordinary multipart input available when JS is absent.
             input.classList.add('visually-hidden');
             input.tabIndex = -1;
+            input.setAttribute('aria-hidden', 'true');
             select.hidden = false;
             select.addEventListener('click', () => {
                 // The retained File objects are restored after the next choice.
