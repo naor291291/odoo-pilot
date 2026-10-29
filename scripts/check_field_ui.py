@@ -226,6 +226,12 @@ with sync_playwright() as playwright:
     page.goto(url)
     page.get_by_role('button', name='אישור ביצוע', exact=True).click()
     expect(page.locator('.o_field_report_panel [name="field_report_state"]')).to_contain_text('אושר')
+    extra_images = page.locator('.o_field_extra_gallery .o_field_image img')
+    expect(extra_images).to_have_count(5)
+    for image in extra_images.all():
+        image.scroll_into_view_if_needed()
+        expect(image).to_have_js_property('complete', True)
+        assert image.evaluate('(el) => el.naturalWidth > 0 && !el.src.includes("placeholder")'), 'A manager gallery photo did not load'
     page.locator('.o_field_report_panel').scroll_into_view_if_needed()
     page.screenshot(path=str(OUTPUT / 'workspace-approved-desktop.png'), full_page=True)
     assert model('crm.lead', 'read', [[lead]], fields=['field_dispatch_code'])[0]['field_dispatch_code'] == 'completed'
