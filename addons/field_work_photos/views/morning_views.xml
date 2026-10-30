@@ -61,13 +61,13 @@
         <field name="inherit_id" ref="view_field_lead_form"/>
         <field name="arch" type="xml">
             <xpath expr="//field[@name='partner_id']" position="after">
-                <button name="action_morning_customer" string="בחירת לקוח ממורנינג" type="object" icon="fa-search" groups="field_work_photos.group_field_dispatcher" invisible="field_dispatch_locked"/>
+                <button name="action_morning_customer" string="בחירת לקוח ממורנינג" aria-label="בחירת לקוח ממורנינג" type="object" class="btn btn-outline-secondary" icon="fa-search" groups="field_work_photos.group_field_dispatcher" invisible="field_dispatch_locked"/>
             </xpath>
             <xpath expr="//div[hasclass('o_field_service_main')]" position="inside">
                 <div class="o_field_service_card o_field_morning_card" groups="field_work_photos.group_field_dispatcher">
                     <div class="o_field_service_card_heading"><div><h2>מסמכי מורנינג</h2><p>קישור מסמכים קיימים ללקוח ולעבודה הזו</p></div></div>
                     <field name="field_morning_customer_id" options="{'no_open': True}"/>
-                    <button name="action_morning_documents" string="קישור מסמך ממורנינג" type="object" class="btn-secondary" icon="fa-file-text-o"/>
+                    <button name="action_morning_documents" string="קישור מסמך ממורנינג" aria-label="קישור מסמך ממורנינג" type="object" class="btn-secondary" icon="fa-file-text-o"/>
                     <p class="text-muted mt-2">אפשר להמשיך להזין מספר הצעה ידנית. קישור מסמך או מצב ״סגור״ במורנינג אינם אישור לתשלום.</p>
                     <field name="field_morning_document_ids" nolabel="1">
                         <list create="false" edit="false" delete="false" decoration-danger="status in ['3', '4']">
