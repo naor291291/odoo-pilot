@@ -78,6 +78,11 @@ with sync_playwright() as playwright:
     page.goto(url)
     expect(page.locator('.o_field_service_hero')).to_be_visible(timeout=60000)
     expect(page.locator('.o_field_service_notice_warning')).to_contain_text('טלפון לתיאום')
+    # A missing Morning configuration must leave the manual workflow usable.
+    page.get_by_role('button', name='בחירת לקוח ממורנינג', exact=True).click()
+    expect(page.locator('.modal:visible')).to_contain_text('חיבור מורנינג עדיין לא הופעל')
+    page.screenshot(path=str(OUTPUT / 'desktop-morning-manual-fallback.png'), full_page=True)
+    page.locator('.modal:visible .btn-close').click()
     page.screenshot(path=str(OUTPUT / 'desktop-missing-details.png'), full_page=True)
     page.get_by_role('button', name='המשך להצעת מחיר', exact=True).click()
     expect(page.locator('.modal:visible')).to_be_visible()
