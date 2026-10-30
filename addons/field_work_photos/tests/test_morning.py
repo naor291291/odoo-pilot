@@ -104,14 +104,17 @@ class TestMorningImport(TransactionCase):
         partner = self.env['res.partner'].create({'name': 'Existing name', 'phone': '0520000000',
                                                   'email': 'keep@example.test', 'street': 'Keep street'})
         lead = self.lead(partner_id=partner.id, phone='0530000000')
+        # Native CRM synchronizes the lead phone to the partner on lead creation.
+        # Capture the state before Morning import, which must preserve that state.
+        previous_partner_phone, previous_lead_phone = partner.phone, lead.phone
         mapping = self.link_customer(lead)
         self.assertEqual(mapping.partner_id, partner)
         self.assertEqual(partner.name, 'Existing name')
-        self.assertEqual(partner.phone, '0520000000')
+        self.assertEqual(partner.phone, previous_partner_phone)
         self.assertEqual(partner.email, 'keep@example.test')
         self.assertEqual(partner.street, 'Keep street')
         self.assertFalse(partner.city)
-        self.assertEqual(lead.phone, '0530000000')
+        self.assertEqual(lead.phone, previous_lead_phone)
 
     def test_repeat_import_reuses_customer_and_link(self):
         lead = self.linked_lead()
@@ -222,7 +225,7 @@ class TestMorningImport(TransactionCase):
             lead = self.linked_lead()
             original = deepcopy(self.document_data)
             self.document_data.update(values)
-            with self.assertRaises((ValidationError, UserError)), self.cr.savepoint():
+            with self.assertRaises(UserError), self.cr.savepoint():
                 self.link_document(lead)
             self.assertFalse(lead.field_morning_document_ids)
             self.document_data = original
@@ -328,7 +331,7 @@ class TestMorningImport(TransactionCase):
         with self.assertRaises(AccessError):
             foreign.with_user(self.ops).read(['environment'])
         lead = self.lead()
-        with self.assertRaises((AccessError, UserError)):
+        with self.assertRaises(AccessError):
             lead.with_context(allowed_company_ids=[company.id]).action_morning_customer()
 
     def test_pdf_is_fresh_and_invalid_urls_are_rejected(self):
@@ -339,6 +342,9 @@ class TestMorningImport(TransactionCase):
             self.service.get_document_links.return_value = {'origin': value}
             with self.assertRaises(UserError):
                 document.action_open_pdf()
+        self.document_data['client'] = {'id': OTHER}
+        with self.assertRaises(ValidationError):
+            document.action_open_pdf()
 
     def test_pagination_and_empty_results(self):
         wizard = self.wizard(self.lead())

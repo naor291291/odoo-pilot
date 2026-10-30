@@ -268,7 +268,10 @@ class MorningDocument(models.Model):
         if connection != self.connection_id:
             raise ValidationError('חיבור מורנינג השתנה.')
         try:
-            urls = connection._api().get_document_links(self.remote_id)
+            service = connection._api()
+            data = service.get_document(self.remote_id)
+            document_values(data, self.remote_id, self.customer_id.remote_id)
+            urls = service.get_document_links(self.remote_id)
         except MorningError as error:
             raise UserError(str(error)) from None
         url = urls.get('origin') or urls.get('he')
