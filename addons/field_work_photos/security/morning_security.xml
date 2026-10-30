@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="morning_connection_company_rule" model="ir.rule">
+        <field name="name">Morning connections: allowed companies</field><field name="model_id" ref="model_field_morning_connection"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="morning_customer_company_rule" model="ir.rule">
+        <field name="name">Morning customers: allowed companies</field><field name="model_id" ref="model_field_morning_customer"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="morning_document_company_rule" model="ir.rule">
+        <field name="name">Morning documents: allowed companies</field><field name="model_id" ref="model_field_morning_document"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="morning_document_lead_rule" model="ir.rule">
+        <field name="name">Morning documents: accessible work only</field><field name="model_id" ref="model_field_morning_document"/>
+        <field name="domain_force">[('lead_id.is_field_service', '=', True)]</field>
+    </record>
+</odoo>

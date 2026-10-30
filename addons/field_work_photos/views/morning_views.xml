@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_morning_connection_list" model="ir.ui.view">
+        <field name="name">field.morning.connection.list</field><field name="model">field.morning.connection</field>
+        <field name="arch" type="xml"><list><field name="name"/><field name="company_id"/><field name="environment"/><field name="enabled"/></list></field>
+    </record>
+    <record id="view_morning_connection_form" model="ir.ui.view">
+        <field name="name">field.morning.connection.form</field><field name="model">field.morning.connection</field>
+        <field name="arch" type="xml">
+            <form string="חיבור מורנינג">
+                <header><button name="action_test" string="בדיקת חיבור — קריאה בלבד" type="object" class="oe_highlight"/></header>
+                <sheet>
+                    <div class="alert alert-info">התחילו ב־Sandbox עם מפתחות של סביבת הבדיקות. החיבור מאפשר יבוא בלבד; הפקת מסמכים ממשיכה במורנינג.</div>
+                    <div class="alert alert-warning" invisible="environment != 'production'">נבחר חשבון העסק. הפעלת החיבור תאפשר קריאת לקוחות ומסמכים אמיתיים.</div>
+                    <group><field name="name"/><field name="company_id"/><field name="environment"/><field name="enabled"/></group>
+                    <group string="מפתחות — למנהל המערכת בלבד" groups="base.group_system">
+                        <field name="client_id"/><field name="client_secret" password="True"/>
+                    </group>
+                    <p>יש להזין מפתחות כאן בלבד, ללא שמירתם בקוד או בהודעות. הם נשמרים במסד הנתונים ומוגנים בהרשאת מנהל מערכת. לאחר קישור לקוחות לא ניתן להחליף חברה, סביבה או מזהה מפתח באותו חיבור.</p>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_morning_connections" model="ir.actions.act_window">
+        <field name="name">הגדרת חיבור מורנינג</field><field name="res_model">field.morning.connection</field><field name="view_mode">list,form</field>
+    </record>
+    <menuitem id="menu_morning_connections" name="הגדרת חיבור מורנינג" parent="menu_field_service_root" action="action_morning_connections" sequence="60" groups="base.group_system"/>
+
+    <record id="view_morning_import_form" model="ir.ui.view">
+        <field name="name">field.morning.import.form</field><field name="model">field.morning.import</field>
+        <field name="arch" type="xml">
+            <form string="בחירה ממורנינג" class="o_field_ui">
+                <field name="mode" invisible="1"/><field name="has_more" invisible="1"/>
+                <group><field name="lead_id" options="{'no_open': True}"/></group>
+                <div class="alert alert-info" invisible="mode != 'customer'">בחר לקוח ממורנינג. לקישור ללקוח קיים באודו בחר אותו בשדה הבא; ליצירת לקוח חדש נקה את השדה. פרטים קיימים וכתובת הביצוע לא יידרסו.</div>
+                <div class="alert alert-info" invisible="mode != 'document'">מוצגים מסמכים של הלקוח המקושר בלבד. הקישור אינו מסמן תשלום ואינו משנה סכום עסקה או שלב. מספר הצעת מחיר יושלם רק אם עדיין ריק והעבודה אינה נעולה.</div>
+                <group invisible="mode != 'customer'"><field name="partner_id" options="{'no_create': True}"/><field name="query"/></group>
+                <group invisible="mode != 'document'"><field name="kind"/><field name="number"/></group>
+                <button name="action_search" string="חיפוש במורנינג" type="object" class="btn-primary" icon="fa-search"/>
+                <div class="my-3" role="status"><field name="message" nolabel="1"/></div>
+                <field name="result_ids" nolabel="1">
+                    <list create="false" edit="false" delete="false">
+                        <field name="name"/><field name="detail"/>
+                        <field name="total_amount" column_invisible="parent.mode != 'document'"/>
+                        <field name="currency_code" column_invisible="parent.mode != 'document'"/>
+                        <button name="action_select" string="בחירה וקישור" type="object" class="btn-primary"/>
+                    </list>
+                </field>
+                <group><field name="page" string="עמוד"/></group>
+                <footer>
+                    <button name="action_previous_page" string="עמוד קודם" type="object" invisible="page &lt;= 1"/>
+                    <button name="action_next_page" string="עמוד הבא" type="object" invisible="not has_more"/>
+                    <button string="סגירה" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_field_lead_morning" model="ir.ui.view">
+        <field name="name">crm.lead.field.morning</field><field name="model">crm.lead</field>
+        <field name="inherit_id" ref="view_field_lead_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <button name="action_morning_customer" string="בחירת לקוח ממורנינג" type="object" icon="fa-search" groups="field_work_photos.group_field_dispatcher" invisible="field_dispatch_locked"/>
+            </xpath>
+            <xpath expr="//div[hasclass('o_field_service_main')]" position="inside">
+                <div class="o_field_service_card" groups="field_work_photos.group_field_dispatcher">
+                    <div class="o_field_service_card_heading"><div><h2>מסמכי מורנינג</h2><p>קישור מסמכים קיימים ללקוח ולעבודה הזו</p></div></div>
+                    <field name="field_morning_customer_id" options="{'no_open': True}"/>
+                    <button name="action_morning_documents" string="קישור מסמך ממורנינג" type="object" class="btn-secondary" icon="fa-file-text-o"/>
+                    <p class="text-muted mt-2">אפשר להמשיך להזין מספר הצעה ידנית. קישור מסמך או מצב ״סגור״ במורנינג אינם אישור לתשלום.</p>
+                    <field name="field_morning_document_ids" nolabel="1">
+                        <list create="false" edit="false" delete="false" decoration-danger="status in ['3', '4']">
+                            <field name="kind"/><field name="number"/><field name="document_date"/>
+                            <field name="net_amount"/><field name="total_amount"/><field name="currency_code"/>
+                            <field name="status"/><field name="synced_at"/>
+                            <button name="action_refresh" string="רענון" title="רענון הנתונים ממורנינג" type="object" icon="fa-refresh"/>
+                            <button name="action_open_pdf" string="פתיחת מסמך" type="object" icon="fa-file-pdf-o"/>
+                            <button name="action_apply_amount" string="עדכון סכום העסקה" type="object" invisible="kind == '400' or status in ['3', '4'] or currency_code != 'ILS' or parent.field_dispatch_locked" confirm="לעדכן את סכום העסקה לפני מע״מ לפי המסמך? השינוי ישפיע על חישוב הרווחיות."/>
+                            <button name="action_remove_link" string="הסרת קישור" type="object" icon="fa-unlink" confirm="להסיר את הקישור לעבודה? המסמך המקורי במורנינג נשאר ללא שינוי."/>
+                        </list>
+                    </field>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

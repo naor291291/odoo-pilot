@@ -12,6 +12,8 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - name: Check read-only Morning API contract and failures
+        run: python3 -m unittest discover -s tests -p test_morning_api.py -v
       - name: Build development container and start PostgreSQL
         run: |
           PILOT_UID="$(id -u)" docker compose -f .devcontainer/compose.yaml build odoo
