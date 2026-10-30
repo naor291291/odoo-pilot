@@ -130,6 +130,10 @@
     .o_field_pricing_card { border-top: 1px solid var(--field-border); padding-top: 20px; margin-top: 20px; }
     .o_field_report_panel .o_field_image { width: 100%; }
     .o_field_report_panel .o_field_image img { max-height: 320px; object-fit: contain; }
+    .o_field_morning_card {
+        min-width: 0;
+        .o_field_one2many { max-width: 100%; min-width: 0; overflow-x: auto; }
+    }
     .o_field_service_sidebar { min-width: 0; }
 }
 

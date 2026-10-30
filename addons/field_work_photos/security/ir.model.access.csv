@@ -1,3 +1,9 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_morning_connection_admin,morning.connection.admin,model_field_morning_connection,base.group_system,1,1,1,1
+access_morning_connection_ops,morning.connection.ops,model_field_morning_connection,group_field_dispatcher,1,0,0,0
+access_morning_customer_ops,morning.customer.ops,model_field_morning_customer,group_field_dispatcher,1,1,1,1
+access_morning_document_ops,morning.document.ops,model_field_morning_document,group_field_dispatcher,1,1,1,1
+access_morning_import_ops,morning.import.ops,model_field_morning_import,group_field_dispatcher,1,1,1,1
+access_morning_result_ops,morning.result.ops,model_field_morning_import_result,group_field_dispatcher,1,1,1,1
 access_field_work_correction,Field work correction,model_field_work_correction,field_work_photos.group_field_reviewer,1,1,1,1
 access_field_work_photo,Field work photo,model_field_work_photo,project.group_project_user,1,1,1,1
