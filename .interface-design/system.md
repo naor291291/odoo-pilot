@@ -77,3 +77,18 @@ Base: upstream `main` at `02d74f2`; this pass preserves the palette, Heebo, nati
 Terminology: “כרטיס העבודה” is the operational source for assignment, approval and collection; “משימה” is the dispatched evidence record; “שמירה והמשך מאוחר יותר” saves a draft; “שליחת דיווח לבדיקה” locks and submits for review, not approval.
 
 Native Kanban integration: the hub's registered relational widget and today's registered renderer preserve Enter activation on nested work-card buttons. Do not apply a global Kanban patch. Outline action hover/focus/active use water fill + white text with the shared visible focus ring.
+
+## Contractor statement — monthly reconciliation
+
+Intent: the owner checks what is owed for a contractor and period, explains the arithmetic and opens original records. Signature: work identity recurs in dated movements with running balance and source links. Domain: eligibility, paid closure, gross approval, advance, cancellation, opening and closing balance. Preserve the water/ink/steel/white/amber world; no decorative KPI panels or charts.
+
+- Native full-page transient form: company/contractor and month/range, **הצגת דוח** primary, **הפקת PDF** secondary after generation. Filter edits invalidate results. Retain the separately named per-job payment list.
+- Closing balance leads at 28px/600; other amounts 20px, labels 14px, report heading 24px. Unboxed arithmetic strip, 16/24px gaps, thin separators, shared 4px rhythm and paper surfaces, no shadows. Dedicated report aliases use the existing palette and Qt print fallbacks.
+- Dated ledger: work/source links, signed gross movement and running balance. Missing approval is text, never a silent zero. Approved zero is explicit in both card and report. Current estimates are separately labelled and never mixed into dated balances.
+- Phone: cells stack with persistent labels at 767px; retain table headings for assistive technology. No horizontal page overflow or sticky overlay; 44px links/controls. Native date/autocomplete keyboard behavior stays intact.
+- LTR-isolated numbers inside Hebrew RTL. Screen/PDF share one body and generation snapshot. A static 400-weight OFL Heebo instance is loaded through web.report_assets_common for Qt. A4 uses table layout, repeated headings, page-safe rows and page numbers.
+- Show generation time, Israel timezone, arithmetic and legacy/late-entry limitations. Do not present effective-date reporting as a certified historic month-end snapshot. Current follow-up state is not historical evidence.
+
+Sources: unclecatvn Odoo 18, Interface Design, Impeccable clarify/distill/adapt/craft floor and Anthropic Webapp Testing. Impeccable launcher was unavailable; its binary/detector did not run. Verification boundaries: docs/contractor-statement.md.
+
+Print verification: Qt may apply phone screen media rules at A4 width. The report-only class explicitly restores table/header/body/row/cell display and hides mobile pseudo-labels. Keep data 14px and supporting print text 12px; preserve the 22/38/20/20 column split. Actual wkhtmltopdf output was inspected across a one-page example and four-page long-reference fixture. Native report actions use config=False for this internal layout, avoiding an unrelated company-branding wizard.

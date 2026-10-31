@@ -61,7 +61,7 @@ No pricing formulas, tier boundaries, frozen assignment rates, approval/paid tra
 ## Specification gaps / blockers
 
 - Morning read-only integration remains separate in PR #9; live account/API verification depends on credentials/Best access. No live API call or document delivery is claimed here.
-- Invoice/PDF workflow, automatic WhatsApp/email delivery, monthly contractor statement/Pivot and owner revenue/profit/conversion dashboard with 50% target are not complete in the current pilot. The new operational hub does not pretend to implement them.
+- Invoice/PDF workflow, automatic WhatsApp/email delivery and owner revenue/profit/conversion dashboard with 50% target remain incomplete. Monthly contractor statements are implemented separately in this branch; see `docs/contractor-statement.md` for the confirmed eligibility rules, dedicated ledger report/PDF and historical-data limits. The operational hub itself does not implement business analytics.
 - General Odoo administration, every third-party/native module and production deployment are outside an exhaustive UI redesign of this custom CRM. Native surfaces are separately identified rather than counted from shared CSS.
 - Browser automation is Chrome on Linux with simulated viewport/touch context. Physical iPhone/Android camera, actual mobile screen reader, interrupted cellular upload and production concurrency require device/environment verification.
 
@@ -90,3 +90,19 @@ Selected screenshots were visually inspected for work/financial forms, owner and
 The 31 October 2026 follow-up starts from merged upstream `main` (`02d74f2`). See [the separate clarity audit](crm-clarity-audit.md) for current findings, affected screens, skill provenance and new verification results. Historical results above belong to PR #12; they are not evidence that this follow-up passed.
 
 Follow-up evidence: [CI 41217828468](https://github.com/naor291291/odoo-pilot/actions/runs/41217828468) passed all 152 tests, startup/restart and both Chrome suites, including the scoped Enter fix. The follow-up generated 66 screenshots (25 core + 41 CRM) and an annotated before/after HTML. Full results, exact tested implementation commit, evidence provenance and remaining device/API limits are in `crm-clarity-audit.md`.
+
+## Contractor statement extension — PR #14
+
+Base `c3960c7`; tested code `4395e00a7b35e6e6d4c4b7b6ffeb90b4041f6b66`. [CI run 41226165102](https://github.com/naor291291/odoo-pilot/actions/runs/41226165102) passed all integration/startup/three-Chrome-suite/evidence steps. Business rules, source/skill review, arithmetic, security and historical limits: [contractor-statement.md](contractor-statement.md). No live deployment or Morning call is claimed.
+
+| Surface | Changed | Actual browser verification | Role / width |
+| --- | --- | --- | --- |
+| Work-card contractor amount | Explicit approval, including zero; approval audit; invalidation after gross changes | Confirmed owner approval; existing full workflow regression | Owner / 1440; server role/zero/correction cases |
+| Statement filters | Native company/contractor, month/range, Show/PDF | Required contractor, selected month, range, empty and invalid order | Owner / 1440 and 390 |
+| Summary and dated ledger | Opening/credit/payout/adjustment/closing, running balance, current exceptions, source links | Both summary and movement captures, no horizontal overflow, LTR amounts | Owner / 1440, 1024, 768, 390 |
+| Source drill-down | Immutable entitlement form; original work and payment records | Keyboard Enter opens source in native new tab; work card and opening-payment list opened | Owner / 1440; entitlement also 390 |
+| PDF | Shared snapshot/body, Hebrew static Heebo, A4 tables, repeated headers, page numbers | UI download and multi-page download; text/sums checked; all output pages visually inspected after Poppler rendering | Owner / one-page and four-page fixtures |
+| Permission boundaries | Finance ACL, active company and creator rules, provider/server checks | Contractor direct RPC/PDF denied; ops/other owner/company/contractor cases in Odoo integration tests | Owner + contractor in Chrome; broader server matrix |
+| Existing CRM/portal | Pricing-query batching only; no formula/workflow change | Main field workflow and all 41 CRM captures rerun successfully | Existing owner/operations/contractor matrix |
+
+[Final evidence archive](https://github.com/naor291291/odoo-pilot/actions/runs/41226165102/artifacts/13052275621): 81 PNGs including 15 new statement captures, two actual PDFs, JSON and annotated CRM HTML. Total 169 meaningful integration cases, no failures/errors/skips; all three Chrome suites reported zero uncaught page errors. Cold calculation fixture: 1,001 movements across 1,001 source jobs, under 100 SQL queries and under ten seconds asserted. Data is synthetic. Physical iPhone/Android, Safari/WebKit, actual screen-reader use, production concurrency and live Codespaces/Morning remain unverified.

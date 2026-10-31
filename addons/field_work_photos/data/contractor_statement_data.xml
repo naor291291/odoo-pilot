@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="param_statement_history_start" model="ir.config_parameter">
+        <field name="key">field_work_photos.statement_history_start</field>
+        <field name="value" eval="DateTime.utcnow().strftime('%Y-%m-%d %H:%M:%S')"/>
+    </record>
+</odoo>

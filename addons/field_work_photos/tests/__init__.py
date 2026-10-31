@@ -5,3 +5,4 @@ from . import test_field_pricing
 from . import test_field_workspace
 from . import test_field_visit
 from . import test_field_collection
+from . import test_contractor_statement
