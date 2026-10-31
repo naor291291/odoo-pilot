@@ -29,7 +29,6 @@
     font-size: 16px;
     line-height: 1.6;
     color: var(--work-ink);
-    direction: rtl;
     text-align: right;
     -webkit-font-smoothing: antialiased;
 
@@ -46,9 +45,9 @@
     .o_field_monetary, .o_field_float, .o_field_integer { font-variant-numeric: tabular-nums; }
     .o_field_numeric, .o_field_numeric input {
         /*rtl:ignore*/
-        direction: ltr;
+        direction: ltr !important;
         /*rtl:ignore*/
-        text-align: left;
+        text-align: start !important;
         unicode-bidi: isolate;
     }
     .o_list_table { font-size: 15px; }
@@ -76,6 +75,8 @@
     .o_field_stage_pill { display: inline-block; width: auto; margin: 0; padding: 4px 12px; background: var(--work-water-tint); color: var(--work-water); border-radius: 8px; font-size: 14px; font-weight: 600; }
     .o_field_service_heading h1 { margin: 0 0 8px; font-size: 28px; font-weight: 600; line-height: 1.3; }
     .o_field_service_heading h1 input { font: inherit; color: var(--work-ink); }
+    .o_field_service_heading h1 .o_field_title_text { font: inherit; display: block; white-space: normal; overflow-wrap: anywhere; }
+    .o_field_work_header, .o_field_work_tabs, .o_field_service_notice, .o_field_workflow_details { direction: rtl; }
     .o_field_work_context { display: block; width: 100%; margin: 0; color: var(--work-steel); font-size: 15px; white-space: normal; overflow-wrap: anywhere; }
     .o_field_next_step { padding: 16px; background: var(--work-water-tint); border-inline-start: 3px solid var(--work-water); border-radius: 8px; }
     .o_field_next_step strong { display: block; margin-bottom: 4px; color: var(--work-water); font-size: 14px; font-weight: 600; }
@@ -120,6 +121,10 @@
     .o_field_metric_percent .o_field_widget { width: auto; margin: 0; }
     .o_field_metric_note { font-size: 14px; color: var(--work-steel); margin-top: 8px; }
     .o_field_metric_note .o_field_widget { width: auto; display: inline; }
+    .o_field_rate_number { display: inline-flex; unicode-bidi: isolate;
+        /*rtl:ignore*/
+        direction: ltr;
+    }
     .o_field_pricing_number { color: var(--work-ink); font-weight: 600; font-variant-numeric: tabular-nums; }
     .o_field_money_summary { gap: 20px 24px; }
     .o_field_money_summary .o_field_pricing_number { font-size: 22px; }
@@ -144,10 +149,18 @@
         .o_field_work_tabs .nav-link { padding: 12px; font-size: 14px; }
         .o_field_service_mobile_actions { padding: 8px 0; background: var(--work-desk); }
         .o_field_service_mobile_actions .btn { font-size: 14px; }
+        .o_field_service_mobile_actions .btn-primary { flex: 1 1 auto !important; }
+        .o_field_more_actions { flex: 0 0 auto; position: relative; }
+        .o_field_more_actions summary { min-height: 44px; padding: 10px 12px; border: 1px solid var(--work-line); border-radius: 8px; cursor: pointer; }
+        .o_field_more_actions_panel { display: grid; gap: 8px; position: absolute; inset-inline-end: 0; top: 100%; min-width: 200px; padding: 12px; background: var(--work-paper); border: 1px solid var(--work-line); border-radius: 8px; z-index: 8; }
+        .o_field_more_actions:not([open]) .o_field_more_actions_panel { display: none; }
     }
     @media (max-width: 575px) {
         .o_form_sheet { padding: 12px; }
         .o_field_service_card, .o_field_work_header { padding: 20px; }
+        .o_field_work_header { padding: 16px; gap: 12px; }
+        .o_field_next_step { padding: 12px; }
+        .o_field_next_step .o_field_widget { font-size: 14px; }
         .o_field_service_heading h1 { font-size: 24px; }
         .o_field_work_tabs > .o_notebook_headers { margin-bottom: 16px; }
         .o_field_form_grid, .o_field_planning_grid { gap: 20px; }
@@ -155,6 +168,7 @@
 }
 
 .o_field_portal {
+    direction: rtl;
     .o_field_panel { border-color: var(--work-line); border-radius: 12px; box-shadow: none; }
     .o_field_job_details dt { color: var(--work-steel); font-weight: 500; }
     .o_field_job_details dd { color: var(--work-ink); font-size: 16px; }

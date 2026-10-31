@@ -8,7 +8,7 @@
                 <div class="o_field_service_hero o_field_work_header">
                     <div class="o_field_service_heading">
                         <div class="o_field_work_identity"><span class="o_field_service_eyebrow">כרטיס עבודה</span><field name="field_stage_title" nolabel="1" class="o_field_stage_pill"/></div>
-                        <h1><field name="name" string="שם העבודה" placeholder="למשל: החלפת ברז במטבח" required="1" readonly="field_dispatch_locked"/></h1>
+                        <h1><field name="field_workspace_title" nolabel="1" class="o_field_title_text"/></h1>
                         <field name="field_workspace_summary" nolabel="1" class="o_field_work_context"/>
                     </div>
                     <div class="o_field_next_step" role="status"><strong>הפעולה הבאה</strong><field name="field_next_step" nolabel="1"/></div>
@@ -57,6 +57,7 @@
             <xpath expr="//div[hasclass('o_field_customer_card')]/group" position="replace">
                 <div class="o_field_message" role="status" invisible="not field_dispatch_locked">פרטי העבודה נעולים בזמן בדיקת הדיווח ולאחר אישורו. לשינוי פרטים, החזירו את העבודה לתיקון דרך לשונית ביצוע.</div>
                 <div class="o_field_form_grid">
+                    <div class="o_field_control o_field_control_wide"><label for="name" string="שם העבודה"/><field name="name" string="שם העבודה" placeholder="למשל: החלפת ברז במטבח" required="1" readonly="field_dispatch_locked"/></div>
                     <div class="o_field_control"><label for="partner_id" string="לקוח"/><field name="partner_id" string="לקוח" readonly="field_dispatch_locked"/></div>
                     <div class="o_field_control"><label for="phone" string="טלפון לתיאום"/><field name="phone" widget="phone" class="o_field_numeric" placeholder="0501234567" readonly="field_dispatch_locked"/></div>
                     <div class="o_field_control o_field_control_wide"><label for="field_site_address"/><field name="field_site_address" placeholder="רחוב, מספר ועיר" readonly="field_dispatch_locked"/></div>
@@ -100,7 +101,7 @@
                 <div class="o_field_finance_metrics" invisible="field_sale_amount &lt;= 0 or (field_execution_type == 'subcontractor' and not field_contractor_id)">
                     <div class="o_field_metric o_field_metric_outcome"><label for="field_gross_profit"/><field name="field_gross_profit" class="o_field_pricing_number" nolabel="1"/></div>
                     <div class="o_field_metric"><label for="field_gross_margin" string="שיעור הרווח הגולמי"/><div class="o_field_metric_percent"><field name="field_gross_margin" nolabel="1"/>%</div></div>
-                    <div class="o_field_metric" invisible="field_execution_type != 'subcontractor'"><label for="field_contractor_cost"/><field name="field_contractor_cost" class="o_field_pricing_number" nolabel="1"/><div class="o_field_metric_note">לפי המחירון: <field name="field_applied_rate"/>%</div></div>
+                    <div class="o_field_metric" invisible="field_execution_type != 'subcontractor'"><label for="field_contractor_cost"/><field name="field_contractor_cost" class="o_field_pricing_number" nolabel="1"/><div class="o_field_metric_note">לפי המחירון: <span class="o_field_rate_number"><field name="field_applied_rate"/>%</span></div></div>
                 </div>
             </xpath>
             <xpath expr="//div[hasclass('o_field_payout_panel')]" position="attributes"><attribute name="invisible">field_execution_type != 'subcontractor' or not field_contractor_id</attribute></xpath>
@@ -113,6 +114,19 @@
             <xpath expr="//field[@name='field_payment_ids']" position="attributes"><attribute name="invisible">not field_payment_ids</attribute><attribute name="class">o_field_ledger</attribute></xpath>
             <xpath expr="//field[@name='field_payout_ids']" position="attributes"><attribute name="invisible">not field_payout_ids</attribute><attribute name="class">o_field_ledger</attribute></xpath>
             <xpath expr="//button[@name='action_dispatch_field_work']" position="attributes"><attribute name="string">אישור השיבוץ</attribute><attribute name="aria-label">אישור השיבוץ</attribute></xpath>
+            <xpath expr="//button[@aria-label='אישור פרטי ההצעה והמשך']" position="attributes"><attribute name="string">ההצעה נשלחה — המשך</attribute><attribute name="aria-label">ההצעה נשלחה — המשך</attribute></xpath>
+            <xpath expr="//button[@aria-label='אישור הצעה והמשך לתיאום']" position="attributes"><attribute name="string">הלקוח אישר — לתיאום</attribute><attribute name="aria-label">הלקוח אישר — לתיאום</attribute></xpath>
+            <xpath expr="//div[hasclass('o_field_service_mobile_actions')]/button[@aria-label='החזרה להמשך טיפול']" position="attributes"><attribute name="class">btn btn-primary</attribute></xpath>
+            <xpath expr="//div[hasclass('o_field_service_mobile_actions')]" position="inside">
+                <details class="o_field_more_actions" invisible="field_dispatch_code not in ['new','quote','sent','schedule'] and (field_report_state not in ['pending','approved'] or not field_report_can_review or field_visit_result in ['followup','not_done'])">
+                    <summary>עוד</summary><div class="o_field_more_actions_panel"/>
+                </details>
+            </xpath>
+            <xpath expr="//div[hasclass('o_field_more_actions_panel')]" position="inside">
+                <xpath expr="//div[hasclass('o_field_service_mobile_actions')]/button[@name='action_save_field_draft']" position="move"/>
+                <xpath expr="//div[hasclass('o_field_service_mobile_actions')]/button[@name='action_previous_field_stage']" position="move"/>
+                <xpath expr="//div[hasclass('o_field_service_mobile_actions')]/button[@aria-label='החזרה לתיקון']" position="move"/>
+            </xpath>
         </field>
     </record>
     <record id="view_field_lead_execution_focus" model="ir.ui.view">

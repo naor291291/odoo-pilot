@@ -9,12 +9,14 @@ class CrmLead(models.Model):
     _inherit = 'crm.lead'
 
     field_workspace_summary = fields.Char(compute='_compute_workspace_context', groups=OPS)
+    field_workspace_title = fields.Char(compute='_compute_workspace_context', groups=OPS)
     field_next_step = fields.Char(compute='_compute_workspace_context', groups=OPS)
 
-    @api.depends('partner_id.name', 'field_site_address', 'field_dispatch_code',
+    @api.depends('name', 'partner_id.name', 'field_site_address', 'field_dispatch_code',
                  'field_report_state', 'field_visit_result', 'field_collection_status')
     def _compute_workspace_context(self):
         for lead in self:
+            lead.field_workspace_title = lead.name or 'עבודה חדשה'
             lead.field_workspace_summary = ' · '.join(value for value in (
                 lead.partner_id.name, lead.field_site_address) if value) or 'פרטי הלקוח והכתובת יופיעו כאן לאחר מילוי התכנון.'
             code = lead.field_dispatch_code
