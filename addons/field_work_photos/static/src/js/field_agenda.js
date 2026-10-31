@@ -18,7 +18,13 @@ class FieldWorkActionRenderer extends KanbanRenderer {
             } else if (target.classList.contains('o_kanban_record')) {
                 target.querySelector('button[name="action_open_field_workspace"], button[name="action_open_field_work_card"]')?.click();
             }
-        }, { area: () => this.rootRef.el });
+        }, { area: () => {
+            // Odoo chooses the closest registered area; equal areas favor the
+            // older native registration. Use the focused control/card itself.
+            const active = document.activeElement;
+            return active?.matches('button[name="action_open_field_workspace"], button[name="action_open_field_work_card"], .o_kanban_record')
+                && this.rootRef.el?.contains(active) ? active : null;
+        } });
     }
 }
 
