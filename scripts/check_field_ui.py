@@ -296,7 +296,10 @@ with sync_playwright() as playwright:
     page.screenshot(path=str(OUTPUT / 'collections-partial-desktop.png'), full_page=True)
     page.set_viewport_size({'width': 390, 'height': 844})
     page.goto(url)
-    expect(collection.locator('.o_kanban_record')).to_have_count(1)
+    expect(collection).to_be_visible()
+    collection.scroll_into_view_if_needed()
+    page.screenshot(path=str(OUTPUT / 'collections-partial-mobile.png'), full_page=True)
+    expect(collection.locator('.o_field_payment_meta')).to_have_count(1)
     expect(collection.locator('[name="field_customer_balance"]')).to_contain_text('780')
     for field_name in ('field_customer_due', 'field_customer_paid', 'field_customer_balance'):
         bounds = collection.locator(f'[name="{field_name}"]').bounding_box()
