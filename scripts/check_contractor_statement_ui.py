@@ -163,7 +163,11 @@ with sync_playwright() as playwright:
         page.on('pageerror', lambda error: errors.append(str(error)))
         settle(page)
         expect(page.locator('.o_form_view')).to_contain_text('תנועה כולל מע״מ')
+        expect(page.get_by_text('סוג תנועה', exact=True)).to_be_visible()
+        expect(page.get_by_text('חברה', exact=True)).to_be_visible()
         capture('entitlement-source')
+        page.set_viewport_size({'width': 390, 'height': 1000})
+        capture('entitlement-source-390')
         page.close()
         page = report_page
         with page.expect_popup() as opened:
