@@ -18,15 +18,18 @@ Skill sources: [Interface Design](https://github.com/Dammyjay93/interface-design
 | P1 | `static/src/js/field_portal.js` | Newly chosen files may be lost by navigation without warning | Dirty-form navigation warning; current step never submits automatically |
 | P1 | Work planning | Missing data listed away from its field; progress hidden in expanded status list | Inline missing-data guidance and compact stage indicator, same server validation |
 | P1 | Calendar event popover | Native Edit/Delete labels suggested changing a governed assignment from the schedule | Scoped calendar renderer/popover: open readonly task, no deletion, native dialogs and accessible close button |
+| P1 | Calendar at the phone breakpoint | The open desktop sidebar survives a resize and hides the native mobile calendar | Scoped controller collapses the sidebar on entry to phone layout; mobile filters remain available |
+| P2 | Calendar appointment details | Only a start is stored, while the native popup invents an end and a one-hour duration | Show the actual localized start/date, with an explicit Hebrew label and LTR isolation |
 | P2 | Clients / Contacts | No short project-specific entry; native generic contact surface has unrelated fields | Scoped directory, short form, client-to-work action, discoverable pre-job clients |
 | P2 | Tasks / Project | Native task has many project controls; unclear path back to governed work flow | Readonly task evidence view + schedule; explicit work-card action |
+| P2 | Shared icon buttons / mobile dialogs | A shared text font replaced native icon fonts, and the event header truncated the work identity | Preserve native FA/OI fonts; wrap the scoped mobile event header |
 | P2 | Shared CSS / portal | Focus target/footer overlap, non-semantic dates, image dimensions, unclear unsaved photos | Shared focus/scroll rules, static report action area, native dates, sized lazy thumbnails |
 | P2 | Settings/integration | Manual/expected/API capabilities can be mistaken for active automation | Plain-language guide explicitly distinguishes manual work, unverified API and simulation |
 | P2 | Test script | Operations screenshot captured while Odoo was still updating | Attempt network idle, then wait for rendered content, unblocked UI, fonts and layout frames when Odoo’s persistent bus prevents idle |
 
 ## Coverage matrix
 
-Status legend: source-reviewed is distinct from browser-verified. The CI evidence section below is the authority for completed checks; planned checks are not reported as passed.
+Status legend: source-reviewed is distinct from browser-verified. The completed CI evidence section below and its machine-readable checklist identify the actual checks; shared CSS is not treated as per-screen verification.
 
 | Screen / state | Source review | Change | Browser scenarios |
 | --- | --- | --- | --- |
@@ -42,8 +45,8 @@ Status legend: source-reviewed is distinct from browser-verified. The CI evidenc
 | Client form (new scoped view) | Partner/native labels/widgets | Short contact/address groups | Required name, edit/save, phone/email, return to related jobs |
 | Tasks list/detail (new scoped views) | Task/Project/review security | Readonly evidence + work-card link | Dispatched job, details, return to current work stage |
 | Appointment calendar | Native calendar interaction and popover | Dedicated date-start/action, scoped open-task popover, no deletion | Open calendar and event, phone/desktop |
-| Native Project/CRM surfaces | Upstream XML and installed actions | No core changes | Read-only smoke entry and screenshot where available |
-| Native Odoo settings/users | Upstream XML and installed actions | No core changes or permission edits | Owner-only read-only smoke entry where available; not an exhaustive admin workflow audit |
+| Native Project/CRM surfaces | Upstream XML and installed actions | No core changes | Read-only smoke entry and screenshot |
+| Native Odoo settings/users | Upstream XML and installed actions | No core changes or permission edits | Owner-only read-only smoke entry; not an exhaustive admin workflow audit |
 | Guide (new) | Current pilot vs specification compared | Workflow/role/integration help | Desktop/phone, actual visible manual/unverified status |
 | Portal home/list/scopes/empty | Routes/domains/pager | Skip/navigation/readability | Assigned work, scopes, empty, contractor separation |
 | Portal report step 1 | Report fields and submission constraints | Required-field hints/errors | Empty summary, incomplete reason, keyboard focus, Back retention |
@@ -64,4 +67,19 @@ No pricing formulas, tier boundaries, frozen assignment rates, approval/paid tra
 
 ## Evidence
 
-Pending final CI and visual review. Before images: supplied screenshots and PR #11 CI artifacts (rates/portal/work cards). New hub/client/task screens have no equivalent custom before screen. After screenshots and a machine-readable screen checklist are generated in `.local-data/ui-checks/` by `scripts/check_field_ui.py` and `scripts/check_crm_ui.py`. Replace this paragraph with exact final run/results after verification.
+Implementation verified at commit `196032d4d67d8ccad1e1ea0c6610b61d9e9e23ec` in [CI run 41210874114](https://github.com/naor291291/odoo-pilot/actions/runs/41210874114). All integration, restart/smoke, both Chrome suites, evidence generation and screenshot upload steps passed.
+
+| Verification | Completed result |
+| --- | --- |
+| Actual Odoo/PostgreSQL integration suite | 148 tests, 0 failures, 0 errors; also passed locally |
+| Startup and restart smoke | Hebrew, existing data/admin ownership, generated contractor and reviewer/owner roles |
+| Main Chrome workflow | Missing required fields, Continue/Back, saved amounts, negative profitability, photos/limits/remove/replace/zoom/focus, drafts, correction/resubmission, incomplete visit, approval, partial receipts, paid closure, payout, cancellation and queues |
+| Additional CRM Chrome suite | 36 successful captures, 0 uncaught page errors; dashboard, board/search, client directory/form/cards/required-name/new-client persistence, task detail/work-card/customer dialog, calendar event/readonly dialog/phone resize, rate validation and saved edit with frozen prior assignment, guide, operations and contractor separation |
+| Responsive widths | 390/768/1024/1440px for the hub and core pricing checks; selected additional screens at desktop/390px, as recorded individually in `coverage.json` |
+| Roles | Owner, operations, and two separate contractors; foreign contractor job returns 404, operations has no owner finance fields |
+| Native unchanged surfaces | Client/task reference forms plus Project, CRM, general settings and users: read-only entry/screenshot smoke; no admin-setting mutation or exhaustive native workflow claim |
+| Visual evidence | 25 main-flow + 36 additional CRM PNGs, `crm/coverage.json`, self-contained `crm-ui-before-after.html`; baseline PR #11 screenshots loaded successfully |
+
+[Download the evidence archive](https://github.com/naor291291/odoo-pilot/actions/runs/41210874114/artifacts/13046347621). All screenshots use disposable synthetic data. Before images are PR #11 (`7ee7394`) rates/portal/work cards; native client/task references are explicitly identified as unchanged original screens captured in the same run. New hub/client/task views are not presented as if an equivalent custom before screen existed.
+
+Selected screenshots were visually inspected for work/financial forms, owner and operations hubs, client/task phone layouts, rate cards and native validation, calendar phone/popup/dialog, guide, contractor report/review and empty states. The review caught and corrected the missing mobile primary action, oversized portal buttons, hidden native customer arrow, empty mobile calendar/sidebar, icon-font replacement, clipped mobile event title and invented appointment duration. Exact per-capture widths and files remain in the machine-readable checklist; shared CSS is not counted as independent coverage of unvisited screens.

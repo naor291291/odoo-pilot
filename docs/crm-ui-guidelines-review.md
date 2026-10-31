@@ -34,6 +34,10 @@ Rules fetched from Vercel's `web-interface-guidelines/command.md`, SHA `3eb3a212
 - `static/src/js/field_calendar.js` — registers a dedicated view via Odoo's view registry; inherits the native renderers/popover instead of patching core or globally altering calendars.
 - `static/src/xml/field_calendar.xml` — native mobile Dialog, semantic close/open buttons, explicit Hebrew labels and wrapped event title. The action opens the readonly task form.
 - `views/field_navigation_views.xml` — calendar creation, drag editing and deletion disabled; the workflow remains governed in the work card.
+- `static/src/js/field_calendar.js` — native sidebar collapses when entering phone layout, so it does not hide the calendar; explicit mobile filtering remains usable. Popup shows the stored start rather than an invented one-hour duration.
+- `static/src/xml/field_calendar.xml` — localized appointment start has an explicit Hebrew label and LTR isolation; an empty mobile filter panel is omitted, and any available filtering uses a named native button.
+- `static/src/scss/field_interface.scss` — shared text-button typography excludes native FA/OI icon buttons; glyph fonts remain intact.
+- `static/src/scss/field_crm.scss` — the native mobile calendar header wraps the complete work title and grows to its content.
 
 ## Native platform boundaries and remaining checks
 
