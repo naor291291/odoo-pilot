@@ -197,7 +197,8 @@ with sync_playwright() as playwright, capture_on_failure():
     page.locator('.fc-event').filter(has_text='עבודת סקירה').first.click()
     expect(page.locator('.modal:visible .o_field_calendar_open')).to_be_visible()
     capture(page, 'appointment-popover-mobile')
-    page.locator('.modal:visible .btn-close').click()
+    # Native fullscreen Dialog uses a named back/close button, not btn-close.
+    page.locator('.modal:visible .modal-header').get_by_role('button', name='סגור', exact=True).click()
     page.set_viewport_size({'width': 1440, 'height': 1100})
 
     # Tier form: readable semantics, save a valid edit and reject an invalid rate.

@@ -100,3 +100,11 @@
     .list-group-item { white-space: normal !important; }
     .o_field_calendar_open { min-height: 44px; }
 }
+
+// Keep the complete work identity visible in the native mobile event dialog.
+.modal.o_technical_modal .o_field_calendar_popup .modal-header .modal-title {
+    white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere;
+}
+.modal.o_modal_full .o_field_calendar_popup .modal-header {
+    height: auto; min-height: 44px; padding: 12px 16px; align-items: flex-start;
+}
