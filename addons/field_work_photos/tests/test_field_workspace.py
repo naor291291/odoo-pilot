@@ -82,6 +82,7 @@ class TestFieldWorkspace(TransactionCase):
     def test_dashboard_counts_only_active_field_work(self):
         Dashboard = self.env['field.work.dashboard'].with_user(self.ops)
         dashboard = Dashboard.create({})
+        self.assertEqual(dashboard.display_name, 'מרכז העבודה')
         before = dashboard.new_count
         field = self.env['crm.lead'].with_user(self.ops).create({'name': 'Dashboard field', 'is_field_service': True})
         ordinary = self.env['crm.lead'].with_user(self.ops).create({'name': 'Ordinary CRM'})

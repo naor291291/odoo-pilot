@@ -10,6 +10,7 @@ class FieldWorkDashboard(models.TransientModel):
     _name = 'field.work.dashboard'
     _description = 'מרכז עבודות השטח'
 
+    name = fields.Char(default='מרכז העבודה', readonly=True)
     new_count = fields.Integer(compute='_compute_counts')
     quote_count = fields.Integer(compute='_compute_counts')
     schedule_count = fields.Integer(compute='_compute_counts')

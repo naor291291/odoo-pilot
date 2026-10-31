@@ -20,6 +20,7 @@ coverage, errors = [], []
 
 def settle(page):
     """Attempt network idle; Odoo's persistent bus can keep it unavailable."""
+    page.bring_to_front()
     page.wait_for_load_state('domcontentloaded')
     try:
         page.wait_for_load_state('networkidle', timeout=2000)
@@ -28,10 +29,10 @@ def settle(page):
         if '/odoo' in page.url:
             expect(page.locator('.o_action_manager .o_content').first).to_be_visible(timeout=60000)
         else:
-            expect(page.locator('.o_field_portal')).to_be_visible(timeout=60000)
+            expect(page.locator('.o_field_portal, #wrapwrap .o_portal_wrap').first).to_be_visible(timeout=60000)
     expect(page.locator('.o_blockUI')).to_have_count(0, timeout=60000)
     page.evaluate('document.fonts.ready')
-    page.evaluate('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))')
+    page.evaluate('Promise.race([new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))), new Promise(resolve => setTimeout(resolve, 250))])')
 
 @contextmanager
 def capture_on_failure():
@@ -191,6 +192,19 @@ with sync_playwright() as playwright, capture_on_failure():
     page.set_viewport_size({'width': 390, 'height': 844})
     capture(page, 'contractor-rate-form-mobile')
     page.set_viewport_size({'width': 1440, 'height': 1100})
+    applied_before = rpc(owner, 'crm.lead', 'read', [[lead]], fields=['field_applied_rate'])[0]['field_applied_rate']
+    medium_rate = page.locator('[name="field_rate_medium"] input')
+    medium_rate.fill('101')
+    page.locator('.o_form_button_save').click()
+    expect(page.locator('.modal:visible')).to_contain_text('אחוז קבלן חייב להיות בין 0 ל־100')
+    capture(page, 'contractor-rate-validation-desktop')
+    page.locator('.modal:visible .btn-close').click()
+    medium_rate.fill('66')
+    page.locator('.o_form_button_save').click()
+    settle(page)
+    current_applied = rpc(owner, 'crm.lead', 'read', [[lead]], fields=['field_applied_rate'])[0]['field_applied_rate']
+    assert current_applied == applied_before, 'Editing the price list changed an already assigned rate'
+
     open_action(page, 'action_field_guide')
     expect(page.get_by_role('heading', name='כך עובדים במערכת', exact=True)).to_be_visible()
     expect(page.get_by_text('פעיל: תיעוד ידני של מספר הצעת מחיר ותקבולים.', exact=True)).to_be_visible()

@@ -16,6 +16,7 @@ login = json.loads((ROOT / '.local-data' / 'credentials.json').read_text())
 
 def settle(page):
     """Attempt network idle; Odoo's persistent bus can keep it unavailable."""
+    page.bring_to_front()
     page.wait_for_load_state('domcontentloaded')
     try:
         page.wait_for_load_state('networkidle', timeout=2000)
@@ -24,10 +25,10 @@ def settle(page):
         if '/odoo' in page.url:
             expect(page.locator('.o_action_manager .o_content').first).to_be_visible(timeout=60000)
         else:
-            expect(page.locator('.o_field_portal')).to_be_visible(timeout=60000)
+            expect(page.locator('.o_field_portal, #wrapwrap .o_portal_wrap').first).to_be_visible(timeout=60000)
     expect(page.locator('.o_blockUI')).to_have_count(0, timeout=60000)
     page.evaluate('document.fonts.ready')
-    page.evaluate('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))')
+    page.evaluate('Promise.race([new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))), new Promise(resolve => setTimeout(resolve, 250))])')
 
 @contextmanager
 def capture_on_failure():
