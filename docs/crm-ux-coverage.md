@@ -61,7 +61,7 @@ No pricing formulas, tier boundaries, frozen assignment rates, approval/paid tra
 ## Specification gaps / blockers
 
 - Morning read-only integration remains separate in PR #9; live account/API verification depends on credentials/Best access. No live API call or document delivery is claimed here.
-- Invoice/PDF workflow, automatic WhatsApp/email delivery, monthly contractor statement/Pivot and owner revenue/profit/conversion dashboard with 50% target are not complete in the current pilot. The new operational hub does not pretend to implement them.
+- Invoice/PDF workflow, automatic WhatsApp/email delivery and owner revenue/profit/conversion dashboard with 50% target remain incomplete. Monthly contractor statements are implemented separately in this branch; see `docs/contractor-statement.md` for the confirmed eligibility rules, dedicated ledger report/PDF and historical-data limits. The operational hub itself does not implement business analytics.
 - General Odoo administration, every third-party/native module and production deployment are outside an exhaustive UI redesign of this custom CRM. Native surfaces are separately identified rather than counted from shared CSS.
 - Browser automation is Chrome on Linux with simulated viewport/touch context. Physical iPhone/Android camera, actual mobile screen reader, interrupted cellular upload and production concurrency require device/environment verification.
 

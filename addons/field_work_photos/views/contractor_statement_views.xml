@@ -45,7 +45,7 @@
         <field name="arch" type="xml"><form create="false" edit="false" delete="false" duplicate="false" class="o_field_ui">
             <sheet><h1>תנועת זכאות לקבלן</h1><group><field name="lead_id"/><field name="contractor_id"/><field name="company_id"/>
                 <field name="kind"/><field name="event_date"/><field name="event_at"/><field name="currency_id" invisible="1"/>
-                <field name="amount"/><field name="reason"/><field name="reversal_of_id"/>
+                <field name="amount"/><field name="reason"/><field name="recorded_by"/><field name="reversal_of_id"/>
             </group><group string="בסיס היסטורי שמור"><field name="closed_at"/><field name="approved_by"/><field name="approved_at"/>
                 <field name="sale_net"/><field name="applied_rate"/><field name="net_estimate"/>
             </group></sheet>
@@ -61,11 +61,14 @@
     <record id="view_lead_entitlement_approval" model="ir.ui.view">
         <field name="name">crm.lead.contractor.entitlement.approval</field><field name="model">crm.lead</field>
         <field name="inherit_id" ref="view_field_lead_collection"/>
-        <field name="arch" type="xml"><xpath expr="//div[hasclass('o_field_payout_panel')]/button[@name='action_register_contractor_payment']" position="before">
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('o_field_payout_panel')]//div[field[@name='field_payout_status']]" position="attributes"><attribute name="invisible">field_contractor_amount_approved and field_contractor_due == 0</attribute></xpath>
+            <xpath expr="//div[hasclass('o_field_payout_panel')]/button[@name='action_register_contractor_payment']" position="before">
             <div class="o_statement_approval" groups="field_work_photos.group_field_finance">
                 <field name="field_contractor_amount_approved" invisible="1"/>
+                <p class="o_field_help" invisible="not field_contractor_amount_approved or field_contractor_due != 0">אושר סכום של אפס לקבלן. אין סכום לתשלום; הזכאות בדוח תהיה אפס לאחר סגירת העבודה.</p>
                 <p class="o_field_help" invisible="field_contractor_amount_approved">הסכום הכולל טרם אושר ולכן אינו זכאות בדוח. הזינו סכום מוסכם ואשרו אותו; אפשר לאשר גם אפס במפורש.</p>
-                <button name="action_approve_contractor_amount" type="object" string="אישור סכום הקבלן לדוח" class="btn-outline-primary" invisible="field_contractor_amount_approved or not id or not field_contractor_id" confirm="הסכום הכולל שהוזן, כולל אפס אם הוזן, יהיה בסיס הזכאות לקבלן לאחר סגירת העבודה ושולם. לאישור הסכום?"/>
+                <button name="action_approve_contractor_amount" type="object" string="אישור סכום הקבלן לדוח" class="btn-outline-primary" invisible="field_contractor_amount_approved or not id or not field_contractor_id" confirm="הסכום הכולל שהוזן, כולל אפס אם הוזן, יהיה בסיס הזכאות לקבלן לאחר סגירת העבודה כטופל ושולם. לאישור הסכום?"/>
                 <group invisible="not field_contractor_amount_approved"><field name="field_contractor_amount_approved_by"/><field name="field_contractor_amount_approved_at"/></group>
             </div>
         </xpath></field>

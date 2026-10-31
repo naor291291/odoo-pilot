@@ -67,6 +67,7 @@
         tr { border-bottom: 1px solid var(--statement-line); padding-block: 12px; }
         td { border: 0; padding: 4px 0; }
         td::before { content: attr(data-label); display: block; font-size: 14px; color: var(--statement-steel); }
+        a { display: inline-block; min-height: 44px; padding-block: 8px; }
     }
 }
 // Qt WebKit: use fallbacks rather than depending on CSS variables, grid or flex.

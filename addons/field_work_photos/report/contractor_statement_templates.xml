@@ -49,6 +49,7 @@
             <div class="o_statement_basis">
                 <h3>בסיס החישוב</h3>
                 <p>יתרת פתיחה + זכאות שנוספה − תשלומים לקבלן + התאמות וביטולים = יתרת סגירה.</p>
+                <p>פירוט יתרת הפתיחה: זכאות נטו לאחר ביטולי זכאות <span dir="ltr" t-out="'{:,.2f} ₪'.format(s['opening_credit'])"/>, פחות תשלומים <span dir="ltr" t-out="'{:,.2f} ₪'.format(s['opening_paid'])"/>, בתוספת ביטולי תשלומים <span dir="ltr" t-out="'{:,.2f} ₪'.format(s['opening_void'])"/>. כולם לפני תחילת התקופה.</p>
                 <p>זכאות נוצרת כשעבודה נסגרת כטופל ושולם והבעלים אישר את סכום הקבלן. אם הסכום אושר אחרי הסגירה, הזכאות נרשמת במועד האישור. פתיחה מחדש או שינוי סכום מבטלים את הזכאות בתנועה נפרדת.</p>
                 <p>תשלומים משויכים לתאריך התשלום שהוזן, גם עבור עבודה מחודש קודם. ביטול רישום משויך למועד הביטול בישראל ואינו החזר כספי. גבייה מהלקוח אינה תשלום לקבלן ואינה מופחתת בדוח.</p>
                 <p>תאריכי הזכאות והביטול מחושבים לפי שעון ישראל (Asia/Jerusalem). הדוח משקף תנועות לתקופה לפי המידע הידוע במועד ההפקה. הזנה מאוחרת של תשלום לתאריך עבר עשויה לשנות דוח שיופק מחדש; זה אינו שחזור של המידע שהיה ידוע בסוף החודש.</p>
@@ -58,9 +59,9 @@
         </section>
     </template>
     <template id="contractor_statement_pdf">
-        <t t-call="web.html_container"><t t-foreach="docs" t-as="o"><t t-call="web.basic_layout">
+        <t t-foreach="docs" t-as="o"><t t-call="web.basic_layout">
             <div class="page o_statement_pdf"><t t-set="s" t-value="o.payload"/><t t-call="field_work_photos.contractor_statement_body"/></div>
             <div class="footer" dir="rtl" style="font-family: 'Statement Heebo', sans-serif; font-size: 10px; text-align: center;">עמוד <span class="page"/> מתוך <span class="topage"/></div>
-        </t></t></t>
+        </t></t>
     </template>
 </odoo>

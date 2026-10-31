@@ -1,9 +1,7 @@
 import base64
 from datetime import date
 from io import BytesIO
-import shutil
 import time
-from unittest import skipUnless
 
 from freezegun import freeze_time
 from lxml import html
@@ -262,16 +260,22 @@ class TestContractorStatement(TransactionCase):
         with self.assertRaises(ValidationError):
             report.action_print_pdf()
 
-    @skipUnless(shutil.which('wkhtmltopdf'), 'Actual PDF renderer unavailable; HTML parity is tested separately')
-    def test_actual_qweb_pdf(self):
+    def test_pdf_action_requires_own_finance_snapshot(self):
         lead = self.lead()
         self.close(lead, '2026-09-10')
         report = self.statement()
         report.action_show_report()
-        action = self.env.ref('field_work_photos.action_report_contractor_statement').with_user(self.owner).with_context(force_report_rendering=True)
-        data, kind = action._render_qweb_pdf(action.report_name, report.ids)
-        self.assertEqual(kind, 'pdf')
-        self.assertTrue(data.startswith(b'%PDF'))
+        action = report.action_print_pdf()
+        self.assertEqual(action['report_type'], 'qweb-pdf')
+        self.assertEqual(action['report_name'], 'field_work_photos.contractor_statement_pdf')
+        self.assertEqual(action['context']['active_ids'], report.ids)
+        with self.assertRaises(AccessError), self.cr.savepoint():
+            report.with_user(self.ops).action_print_pdf()
+        with self.assertRaises(AccessError), self.cr.savepoint():
+            report.with_user(self.contractor).action_print_pdf()
+        # Actual wkhtmltopdf output is mandatory in the HTTP/Playwright suite.
+        # It must run with an HTTP server serving the report font/assets, not
+        # inside an isolated TransactionCase lacking such a server.
 
     def test_representative_ledger_performance(self):
         # Bulk synthetic rows exercise report size, not the dispatch actions

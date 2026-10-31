@@ -31,6 +31,7 @@ class FieldWorkEntitlement(models.Model):
     event_at = fields.Datetime(string='מועד התנועה', required=True)
     event_date = fields.Date(string='תאריך בישראל', required=True, index=True)
     reason = fields.Char(string='בסיס התנועה', required=True)
+    recorded_by = fields.Many2one('res.users', string='התנועה נרשמה בעקבות פעולה של', required=True)
     reversal_of_id = fields.Many2one('field.work.entitlement', string='התנועה שבוטלה', ondelete='restrict', index=True)
     approved_by = fields.Many2one('res.users', string='הסכום אושר על ידי', required=True)
     approved_at = fields.Datetime(string='מועד אישור הסכום', required=True)
@@ -72,7 +73,7 @@ class FieldWorkEntitlement(models.Model):
                 'lead_id': row.lead_id.id, 'company_id': row.company_id.id,
                 'contractor_id': row.contractor_id.id, 'currency_id': row.currency_id.id,
                 'kind': 'reversal', 'amount': -row.amount, 'event_at': now,
-                'event_date': business_date(now), 'reason': reason,
+                'event_date': business_date(now), 'reason': reason, 'recorded_by': self.env.uid,
                 'reversal_of_id': row.id, 'approved_by': row.approved_by.id,
                 'approved_at': row.approved_at, 'closed_at': row.closed_at,
                 'net_estimate': row.net_estimate, 'sale_net': row.sale_net,
@@ -88,6 +89,7 @@ class FieldWorkEntitlement(models.Model):
                 'amount': lead_sudo.field_contractor_due, 'event_at': now,
                 'event_date': business_date(now),
                 'reason': 'העבודה נסגרה ושולמה וסכום הקבלן אושר',
+                'recorded_by': self.env.uid,
                 'approved_by': lead_sudo.field_contractor_amount_approved_by.id,
                 'approved_at': lead_sudo.field_contractor_amount_approved_at,
                 'closed_at': lead.field_closed_at,
