@@ -21,7 +21,7 @@ Skill sources: [Interface Design](https://github.com/Dammyjay93/interface-design
 | P2 | Tasks / Project | Native task has many project controls; unclear path back to governed work flow | Readonly task evidence view + schedule; explicit work-card action |
 | P2 | Shared CSS / portal | Focus target/footer overlap, non-semantic dates, image dimensions, unclear unsaved photos | Shared focus/scroll rules, static report action area, native dates, sized lazy thumbnails |
 | P2 | Settings/integration | Manual/expected/API capabilities can be mistaken for active automation | Plain-language guide explicitly distinguishes manual work, unverified API and simulation |
-| P2 | Test script | Operations screenshot captured while Odoo was still updating | Wait for network idle before role inspection/capture |
+| P2 | Test script | Operations screenshot captured while Odoo was still updating | Attempt network idle, then wait for rendered content, unblocked UI, fonts and layout frames when Odoo’s persistent bus prevents idle |
 
 ## Coverage matrix
 

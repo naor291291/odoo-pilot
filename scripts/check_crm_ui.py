@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 import secrets
 
-from playwright.sync_api import sync_playwright, expect
+from playwright.sync_api import sync_playwright, expect, TimeoutError as PlaywrightTimeoutError
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / '.local-data' / 'ui-checks' / 'crm'
@@ -17,6 +17,21 @@ OUTPUT.mkdir(parents=True, exist_ok=True)
 login = json.loads((ROOT / '.local-data' / 'credentials.json').read_text())
 BASE = 'http://127.0.0.1:8069'
 coverage, errors = [], []
+
+def settle(page):
+    """Attempt network idle; Odoo's persistent bus can keep it unavailable."""
+    page.wait_for_load_state('domcontentloaded')
+    try:
+        page.wait_for_load_state('networkidle', timeout=2000)
+    except PlaywrightTimeoutError:
+        # Wait for the real UI, not an arbitrary sleep or an endless bus request.
+        if '/odoo' in page.url:
+            expect(page.locator('.o_action_manager .o_content').first).to_be_visible(timeout=60000)
+        else:
+            expect(page.locator('.o_field_portal')).to_be_visible(timeout=60000)
+    expect(page.locator('.o_blockUI')).to_have_count(0, timeout=60000)
+    page.evaluate('document.fonts.ready')
+    page.evaluate('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))')
 
 @contextmanager
 def capture_on_failure():
@@ -65,11 +80,11 @@ with sync_playwright() as playwright, capture_on_failure():
 
     def open_action(page, name, module='field_work_photos'):
         page.goto(f'{BASE}/odoo/action-{xmlid(name, module)}')
-        page.wait_for_load_state('networkidle')
+        settle(page)
         expect(page.locator('.o_action_manager')).to_be_visible()
 
     def capture(page, name, check_overflow=True):
-        page.wait_for_load_state('networkidle')
+        settle(page)
         if check_overflow:
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), f'Page overflows: {name}'
         page.screenshot(path=str(OUTPUT / f'{name}.png'), full_page=True)
@@ -139,7 +154,7 @@ with sync_playwright() as playwright, capture_on_failure():
     page.locator('[name="name"] input').fill('לקוח חדש לפני עבודה ראשונה')
     page.locator('[name="phone"] input').fill('0507654321')
     page.locator('.o_form_button_save').click()
-    page.wait_for_load_state('networkidle')
+    settle(page)
     open_action(page, 'action_field_clients_open')
     expect(page.get_by_text('לקוח חדש לפני עבודה ראשונה', exact=True)).to_be_visible()
 
@@ -218,11 +233,11 @@ with sync_playwright() as playwright, capture_on_failure():
     assert portal_context.request.get(f'{BASE}/my/field-work/{task}').status == 404
     portal_page = page_for(portal_context)
     portal_page.goto(f'{BASE}/my/home')
-    portal_page.wait_for_load_state('networkidle')
+    settle(portal_page)
     expect(portal_page.get_by_role('link', name='עבודות השטח שלי', exact=False)).to_be_visible()
     capture(portal_page, 'contractor-home-mobile')
     portal_page.goto(f'{BASE}/my/field-work?scope=pending')
-    portal_page.wait_for_load_state('networkidle')
+    settle(portal_page)
     expect(portal_page.get_by_role('heading', name='אין כרגע עבודות ברשימה הזאת', exact=True)).to_be_visible()
     capture(portal_page, 'contractor-empty-mobile')
     portal_context.close()

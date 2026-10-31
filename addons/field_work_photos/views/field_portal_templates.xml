@@ -24,7 +24,7 @@
                         <a t-att-href="'/my/field-work/%s' % task.id" class="o_field_panel o_field_job_link">
                             <span class="o_field_status" t-out="'בוטלה' if task.state == '1_canceled' else dict(task._fields['field_review_state'].selection).get(task.field_review_state)"/>
                             <h2 t-out="task.name"/><p t-out="task.field_customer_name"/>
-                            <p t-out="task.field_site_address"/><p><span t-field="task.field_visit_at" t-options="{'widget': 'datetime'}"/></p>
+                            <p t-out="task.field_site_address"/><p><span t-field="task.field_visit_at" t-options="{'widget': 'datetime', 'hide_seconds': True}"/></p>
                             <strong t-if="task.field_review_state == 'changes_requested'">נדרש עדכון הדיווח</strong>
                             <span class="o_field_job_cta">פתיחת העבודה ←</span>
                         </a>
@@ -48,7 +48,7 @@
                     <h2>פרטי העבודה</h2>
                     <dl class="o_field_job_details">
                         <div><dt>לקוח</dt><dd t-out="task.field_customer_name"/></div>
-                        <div><dt>מועד ביצוע</dt><dd><span t-field="task.field_visit_at" t-options="{'widget': 'datetime'}"/></dd></div>
+                        <div><dt>מועד ביצוע</dt><dd><span t-field="task.field_visit_at" t-options="{'widget': 'datetime', 'hide_seconds': True}"/></dd></div>
                         <div><dt>כתובת</dt><dd t-out="task.field_site_address"/></div>
                         <div t-if="task.field_site_contact"><dt>איש קשר בשטח</dt><dd t-out="task.field_site_contact"/></div>
                         <div t-if="task.field_site_unit"><dt>דירה / קומה</dt><dd t-out="task.field_site_unit"/></div>
