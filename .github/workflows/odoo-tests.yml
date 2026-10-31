@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
 jobs:
   field-photos:
     runs-on: ubuntu-latest
@@ -27,7 +28,15 @@ jobs:
           python3 -m pip install --quiet --target "$RUNNER_TEMP/field-ui-python" playwright
           docker compose -f .devcontainer/compose.yaml run --rm -d --name field-work-ui -p 127.0.0.1:8069:8069 odoo python3 scripts/pilot.py worker
           trap 'docker rm -f field-work-ui >/dev/null 2>&1 || true' EXIT
-          CHROME_BIN="$(command -v google-chrome)" PYTHONPATH="$RUNNER_TEMP/field-ui-python" python3 scripts/check_field_ui.py
+          FIELD_FLOW_RESULT=0
+          CHROME_BIN="$(command -v google-chrome)" PYTHONPATH="$RUNNER_TEMP/field-ui-python" python3 scripts/check_field_ui.py || FIELD_FLOW_RESULT=$?
+          CRM_SCREEN_RESULT=0
+          CHROME_BIN="$(command -v google-chrome)" PYTHONPATH="$RUNNER_TEMP/field-ui-python" python3 scripts/check_crm_ui.py || CRM_SCREEN_RESULT=$?
+          if [ "$FIELD_FLOW_RESULT" -ne 0 ] || [ "$CRM_SCREEN_RESULT" -ne 0 ]; then exit 1; fi
+      - name: Build visual UI evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/build_ui_evidence.py
       - name: Save browser verification screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -41,3 +50,4 @@ jobs:
       - name: Stop services
         if: always()
         run: docker compose -f .devcontainer/compose.yaml down -v
+

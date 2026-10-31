@@ -9,6 +9,35 @@ function setupFieldReports() {
         const result = form.querySelector('[name="field_visit_result"]');
         const summary = form.querySelector('[name="field_visit_summary"]');
         const reason = form.querySelector('[name="field_visit_reason"]');
+        let dirty = false;
+        const errorSummary = form.querySelector('[data-report-errors]');
+        const clearErrors = () => {
+            if (errorSummary) { errorSummary.hidden = true; errorSummary.replaceChildren(); }
+            for (const error of form.querySelectorAll('[data-inline-validation]')) error.remove();
+            for (const input of form.querySelectorAll('[data-wizard-invalid]')) {
+                input.removeAttribute('aria-invalid'); input.classList.remove('is-invalid');
+                input.removeAttribute('data-wizard-invalid'); input.removeAttribute('aria-describedby');
+            }
+        };
+        const showErrors = errors => {
+            clearErrors();
+            const title = document.createElement('strong');
+            title.textContent = 'כדי להמשיך יש להשלים:';
+            const list = document.createElement('ul');
+            for (const {target, message} of errors) {
+                const error = document.createElement('p');
+                error.className = 'o_field_inline_error'; error.dataset.inlineValidation = '1';
+                error.id = `${target.id}-validation`; error.textContent = message;
+                target.parentElement.append(error);
+                target.dataset.wizardInvalid = '1'; target.setAttribute('aria-invalid', 'true');
+                target.setAttribute('aria-describedby', error.id); target.classList.add('is-invalid');
+                const item = document.createElement('li'); const link = document.createElement('a');
+                link.href = `#${target.id}`; link.textContent = message;
+                link.addEventListener('click', event => { event.preventDefault(); target.focus(); });
+                item.append(link); list.append(item);
+            }
+            errorSummary.append(title, list); errorSummary.hidden = false; errorSummary.focus();
+        };
         const galleries = [...form.querySelectorAll('.o_field_gallery')].map(root => ({root, files: [], urls: []}));
         const count = gallery => gallery.root.querySelectorAll('[data-photo-key]').length
             - gallery.root.querySelectorAll('[name="remove_photo"]:checked').length + gallery.files.length;
@@ -65,6 +94,7 @@ function setupFieldReports() {
                     img.className = 'o_field_gallery_image';
                     img.src = url;
                     img.alt = `תמונה חדשה ${index + 1}`;
+                    img.width = 320; img.height = 240;
                     enlarge.append(img);
                     enlarge.addEventListener('click', () => zoom(url));
                     const label = document.createElement('p');
@@ -122,12 +152,73 @@ function setupFieldReports() {
             }
         }
         for (const field of [result, summary, reason]) field?.addEventListener('input', update);
+        const panels = [...form.querySelectorAll('[data-wizard-panel]')];
+        const next = form.querySelector('[data-wizard-next]');
+        const back = form.querySelector('[data-wizard-back]');
+        const nav = form.querySelector('[data-wizard-nav]');
+        let step = 1;
+        const validation = target => {
+            const errors = [];
+            if (target > 1) {
+                if (!result.value) errors.push({target: result, message: 'בחרו את תוצאת הביקור.'});
+                if (result.value === 'completed' && !summary.value.trim()) errors.push({target: summary, message: 'כתבו מה בוצע בפועל כדי לשלוח עבודה שהושלמה.'});
+                if (result.value && result.value !== 'completed' && !reason.value.trim()) errors.push({target: reason, message: 'פרטו מה מנע השלמה ומה נדרש להמשך.'});
+            }
+            if (!errors.length && target > 2 && result.value === 'completed') {
+                for (const gallery of galleries) {
+                    const button = gallery.root.querySelector('[data-select-photo]');
+                    if (!count(gallery)) errors.push({target: button, message: `הוסיפו לפחות תמונה אחת ${gallery.root.dataset.kind === 'before' ? 'לפני ביצוע' : 'אחרי ביצוע'}.`});
+                }
+            }
+            return errors;
+        };
+        const go = (target, focus = true) => {
+            const errors = target > step ? validation(target) : [];
+            if (errors.length) {
+                // A direct jump to review must expose the panel containing the error.
+                if (target > 2 && errors.some(error => error.target.closest('[data-wizard-panel="2"]'))) go(2, false);
+                showErrors(errors); return;
+            }
+            clearErrors(); step = target;
+            panels.forEach(panel => { panel.hidden = Number(panel.dataset.wizardPanel) !== step; });
+            for (const button of nav.querySelectorAll('[data-wizard-go]')) {
+                if (Number(button.dataset.wizardGo) === step) button.setAttribute('aria-current', 'step');
+                else button.removeAttribute('aria-current');
+            }
+            next.hidden = step === 3; back.hidden = step === 1; submit.hidden = step !== 3;
+            next.textContent = step === 1 ? 'המשך לתמונות' : 'המשך לבדיקה ושליחה';
+            form.querySelector('[data-report-step-note]').textContent = `שלב ${step} מתוך 3 — ${['דיווח הביקור','תמונות','בדיקה ושליחה'][step - 1]}`;
+            if (step === 3) {
+                form.querySelector('[data-review-result]').textContent = `תוצאת הביקור: ${result.selectedOptions[0].textContent}`;
+                form.querySelector('[data-review-description]').textContent = result.value === 'completed' ? summary.value : reason.value;
+                form.querySelector('[data-review-photos]').textContent = `${galleries.map(count)[0]} תמונות לפני · ${galleries.map(count)[1]} תמונות אחרי`;
+            }
+            history.replaceState(null, '', `${location.pathname}${location.search}#report-step-${step}`);
+            if (focus) panels.find(panel => Number(panel.dataset.wizardPanel) === step).querySelector('[data-wizard-heading]').focus();
+        };
+        if (nav) {
+            nav.hidden = false;
+            for (const gallery of galleries) gallery.root.querySelector('[data-select-photo]').id = `photo-${gallery.root.dataset.kind}-select`;
+            next.addEventListener('click', () => go(Math.min(step + 1, 3)));
+            back.addEventListener('click', () => go(Math.max(step - 1, 1)));
+            nav.querySelectorAll('[data-wizard-go]').forEach(button => button.addEventListener('click', () => go(Number(button.dataset.wizardGo))));
+            go(1, false);
+        }
+        form.addEventListener('change', () => { dirty = true; });
+        form.addEventListener('input', () => { dirty = true; });
+        window.addEventListener('beforeunload', event => {
+            if (dirty && form.dataset.submitting !== '1') { event.preventDefault(); event.returnValue = ''; }
+        });
         form.addEventListener('submit', event => {
+            if (nav && event.submitter === submit && step !== 3) {
+                event.preventDefault(); go(3); return;
+            }
             if (form.dataset.submitting === '1') {
                 event.preventDefault();
                 return;
             }
             form.dataset.submitting = '1';
+            dirty = false;
             form.setAttribute('aria-busy', 'true');
             if (event.submitter) event.submitter.textContent = 'שומר את הדיווח…';
         });
@@ -143,3 +234,4 @@ function setupFieldReports() {
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setupFieldReports);
 else setupFieldReports();
+

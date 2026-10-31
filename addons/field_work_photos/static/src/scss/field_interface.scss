@@ -38,7 +38,9 @@
     // Computed amounts are essential information; readonly labels must stay legible.
     .o_form_label.o_form_label_readonly, .o_form_label.o_form_label_empty, .o_form_label.o_form_label_false { opacity: 1; font-weight: 500; }
     .o_field_help, .text-muted { color: var(--work-caption) !important; }
-    .btn { min-height: 44px; font-family: inherit; font-size: 15px; font-weight: 600; border-radius: 8px; }
+    .btn { min-height: 44px; border-radius: 8px; }
+    // Native Odoo icon buttons need their own icon font.
+    .btn:not(.fa):not(.oi) { font-family: inherit; font-size: 15px; font-weight: 600; }
     .btn-primary { background: var(--work-water); border-color: var(--work-water); }
     .btn-primary:hover { background: var(--work-water-hover); border-color: var(--work-water-hover); }
     .btn-outline-primary { color: var(--work-water); border-color: var(--work-water); }

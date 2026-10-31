@@ -260,8 +260,8 @@ def test():
         if result.returncode:
             raise SystemExit(result.returncode)
         count = len(re.findall(r"Starting Test(FieldWorkPhotos|FieldDispatch|FieldPortal|FieldPricing|FieldWorkspace|FieldVisit|FieldCollection)\.test_", result.stdout))
-        if count < 139 or not re.search(r"0 failed, 0 error\(s\)", result.stdout):
-            raise SystemExit("Expected all 139 field-review, dispatch, portal, pricing, workspace and collection tests to pass; inspect the log.")
+        if count < 148 or not re.search(r"0 failed, 0 error\(s\)", result.stdout):
+            raise SystemExit("Expected all 148 field-review, dispatch, portal, pricing, workspace and collection tests to pass; inspect the log.")
         print(f"Verified {count} Odoo integration tests.")
 
 

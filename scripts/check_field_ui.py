@@ -1,19 +1,51 @@
 """Run the real Odoo form in desktop/mobile Chrome against disposable CI data."""
 import json
+from contextlib import contextmanager
 import os
 import re
 import secrets
 from pathlib import Path
 import time
 
-from playwright.sync_api import sync_playwright, expect
+from playwright.sync_api import sync_playwright, expect, TimeoutError as PlaywrightTimeoutError
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / '.local-data' / 'ui-checks'
 OUTPUT.mkdir(parents=True, exist_ok=True)
 login = json.loads((ROOT / '.local-data' / 'credentials.json').read_text())
 
-with sync_playwright() as playwright:
+def settle(page):
+    """Attempt network idle; Odoo's persistent bus can keep it unavailable."""
+    page.bring_to_front()
+    page.wait_for_load_state('domcontentloaded')
+    try:
+        page.wait_for_load_state('networkidle', timeout=2000)
+    except PlaywrightTimeoutError:
+        # Wait for the real UI, not an arbitrary sleep or an endless bus request.
+        if '/odoo' in page.url:
+            expect(page.locator('.o_action_manager .o_content').first).to_be_visible(timeout=60000)
+        else:
+            expect(page.locator('.o_field_portal, #wrapwrap .o_portal_wrap').first).to_be_visible(timeout=60000)
+    expect(page.locator('.o_blockUI')).to_have_count(0, timeout=60000)
+    page.evaluate('document.fonts.ready')
+    page.evaluate('Promise.race([new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))), new Promise(resolve => setTimeout(resolve, 250))])')
+
+@contextmanager
+def capture_on_failure():
+    try:
+        yield
+    except Exception:
+        active_browser = globals().get('browser')
+        if active_browser:
+            for context_index, context in enumerate(active_browser.contexts):
+                for page_index, failed_page in enumerate(context.pages):
+                    try:
+                        failed_page.screenshot(path=str(OUTPUT / f'failure-{context_index}-{page_index}.png'), full_page=True)
+                    except Exception:
+                        pass
+        raise
+
+with sync_playwright() as playwright, capture_on_failure():
     browser = playwright.chromium.launch(executable_path=os.environ['CHROME_BIN'], args=['--no-sandbox'])
     context = browser.new_context(viewport={'width': 1440, 'height': 1100}, locale='he-IL')
     for attempt in range(120):
@@ -76,6 +108,7 @@ with sync_playwright() as playwright:
         expect(tab).to_have_class(re.compile(r'\bactive\b'))
 
     page.goto(f'http://127.0.0.1:8069/odoo/action-{action}/new')
+    settle(page)
     expect(page.locator('.o_field_service_hero')).to_be_visible(timeout=60000)
     page.locator('.o_field_customer_card [name="name"] input').fill('טיוטה — בדיקת ממשק')
     page.locator('.o_form_button_save').click()
@@ -88,6 +121,7 @@ with sync_playwright() as playwright:
     page.screenshot(path=str(OUTPUT / 'collections-empty-desktop.png'), full_page=True)
     url = f'http://127.0.0.1:8069/odoo/action-{action}/{lead}'
     page.goto(url)
+    settle(page)
     expect(page.locator('.o_field_service_hero')).to_be_visible(timeout=60000)
     expect(page.locator('.o_field_service_notice_warning')).to_contain_text('טלפון לתיאום')
     page.screenshot(path=str(OUTPUT / 'desktop-missing-details.png'), full_page=True)
@@ -97,6 +131,7 @@ with sync_playwright() as playwright:
     assert model('crm.lead', 'read', [[lead]], fields=['field_dispatch_code'])[0]['field_dispatch_code'] == 'new'
     model('crm.lead', 'write', [[lead], {'phone': '0500000000'}])
     page.goto(url)
+    settle(page)
     expect(page.locator('.o_field_service_hero')).to_be_visible()
     expect(page.locator('.o_field_service_notice_ready')).to_be_visible()
     page.get_by_role('button', name='המשך להצעת מחיר', exact=True).click()
@@ -140,6 +175,7 @@ with sync_playwright() as playwright:
         'field_material_cost': 100,
     }])
     page.goto(url)
+    settle(page)
     select_tab('עלויות וקבלן')
     pricing = page.locator('.o_field_pricing_card')
     material = pricing.locator('[name="field_material_cost"] input')
@@ -168,7 +204,13 @@ with sync_playwright() as playwright:
         }""")
         assert geometry['frames'] == 1, f'Duplicate monetary borders at {width}px: {geometry}'
         assert geometry['above'] and geometry['contained'] and geometry['width'] > 150, geometry
-        assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), 'Pricing form overflows viewport'
+        try:
+            page.wait_for_function('document.documentElement.scrollWidth <= innerWidth + 1', timeout=5000)
+        except Exception:
+            page.screenshot(path=str(OUTPUT / f'overflow-pricing-{width}.png'), full_page=True)
+            print('OVERFLOW DETAILS', width, page.evaluate("[...document.querySelectorAll('body *')].filter(el => {const r=el.getBoundingClientRect();return r.width > 0 && (r.left < -1 || r.right > innerWidth+1)}).slice(0,20).map(el => ({tag:el.tagName,cls:el.className,x:el.getBoundingClientRect().x,width:el.getBoundingClientRect().width}))"), flush=True)
+            raise
+
         metric_label = page.locator('.o_field_finance_metrics label').first
         assert metric_label.evaluate("el => getComputedStyle(el).opacity") == '1', 'Computed amount labels are faded'
         page.screenshot(path=str(OUTPUT / f'pricing-focused-{width}.png'), full_page=True)
@@ -193,6 +235,7 @@ with sync_playwright() as playwright:
     model('crm.lead', 'write', [[lead], {'field_sale_amount': 1000, 'field_material_cost': 100, 'field_quote_number': 'UI-WORK', 'field_visit_at': datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}])
     page.set_viewport_size({'width': 1440, 'height': 1100})
     page.goto(url)
+    settle(page)
     page.get_by_role('button', name='ההצעה נשלחה — המשך', exact=True).click()
     page.get_by_role('button', name='הלקוח אישר — לתיאום', exact=True).click()
     page.get_by_role('button', name='אישור השיבוץ', exact=True).click()
@@ -209,21 +252,41 @@ with sync_playwright() as playwright:
     portal.on('pageerror', record_page_error)
     portal.on('console', record_console_error)
     portal.goto('http://127.0.0.1:8069/my/field-work')
+    settle(portal)
     expect(portal.get_by_role('heading', name='עבודות השטח שלי', exact=True)).to_be_visible()
     portal.get_by_role('link', name='החלפת ברז — בדיקת ממשק', exact=False).click()
     submit_report = portal.locator('[data-report-submit]')
     expect(submit_report).to_be_disabled()
+    portal.locator('[data-wizard-next]').click()
+    expect(portal.locator('[data-report-errors]')).to_contain_text('מה בוצע בפועל')
+    expect(portal.locator('#field_visit_summary')).to_have_attribute('aria-invalid', 'true')
+    portal.screenshot(path=str(OUTPUT / 'portal-step-error-mobile.png'), full_page=True)
+    portal.locator('#field_visit_summary').fill('הוחלף הברז ונבדקו כל החיבורים')
+    portal.locator('[data-wizard-next]').click()
+    expect(portal.locator('[data-wizard-panel="2"]')).to_be_visible()
+    portal.locator('[data-wizard-back]').click()
+    expect(portal.locator('#field_visit_summary')).to_have_value('הוחלף הברז ונבדקו כל החיבורים')
+    portal.locator('[data-wizard-next]').click()
+    portal.locator('[data-wizard-next]').click()
+    expect(portal.locator('[data-report-errors]')).to_contain_text('לפחות תמונה אחת לפני ביצוע')
+    portal.locator('[data-report-errors] a').first.click()
+    expect(portal.locator('[data-kind="before"] [data-select-photo]')).to_be_focused()
+    portal.locator('#field_before_image').set_input_files({'name': 'invalid.txt', 'mimeType': 'text/plain', 'buffer': b'not an image'})
+    expect(portal.locator('#photo-error-before')).to_contain_text('JPG')
     with portal.expect_file_chooser() as chooser:
         portal.get_by_role('button', name='הוספת תמונות לפני ביצוע', exact=True).click()
     chooser.value.set_files([{'name': f'before-{n}.png', 'mimeType': 'image/png', 'buffer': png((200, 50, 20))} for n in range(2)])
     expect(portal.locator('[data-new-photos]').first).to_contain_text('עדיין לא נשמרה')
-    portal.locator('#field_visit_summary').fill('הוחלף הברז ונבדקו כל החיבורים')
     expect(submit_report).to_be_disabled()
     portal.locator('#field_after_image').set_input_files([{'name': f'after-{n}.png', 'mimeType': 'image/png', 'buffer': png((30, 100, 220))} for n in range(2)])
     expect(submit_report).to_be_enabled()
     expect(portal.locator('.o_field_gallery_image')).to_have_count(4)
     portal.locator('[data-new-photos] .o_field_photo_zoom').first.click()
     expect(portal.locator('[data-photo-dialog]')).to_be_visible()
+    portal.keyboard.press('Escape')
+    expect(portal.locator('[data-photo-dialog]')).not_to_be_visible()
+    expect(portal.locator('[data-new-photos] .o_field_photo_zoom').first).to_be_focused()
+    portal.locator('[data-new-photos] .o_field_photo_zoom').first.click()
     portal.get_by_role('button', name='סגירת התמונה', exact=True).click()
     expect(portal.locator('[data-photo-dialog]')).not_to_be_visible()
     # Reject an over-limit batch without losing the already selected files.
@@ -233,17 +296,23 @@ with sync_playwright() as playwright:
     portal.locator('[data-report-save]').click()
     expect(portal.get_by_text('הדיווח והתמונות נשמרו. אפשר לחזור לעבודה ולהגיש בהמשך.', exact=True)).to_be_visible()
     expect(portal.locator('[data-photo-key]')).to_have_count(4)
+    portal.locator('[data-wizard-next]').click()
     portal.locator('[data-kind="before"] [name="remove_photo"]').first.check()
     portal.locator('#field_before_image').set_input_files([{'name': f'replacement-{n}.png', 'mimeType': 'image/png', 'buffer': png((90, 80, 30))} for n in range(3)])
     expect(portal.locator('[data-report-summary]')).to_contain_text('4 תמונות לפני · 2 תמונות אחרי')
     assert portal.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), 'Portal overflows mobile viewport'
     portal.screenshot(path=str(OUTPUT / 'portal-mobile-selected.png'), full_page=True)
+    portal.locator('[data-wizard-next]').click()
+    expect(portal.locator('[data-review-description]')).to_contain_text('הוחלף הברז')
+    assert portal.locator('[data-report-submit]').evaluate('el => el.getBoundingClientRect().height >= 44 && el.getBoundingClientRect().height <= 80'), 'Mobile report action is not compact and touch-friendly'
+    portal.screenshot(path=str(OUTPUT / 'portal-review-mobile.png'), full_page=True)
     submit_report.click()
     expect(portal.get_by_text('הדיווח והתמונות נשלחו לבדיקת התפעול.', exact=True)).to_be_visible()
     expect(portal.locator('input[type="file"]')).to_have_count(0)
     gallery_data = model('project.task', 'read', [[task]], fields=['field_extra_photo_ids', 'field_visit_summary'])[0]
     assert len(gallery_data['field_extra_photo_ids']) == 4, gallery_data
     page.goto(url)
+    settle(page)
     select_tab('ביצוע')
     expect(page.locator('.o_field_report_panel [name="field_visit_summary"]')).to_contain_text('הוחלף הברז')
     page.get_by_role('button', name='החזרה לתיקון', exact=True).click()
@@ -252,11 +321,15 @@ with sync_playwright() as playwright:
     dialog.get_by_role('button', name='שליחת בקשת תיקון', exact=True).click()
     expect(page.locator('.modal:visible')).to_have_count(0)
     portal.goto(f'http://127.0.0.1:8069/my/field-work/{task}')
+    settle(portal)
     expect(portal.get_by_text('צילום קרוב יותר של החיבור', exact=True)).to_be_visible()
+    portal.locator('[data-wizard-next]').click()
     portal.locator('#field_after_image').set_input_files({'name': 'corrected.png', 'mimeType': 'image/png', 'buffer': png((20, 180, 70))})
+    portal.locator('[data-wizard-next]').click()
     portal.locator('[data-report-submit]').click()
     expect(portal.get_by_text('הדיווח והתמונות נשלחו לבדיקת התפעול.', exact=True)).to_be_visible()
     page.goto(url)
+    settle(page)
     page.get_by_role('button', name='אישור ביצוע', exact=True).click()
     expect(page.locator('.o_field_collection_panel')).to_be_visible()
     select_tab('ביצוע')
@@ -271,6 +344,7 @@ with sync_playwright() as playwright:
     page.screenshot(path=str(OUTPUT / 'workspace-approved-desktop.png'), full_page=True)
     assert model('crm.lead', 'read', [[lead]], fields=['field_dispatch_code'])[0]['field_dispatch_code'] == 'completed'
     portal.goto('http://127.0.0.1:8069/my/field-work?scope=completed')
+    settle(portal)
     expect(portal.get_by_role('link', name='החלפת ברז — בדיקת ממשק', exact=False)).to_be_visible()
     # An incomplete visit has no photo requirement and cannot be approved as done.
     followup_lead = model('crm.lead', 'create', [{
@@ -284,14 +358,18 @@ with sync_playwright() as playwright:
         model('crm.lead', 'action_next_field_stage', [[followup_lead]])
     followup_task = model('crm.lead', 'read', [[followup_lead]], fields=['field_workspace_task_id'])[0]['field_workspace_task_id'][0]
     portal.goto(f'http://127.0.0.1:8069/my/field-work/{followup_task}')
+    settle(portal)
     portal.locator('#field_visit_result').select_option('not_done')
     expect(portal.locator('[data-report-submit]')).to_be_disabled()
     portal.locator('#field_visit_reason').fill('הלקוח לא נמצא בבית. נדרש תיאום ביקור נוסף.')
     expect(portal.locator('[data-report-submit]')).to_be_enabled()
     portal.screenshot(path=str(OUTPUT / 'portal-mobile-incomplete.png'), full_page=True)
+    portal.locator('[data-wizard-next]').click()
+    portal.locator('[data-wizard-next]').click()
     portal.locator('[data-report-submit]').click()
     expect(portal.get_by_text('הדיווח והתמונות נשלחו לבדיקת התפעול.', exact=True)).to_be_visible()
     page.goto(f'http://127.0.0.1:8069/odoo/action-{action}/{followup_lead}')
+    settle(page)
     select_tab('ביצוע')
     expect(page.get_by_role('button', name='אישור ביצוע', exact=True)).to_have_count(0)
     expect(page.locator('.o_field_report_panel [name="field_visit_reason"]')).to_contain_text('הלקוח לא נמצא')
@@ -307,6 +385,7 @@ with sync_playwright() as playwright:
     contractor_context.close()
     rates_action = model('ir.model.data', 'search_read', [[['module', '=', 'field_work_photos'], ['name', '=', 'action_field_contractor_rates']]], fields=['res_id'])[0]['res_id']
     page.goto(f'http://127.0.0.1:8069/odoo/action-{rates_action}')
+    settle(page)
     expect(page.locator('.o_list_view')).to_be_visible()
     for rate in ('field_rate_small', 'field_rate_medium', 'field_rate_large'):
         expect(page.locator(f'th[data-name="{rate}"]')).to_be_visible()
@@ -317,6 +396,7 @@ with sync_playwright() as playwright:
     # cancellation all run through the real dialogs, including a narrow screen.
     model('crm.lead', 'write', [[lead], {'field_customer_due': 1180, 'field_contractor_due': 700}])
     page.goto(url)
+    settle(page)
     select_tab('גבייה')
     collection = page.locator('.o_field_collection_panel')
     collection.scroll_into_view_if_needed()
@@ -333,6 +413,7 @@ with sync_playwright() as playwright:
     page.screenshot(path=str(OUTPUT / 'collections-partial-desktop.png'), full_page=True)
     page.set_viewport_size({'width': 390, 'height': 844})
     page.goto(url)
+    settle(page)
     select_tab('גבייה')
     expect(collection).to_be_visible()
     collection.scroll_into_view_if_needed()
@@ -358,6 +439,7 @@ with sync_playwright() as playwright:
     assert model('crm.lead', 'read', [[lead]], fields=['field_dispatch_code'])[0]['field_dispatch_code'] == 'paid'
     page.set_viewport_size({'width': 1440, 'height': 1100})
     page.goto(url)
+    settle(page)
     select_tab('עלויות וקבלן')
     page.get_by_role('button', name='רישום תשלום לקבלן', exact=True).click()
     dialog = page.locator('.modal:visible')
@@ -382,6 +464,7 @@ with sync_playwright() as playwright:
     assert reopened['field_dispatch_code'] == 'completed' and reopened['field_customer_balance'] == 400 and reopened['field_contractor_paid'] == 300, reopened
     collections_action = model('ir.model.data', 'search_read', [[['module', '=', 'field_work_photos'], ['name', '=', 'action_field_collections']]], fields=['res_id'])[0]['res_id']
     page.goto(f'http://127.0.0.1:8069/odoo/action-{collections_action}')
+    settle(page)
     expect(page.locator('.o_data_row').filter(has_text='החלפת ברז — בדיקת ממשק')).to_be_visible()
     page.screenshot(path=str(OUTPUT / 'collections-queue-desktop.png'), full_page=True)
     page.locator('.o_data_row').filter(has_text='החלפת ברז — בדיקת ממשק').click()
@@ -389,16 +472,19 @@ with sync_playwright() as playwright:
     expect(page.locator('.o_field_work_tabs').get_by_role('tab', name='גבייה', exact=True)).to_have_class(re.compile(r'\bactive\b'))
     payouts_action = model('ir.model.data', 'search_read', [[['module', '=', 'field_work_photos'], ['name', '=', 'action_field_payouts']]], fields=['res_id'])[0]['res_id']
     page.goto(f'http://127.0.0.1:8069/odoo/action-{payouts_action}')
+    settle(page)
     expect(page.locator('.o_list_view')).to_be_visible()
     expect(page.locator('th[data-name="field_contractor_balance"]')).to_be_visible()
     page.screenshot(path=str(OUTPUT / 'payouts-queue-desktop.png'), full_page=True)
     attention_action = model('ir.model.data', 'search_read', [[['module', '=', 'field_work_photos'], ['name', '=', 'action_field_work_attention']]], fields=['res_id'])[0]['res_id']
     page.goto(f'http://127.0.0.1:8069/odoo/action-{attention_action}')
+    settle(page)
     expect(page.locator('.o_list_view')).to_be_visible()
     expect(page.locator('.o_data_row').filter(has_text='טיוטה — בדיקת ממשק')).to_be_visible()
     expect(page.locator('.o_data_row').filter(has_text='החלפת ברז — בדיקת ממשק')).to_have_count(0)
     page.screenshot(path=str(OUTPUT / 'attention-queue-desktop.png'), full_page=True)
     page.goto(url)
+    settle(page)
     tab = page.locator('.o_field_work_tabs').get_by_role('tab', name='גבייה', exact=True)
     tab.focus()
     page.keyboard.press('Enter')
@@ -415,10 +501,12 @@ with sync_playwright() as playwright:
     ops_page = ops_context.new_page()
     ops_page.on('pageerror', record_page_error)
     ops_page.goto(url)
+    settle(ops_page)
     expect(ops_page.locator('.o_field_work_tabs').get_by_role('tab', name='עלויות וקבלן', exact=True)).to_have_count(0)
     select_tab('גבייה', ops_page)
     expect(ops_page.locator('.o_field_collection_panel')).to_be_visible()
     expect(ops_page.locator('.o_field_payout_panel')).to_have_count(0)
+    settle(ops_page)
     ops_page.screenshot(path=str(OUTPUT / 'operations-collection-desktop.png'), full_page=True)
     ops_context.close()
     assert not errors, errors

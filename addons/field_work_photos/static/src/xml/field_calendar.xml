@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="field_work_photos.CalendarMobileFilters">
+        <button t-if="props.model.filterSections.length" type="button" class="o_other_calendar_panel o_field_ui btn btn-light w-100 d-flex align-items-center justify-content-between" t-on-click="props.toggleSideBar" t-att-aria-expanded="props.sideBarShown">
+            <span>סינון תצוגת היומן</span><i t-attf-class="oi oi-chevron-{{caretDirection}}" aria-hidden="true"/>
+        </button>
+    </t>
+    <t t-name="field_work_photos.CalendarPopover">
+        <t t-if="env.isSmall">
+            <Dialog title="props.record.title" contentClass="'o_field_ui o_field_calendar_popup'">
+                <t t-call="{{ constructor.subTemplates.body }}"/>
+                <t t-set-slot="footer"><t t-call="{{ constructor.subTemplates.footer }}"/></t>
+            </Dialog>
+        </t>
+        <t t-else=""><t t-call="{{ constructor.subTemplates.popover }}"/></t>
+    </t>
+    <t t-name="field_work_photos.CalendarPopoverCard">
+        <div class="o_field_ui o_field_calendar_popup">
+            <header class="d-flex align-items-start gap-3 p-3"><h2 class="flex-grow-1 mb-0" t-esc="props.record.title"/><button type="button" class="btn btn-link" aria-label="סגירת פרטי המועד" t-on-click="() => props.close()"><i class="fa fa-times" aria-hidden="true"/></button></header>
+            <t t-call="{{ constructor.subTemplates.body }}"/>
+            <footer class="p-3"><t t-call="{{ constructor.subTemplates.footer }}"/></footer>
+        </div>
+    </t>
+    <t t-name="field_work_photos.CalendarPopoverBody" t-inherit="web.CalendarCommonPopover.body" t-inherit-mode="primary">
+        <xpath expr="//i[contains(@class,'fa-calendar')]" position="attributes"><attribute name="aria-hidden">true</attribute></xpath>
+        <xpath expr="//i[contains(@class,'fa-clock')]" position="attributes"><attribute name="aria-hidden">true</attribute></xpath>
+        <xpath expr="//span[@t-esc='time']" position="before"><span>שעת תחילת ביצוע:</span></xpath>
+        <xpath expr="//span[@t-esc='time']" position="attributes"><attribute name="dir">ltr</attribute><attribute name="class">fw-bold ms-2 d-inline-block</attribute></xpath>
+        <xpath expr="//i[@t-attf-class]" position="attributes"><attribute name="aria-hidden">true</attribute></xpath>
+    </t>
+    <t t-name="field_work_photos.CalendarPopoverFooter">
+        <button type="button" class="btn btn-primary o_field_calendar_open" t-on-click="onEditEvent">פתיחת המשימה</button>
+    </t>
+</templates>

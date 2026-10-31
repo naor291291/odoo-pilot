@@ -5,3 +5,4 @@ from . import field_workspace
 from . import field_visit
 from . import field_collection
 from . import field_interface
+from . import field_navigation
