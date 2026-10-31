@@ -1,5 +1,7 @@
 /** @odoo-module **/
 
+import { useEffect } from '@odoo/owl';
+import { CalendarController } from '@web/views/calendar/calendar_controller';
 import { registry } from '@web/core/registry';
 import { calendarView } from '@web/views/calendar/calendar_view';
 import { CalendarRenderer } from '@web/views/calendar/calendar_renderer';
@@ -23,9 +25,6 @@ class FieldWorkCommonRenderer extends CalendarCommonRenderer {
 }
 
 class FieldWorkCalendarRenderer extends CalendarRenderer {
-    // ActionSwiper changes its DOM at the mobile breakpoint. Remount the native
-    // FullCalendar instance so it measures the new container and keeps events visible.
-    get calendarKey() { return `${super.calendarKey}_${this.env.isSmall ? 'mobile' : 'desktop'}`; }
     static components = {
         ...CalendarRenderer.components,
         day: FieldWorkCommonRenderer,
@@ -34,6 +33,18 @@ class FieldWorkCalendarRenderer extends CalendarRenderer {
     };
 }
 
+class FieldWorkCalendarController extends CalendarController {
+    setup() {
+        super.setup();
+        // A desktop sidebar left open makes the native mobile controller hide
+        // the calendar. Collapse it when entering phone layout; users can still
+        // explicitly open the mobile filters afterwards.
+        useEffect(() => {
+            if (this.env.isSmall) this.state.showSideBar = false;
+        }, () => [this.env.isSmall]);
+    }
+}
+
 registry.category('views').add('field_work_calendar', {
-    ...calendarView, Renderer: FieldWorkCalendarRenderer,
+    ...calendarView, Controller: FieldWorkCalendarController, Renderer: FieldWorkCalendarRenderer,
 });
