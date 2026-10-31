@@ -166,6 +166,7 @@ with sync_playwright() as playwright, capture_on_failure():
     capture(page, 'tasks-list-desktop')
     page.locator('.o_data_row').filter(has_text='עבודת סקירה').click()
     expect(page.locator('.o_field_task_form')).to_be_visible()
+    expect(page.locator('.o_field_task_form')).to_contain_text('הדיווח עדיין בטיוטה וטרם נשלח לבדיקה')
     capture(page, 'task-detail-desktop')
     page.set_viewport_size({'width': 390, 'height': 844})
     expect(page.get_by_role('button', name='המשך טיפול בכרטיס העבודה', exact=True)).to_be_visible()
@@ -192,6 +193,10 @@ with sync_playwright() as playwright, capture_on_failure():
     page.locator('.modal:visible .btn-close').click()
     page.set_viewport_size({'width': 390, 'height': 844})
     capture(page, 'appointments-calendar-mobile')
+    page.locator('.fc-event').filter(has_text='עבודת סקירה').first.click()
+    expect(page.locator('.modal:visible .o_field_calendar_open')).to_be_visible()
+    capture(page, 'appointment-popover-mobile')
+    page.locator('.modal:visible .btn-close').click()
     page.set_viewport_size({'width': 1440, 'height': 1100})
 
     # Tier form: readable semantics, save a valid edit and reject an invalid rate.
@@ -209,7 +214,7 @@ with sync_playwright() as playwright, capture_on_failure():
     page.locator('.o_form_button_save').click()
     expect(page.locator('.modal:visible')).to_contain_text('אחוז קבלן חייב להיות בין 0 ל־100')
     capture(page, 'contractor-rate-validation-desktop')
-    page.locator('.modal:visible .btn-close').click()
+    page.locator('.modal:visible').get_by_role('button', name='השאר בדף זה', exact=True).click()
     medium_rate.fill('66')
     page.locator('.o_form_button_save').click()
     settle(page)

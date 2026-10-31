@@ -16,6 +16,11 @@
             <footer class="p-3"><t t-call="{{ constructor.subTemplates.footer }}"/></footer>
         </div>
     </t>
+    <t t-name="field_work_photos.CalendarPopoverBody" t-inherit="web.CalendarCommonPopover.body" t-inherit-mode="primary">
+        <xpath expr="//i[contains(@class,'fa-calendar')]" position="attributes"><attribute name="aria-hidden">true</attribute></xpath>
+        <xpath expr="//i[contains(@class,'fa-clock')]" position="attributes"><attribute name="aria-hidden">true</attribute></xpath>
+        <xpath expr="//i[@t-attf-class]" position="attributes"><attribute name="aria-hidden">true</attribute></xpath>
+    </t>
     <t t-name="field_work_photos.CalendarPopoverFooter">
         <button type="button" class="btn btn-primary o_field_calendar_open" t-on-click="onEditEvent">פתיחת המשימה</button>
     </t>

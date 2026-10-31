@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
 jobs:
   field-photos:
     runs-on: ubuntu-latest
@@ -32,6 +33,10 @@ jobs:
           CRM_SCREEN_RESULT=0
           CHROME_BIN="$(command -v google-chrome)" PYTHONPATH="$RUNNER_TEMP/field-ui-python" python3 scripts/check_crm_ui.py || CRM_SCREEN_RESULT=$?
           if [ "$FIELD_FLOW_RESULT" -ne 0 ] || [ "$CRM_SCREEN_RESULT" -ne 0 ]; then exit 1; fi
+      - name: Build visual UI evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/build_ui_evidence.py
       - name: Save browser verification screenshots
         if: always()
         uses: actions/upload-artifact@v4

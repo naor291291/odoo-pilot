@@ -12,6 +12,7 @@ class FieldWorkPopover extends CalendarCommonPopover {
     static subTemplates = {
         ...CalendarCommonPopover.subTemplates,
         popover: 'field_work_photos.CalendarPopoverCard',
+        body: 'field_work_photos.CalendarPopoverBody',
         footer: 'field_work_photos.CalendarPopoverFooter',
     };
     get isEventDeletable() { return false; }
