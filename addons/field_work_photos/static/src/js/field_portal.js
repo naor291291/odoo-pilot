@@ -174,7 +174,11 @@ function setupFieldReports() {
         };
         const go = (target, focus = true) => {
             const errors = target > step ? validation(target) : [];
-            if (errors.length) { showErrors(errors); return; }
+            if (errors.length) {
+                // A direct jump to review must expose the panel containing the error.
+                if (target > 2 && errors.some(error => error.target.closest('[data-wizard-panel="2"]'))) go(2, false);
+                showErrors(errors); return;
+            }
             clearErrors(); step = target;
             panels.forEach(panel => { panel.hidden = Number(panel.dataset.wizardPanel) !== step; });
             for (const button of nav.querySelectorAll('[data-wizard-go]')) {
@@ -206,6 +210,9 @@ function setupFieldReports() {
             if (dirty && form.dataset.submitting !== '1') { event.preventDefault(); event.returnValue = ''; }
         });
         form.addEventListener('submit', event => {
+            if (nav && event.submitter === submit && step !== 3) {
+                event.preventDefault(); go(3); return;
+            }
             if (form.dataset.submitting === '1') {
                 event.preventDefault();
                 return;

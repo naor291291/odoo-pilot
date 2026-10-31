@@ -118,6 +118,8 @@ with sync_playwright() as playwright:
     capture(page, 'clients-cards-desktop')
     page.get_by_role('button', name='חדש', exact=True).click()
     expect(page.locator('.o_field_contact_form')).to_be_visible()
+    page.locator('.o_form_button_save').click()
+    expect(page.locator('[name="name"].o_field_invalid')).to_be_visible()
     page.locator('[name="name"] input').fill('לקוח חדש לפני עבודה ראשונה')
     page.locator('[name="phone"] input').fill('0507654321')
     page.locator('.o_form_button_save').click()
@@ -141,6 +143,13 @@ with sync_playwright() as playwright:
     page.locator('.o_switch_view.o_calendar').click()
     expect(page.locator('.o_calendar_view')).to_be_visible()
     capture(page, 'appointments-calendar-desktop')
+    page.locator('.fc-event').filter(has_text='עבודת סקירה').first.click()
+    expect(page.locator('.modal:visible')).to_be_visible()
+    capture(page, 'appointment-dialog-desktop')
+    page.locator('.modal:visible .btn-close').click()
+    page.set_viewport_size({'width': 390, 'height': 844})
+    capture(page, 'appointments-calendar-mobile')
+    page.set_viewport_size({'width': 1440, 'height': 1100})
 
     # Tier form: readable semantics, save a valid edit and reject an invalid rate.
     open_action(page, 'action_field_contractor_rates')
@@ -192,6 +201,10 @@ with sync_playwright() as playwright:
     task = rpc(owner, 'crm.lead', 'read', [[lead]], fields=['field_workspace_task_id'])[0]['field_workspace_task_id'][0]
     assert portal_context.request.get(f'{BASE}/my/field-work/{task}').status == 404
     portal_page = page_for(portal_context)
+    portal_page.goto(f'{BASE}/my/home')
+    portal_page.wait_for_load_state('networkidle')
+    expect(portal_page.get_by_role('link', name='עבודות השטח שלי', exact=False)).to_be_visible()
+    capture(portal_page, 'contractor-home-mobile')
     portal_page.goto(f'{BASE}/my/field-work?scope=pending')
     portal_page.wait_for_load_state('networkidle')
     expect(portal_page.get_by_role('heading', name='אין כרגע עבודות ברשימה הזאת', exact=True)).to_be_visible()
