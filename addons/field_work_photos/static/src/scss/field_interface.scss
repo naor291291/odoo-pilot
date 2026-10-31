@@ -128,7 +128,11 @@
         /*rtl:ignore*/
         direction: ltr;
     }
-    .o_field_pricing_number { color: var(--work-ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .o_field_pricing_number {
+        color: var(--work-ink); font-weight: 600; font-variant-numeric: tabular-nums;
+        /*rtl:ignore*/
+        text-align: right;
+    }
     .o_field_money_summary { gap: 20px 24px; }
     .o_field_money_summary .o_field_pricing_number { font-size: 22px; }
     .o_field_empty_ledger { padding: 16px; margin: 20px 0; background: var(--work-input); border-radius: 8px; color: var(--work-steel); font-size: 15px; }
