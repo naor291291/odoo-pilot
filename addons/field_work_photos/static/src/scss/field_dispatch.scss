@@ -131,6 +131,18 @@
     .o_field_report_panel .o_field_image { width: 100%; }
     .o_field_report_panel .o_field_image img { max-height: 320px; object-fit: contain; }
     .o_field_service_sidebar { min-width: 0; }
+    .o_field_collection_panel, .o_field_payout_panel { min-width: 0; }
+    .o_field_money_summary {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px 24px;
+        margin: 20px 0;
+        min-width: 0;
+    }
+    .o_field_money_summary .o_field_widget { max-width: 100%; }
+    .o_field_payment_meta { display: grid; gap: 8px; overflow-wrap: anywhere; }
+    .o_field_payment_cards .o_kanban_record { width: 100%; }
+    .o_field_payment_cards .o_kanban_renderer { background: transparent; padding: 0; }
 }
 
 @media (max-width: 767px) {
@@ -138,3 +150,8 @@
     .o_field_service_form .o_field_service_mobile_actions .btn-primary { flex: 1 1 100%; }
     .o_field_service_form .o_field_service_mobile_actions .btn-outline-secondary { flex: 1; }
 }
+
+@media (max-width: 575px) {
+    .o_field_service_form .o_field_money_summary { grid-template-columns: minmax(0, 1fr); }
+}
+

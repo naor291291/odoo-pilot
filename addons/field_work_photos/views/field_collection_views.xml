@@ -37,34 +37,74 @@
                 <div class="o_field_service_card o_field_collection_panel" groups="field_work_photos.group_field_dispatcher">
                     <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-credit-card"/></span><div><h2>גבייה מהלקוח</h2><p>סכום העסקה הכולל, תקבולים ויתרה בשקלים</p></div></div>
                     <p class="o_field_help">הזן את הסכום הכולל לתשלום לפי המסמך, כולל מע״מ אם חל. הוא נפרד מסכום העסקה לפני מע״מ המשמש לרווחיות.</p>
-                    <group><field name="field_customer_due" readonly="field_dispatch_code == 'paid'"/>
-                        <field name="field_customer_paid"/><field name="field_customer_balance"/><field name="field_collection_status" widget="badge"/>
-                    </group>
+                    <div class="o_field_money_summary">
+                        <div class="o_field_pricing_row"><label for="field_customer_due"/><field name="field_customer_due" nolabel="1" readonly="field_dispatch_code == 'paid'"/></div>
+                        <div class="o_field_pricing_row"><label for="field_customer_paid"/><field name="field_customer_paid" nolabel="1" class="o_field_pricing_number"/></div>
+                        <div class="o_field_pricing_row"><label for="field_customer_balance"/><field name="field_customer_balance" nolabel="1" class="o_field_pricing_number"/></div>
+                        <div class="o_field_pricing_row"><label for="field_collection_status"/><field name="field_collection_status" nolabel="1" widget="badge"/></div>
+                    </div>
                     <div class="o_field_message" role="status" invisible="field_customer_due &gt; 0">יש להזין סכום כולל לגבייה לפני רישום תשלום.</div>
                     <button name="action_register_customer_payment" type="object" string="רישום תשלום מהלקוח" aria-label="רישום תשלום מהלקוח" class="btn btn-primary" invisible="not id or not partner_id or field_customer_due &lt;= 0 or field_customer_balance &lt;= 0 or field_dispatch_code == 'paid'"/>
-                    <field name="field_payment_ids" nolabel="1" readonly="1">
+                    <field name="field_payment_ids" nolabel="1" readonly="1" mode="list,kanban">
                         <list create="false" edit="false" delete="false" decoration-muted="state == 'cancelled'">
-                            <field name="currency_id" column_invisible="True"/><field name="payment_date"/><field name="amount"/><field name="method"/><field name="reference"/><field name="state" widget="badge"/>
-                            <button name="action_cancel_registration" type="object" string="ביטול רישום שגוי" icon="fa-undo" invisible="state != 'posted'"/>
+                            <field name="currency_id" column_invisible="True"/>
+                            <field name="payment_date" string="תאריך" width="120px"/><field name="amount" string="סכום" width="110px"/>
+                            <field name="method" width="120px"/><field name="reference" string="אסמכתה" width="150px"/><field name="state" widget="badge" width="80px"/>
+                            <button name="action_cancel_registration" type="object" string="ביטול רישום" invisible="state != 'posted'"/>
                         </list>
+                        <kanban create="false" edit="false" delete="false" records_draggable="false" class="o_field_payment_cards">
+                            <field name="state"/><field name="currency_id"/>
+                            <templates><t t-name="card">
+                                <div class="o_field_payment_meta">
+                                    <strong>סכום: <field name="amount"/></strong>
+                                    <div>תאריך: <field name="payment_date"/></div>
+                                    <div><field name="method"/></div>
+                                    <div>אסמכתה: <field name="reference"/></div>
+                                    <div><field name="state" widget="badge"/></div>
+                                    <button t-if="record.state.raw_value == 'posted'" name="action_cancel_registration" type="object" string="ביטול רישום" aria-label="ביטול רישום" class="btn btn-outline-secondary"/>
+                                </div>
+                            </t></templates>
+                        </kanban>
                     </field>
                     <div class="o_field_message" role="status" invisible="field_dispatch_code != 'completed' or field_collection_status != 'paid'">הביצוע אושר והסכום נגבה במלואו. אפשר לסגור את העבודה.</div>
                     <button name="action_close_field_work" type="object" string="סגירת עבודה — טופל ושולם" aria-label="סגירת עבודה — טופל ושולם" class="btn btn-primary" invisible="field_dispatch_code != 'completed' or field_collection_status != 'paid'" confirm="הביצוע אושר וכל התקבולים נרשמו. לסגור את העבודה כטופל ושולם?"/>
-                    <group invisible="field_dispatch_code != 'paid'"><field name="field_closed_at"/><field name="field_closed_by"/></group>
+                    <div class="o_field_money_summary" invisible="field_dispatch_code != 'paid'">
+                        <div class="o_field_pricing_row"><label for="field_closed_at"/><field name="field_closed_at" nolabel="1"/></div>
+                        <div class="o_field_pricing_row"><label for="field_closed_by"/><field name="field_closed_by" nolabel="1"/></div>
+                    </div>
                     <p class="o_field_help mt-3">רישום תפעולי בלבד. הפקת קבלות וחשבוניות מתבצעת במורנינג. ניתן לתעד מקדמה לפני סיום העבודה.</p>
                 </div>
                 <div class="o_field_service_card o_field_payout_panel" groups="field_work_photos.group_field_finance" invisible="field_execution_type != 'subcontractor'">
                     <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-handshake-o"/></span><div><h2>התחשבנות עם הקבלן</h2><p>מידע לבעלים בלבד · תשלומים בפועל</p></div></div>
                     <p class="o_field_help">הסכום הצפוי לפי המחירון הוא לפני מע״מ. הזן בנפרד את הסכום הכולל שסוכם לתשלום לקבלן, כולל מע״מ אם חל.</p>
-                    <group><field name="field_contractor_cost" string="אומדן לפי מחירון לפני מע״מ"/>
-                        <field name="field_contractor_due"/><field name="field_contractor_paid"/><field name="field_contractor_balance"/><field name="field_payout_status" widget="badge"/>
-                    </group>
+                    <div class="o_field_money_summary">
+                        <div class="o_field_pricing_row"><label for="payout_cost" string="אומדן לפי מחירון לפני מע״מ"/><field name="field_contractor_cost" id="payout_cost" nolabel="1" class="o_field_pricing_number"/></div>
+                        <div class="o_field_pricing_row"><label for="field_contractor_due"/><field name="field_contractor_due" nolabel="1"/></div>
+                        <div class="o_field_pricing_row"><label for="field_contractor_paid"/><field name="field_contractor_paid" nolabel="1" class="o_field_pricing_number"/></div>
+                        <div class="o_field_pricing_row"><label for="field_contractor_balance"/><field name="field_contractor_balance" nolabel="1" class="o_field_pricing_number"/></div>
+                        <div class="o_field_pricing_row"><label for="field_payout_status"/><field name="field_payout_status" nolabel="1" widget="badge"/></div>
+                    </div>
                     <button name="action_register_contractor_payment" type="object" string="רישום תשלום לקבלן" aria-label="רישום תשלום לקבלן" class="btn btn-outline-primary" invisible="not id or not field_contractor_id or field_contractor_due &lt;= 0 or field_contractor_balance &lt;= 0"/>
-                    <field name="field_payout_ids" nolabel="1" readonly="1">
+                    <field name="field_payout_ids" nolabel="1" readonly="1" mode="list,kanban">
                         <list create="false" edit="false" delete="false" decoration-muted="state == 'cancelled'">
-                            <field name="currency_id" column_invisible="True"/><field name="payment_date"/><field name="amount"/><field name="method"/><field name="reference"/><field name="state" widget="badge"/>
-                            <button name="action_cancel_registration" type="object" string="ביטול רישום שגוי" icon="fa-undo" invisible="state != 'posted'"/>
+                            <field name="currency_id" column_invisible="True"/>
+                            <field name="payment_date" string="תאריך" width="120px"/><field name="amount" string="סכום" width="110px"/>
+                            <field name="method" width="120px"/><field name="reference" string="אסמכתה" width="150px"/><field name="state" widget="badge" width="80px"/>
+                            <button name="action_cancel_registration" type="object" string="ביטול רישום" invisible="state != 'posted'"/>
                         </list>
+                        <kanban create="false" edit="false" delete="false" records_draggable="false" class="o_field_payment_cards">
+                            <field name="state"/><field name="currency_id"/>
+                            <templates><t t-name="card">
+                                <div class="o_field_payment_meta">
+                                    <strong>סכום: <field name="amount"/></strong>
+                                    <div>תאריך: <field name="payment_date"/></div>
+                                    <div><field name="method"/></div>
+                                    <div>אסמכתה: <field name="reference"/></div>
+                                    <div><field name="state" widget="badge"/></div>
+                                    <button t-if="record.state.raw_value == 'posted'" name="action_cancel_registration" type="object" string="ביטול רישום" aria-label="ביטול רישום" class="btn btn-outline-secondary"/>
+                                </div>
+                            </t></templates>
+                        </kanban>
                     </field>
                     <p class="o_field_help">התשלום לקבלן מנוהל בנפרד מגביית הלקוח ואינו משנה את הרווחיות הצפויה או את סגירת העבודה.</p>
                 </div>

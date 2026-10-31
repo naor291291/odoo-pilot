@@ -295,6 +295,12 @@ with sync_playwright() as playwright:
     collection.scroll_into_view_if_needed()
     page.screenshot(path=str(OUTPUT / 'collections-partial-desktop.png'), full_page=True)
     page.set_viewport_size({'width': 390, 'height': 844})
+    page.goto(url)
+    expect(collection.locator('.o_kanban_record')).to_have_count(1)
+    expect(collection.locator('[name="field_customer_balance"]')).to_contain_text('780')
+    for field_name in ('field_customer_due', 'field_customer_paid', 'field_customer_balance'):
+        bounds = collection.locator(f'[name="{field_name}"]').bounding_box()
+        assert bounds and bounds['x'] >= 0 and bounds['x'] + bounds['width'] <= 391, (field_name, bounds)
     collection.scroll_into_view_if_needed()
     assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), 'Collections overflow mobile viewport'
     page.screenshot(path=str(OUTPUT / 'collections-partial-mobile.png'), full_page=True)
@@ -310,6 +316,7 @@ with sync_playwright() as playwright:
     expect(collection.locator('[name="field_closed_at"]')).to_be_visible()
     assert model('crm.lead', 'read', [[lead]], fields=['field_dispatch_code'])[0]['field_dispatch_code'] == 'paid'
     page.set_viewport_size({'width': 1440, 'height': 1100})
+    page.goto(url)
     page.get_by_role('button', name='רישום תשלום לקבלן', exact=True).click()
     dialog = page.locator('.modal:visible')
     dialog.locator('[name="amount"] input').fill('300')
@@ -321,7 +328,7 @@ with sync_playwright() as playwright:
     collection.scroll_into_view_if_needed()
     page.screenshot(path=str(OUTPUT / 'collections-closed-desktop.png'), full_page=True)
     row = collection.locator('.o_data_row').filter(has_text='UI-CUSTOMER-1')
-    row.get_by_role('button', name='ביטול רישום שגוי', exact=True).click()
+    row.get_by_role('button', name='ביטול רישום', exact=True).click()
     dialog = page.locator('.modal:visible')
     dialog.locator('[name="reason"] textarea').fill('בדיקת ביטול רישום כפול')
     dialog.get_by_role('button', name='ביטול הרישום ושמירת הסיבה', exact=True).click()
