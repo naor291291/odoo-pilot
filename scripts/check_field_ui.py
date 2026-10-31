@@ -277,6 +277,67 @@ with sync_playwright() as playwright:
         title = page.locator(f'th[data-name="{rate}"] .text-truncate')
         assert title.evaluate('(el) => el.scrollWidth <= el.clientWidth'), f'{rate} heading is truncated'
     page.screenshot(path=str(OUTPUT / 'contractor-rates-desktop.png'), full_page=True)
+    # Customer installments, explicit closure, owner payout after closure and
+    # cancellation all run through the real dialogs, including a narrow screen.
+    model('crm.lead', 'write', [[lead], {'field_customer_due': 1180, 'field_contractor_due': 700}])
+    page.goto(url)
+    collection = page.locator('.o_field_collection_panel')
+    collection.scroll_into_view_if_needed()
+    expect(collection.locator('[name="field_collection_status"]')).to_contain_text('טרם שולם')
+    page.get_by_role('button', name='רישום תשלום מהלקוח', exact=True).click()
+    dialog = page.locator('.modal:visible')
+    dialog.locator('[name="amount"] input').fill('400')
+    dialog.locator('[name="reference"] input').fill('UI-CUSTOMER-1')
+    dialog.get_by_role('button', name='אישור רישום תשלום', exact=True).click()
+    expect(page.locator('.modal:visible')).to_have_count(0)
+    expect(collection.locator('[name="field_collection_status"]')).to_contain_text('שולם חלקית')
+    assert model('crm.lead', 'read', [[lead]], fields=['field_customer_balance'])[0]['field_customer_balance'] == 780
+    collection.scroll_into_view_if_needed()
+    page.screenshot(path=str(OUTPUT / 'collections-partial-desktop.png'), full_page=True)
+    page.set_viewport_size({'width': 390, 'height': 844})
+    collection.scroll_into_view_if_needed()
+    assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), 'Collections overflow mobile viewport'
+    page.screenshot(path=str(OUTPUT / 'collections-partial-mobile.png'), full_page=True)
+    page.get_by_role('button', name='רישום תשלום מהלקוח', exact=True).click()
+    dialog = page.locator('.modal:visible')
+    dialog.locator('[name="amount"] input').fill('780')
+    dialog.locator('[name="reference"] input').fill('UI-CUSTOMER-2')
+    page.screenshot(path=str(OUTPUT / 'collections-dialog-mobile.png'), full_page=True)
+    dialog.get_by_role('button', name='אישור רישום תשלום', exact=True).click()
+    expect(page.locator('.modal:visible')).to_have_count(0)
+    page.get_by_role('button', name='סגירת עבודה — טופל ושולם', exact=True).click()
+    page.locator('.modal:visible .btn-primary').click()
+    expect(collection.locator('[name="field_closed_at"]')).to_be_visible()
+    assert model('crm.lead', 'read', [[lead]], fields=['field_dispatch_code'])[0]['field_dispatch_code'] == 'paid'
+    page.set_viewport_size({'width': 1440, 'height': 1100})
+    page.get_by_role('button', name='רישום תשלום לקבלן', exact=True).click()
+    dialog = page.locator('.modal:visible')
+    dialog.locator('[name="amount"] input').fill('300')
+    dialog.locator('[name="reference"] input').fill('UI-PAYOUT-1')
+    dialog.get_by_role('button', name='אישור רישום תשלום', exact=True).click()
+    expect(page.locator('.modal:visible')).to_have_count(0)
+    expect(page.locator('.o_field_payout_panel [name="field_payout_status"]')).to_contain_text('שולם חלקית')
+    assert model('crm.lead', 'read', [[lead]], fields=['field_contractor_balance'])[0]['field_contractor_balance'] == 400
+    collection.scroll_into_view_if_needed()
+    page.screenshot(path=str(OUTPUT / 'collections-closed-desktop.png'), full_page=True)
+    row = collection.locator('.o_data_row').filter(has_text='UI-CUSTOMER-1')
+    row.get_by_role('button', name='ביטול רישום שגוי', exact=True).click()
+    dialog = page.locator('.modal:visible')
+    dialog.locator('[name="reason"] textarea').fill('בדיקת ביטול רישום כפול')
+    dialog.get_by_role('button', name='ביטול הרישום ושמירת הסיבה', exact=True).click()
+    expect(page.locator('.modal:visible')).to_have_count(0)
+    expect(collection.locator('.o_data_row').filter(has_text='UI-CUSTOMER-1')).to_contain_text('בוטל')
+    reopened = model('crm.lead', 'read', [[lead]], fields=['field_dispatch_code', 'field_customer_balance', 'field_contractor_paid'])[0]
+    assert reopened['field_dispatch_code'] == 'completed' and reopened['field_customer_balance'] == 400 and reopened['field_contractor_paid'] == 300, reopened
+    collections_action = model('ir.model.data', 'search_read', [[['module', '=', 'field_work_photos'], ['name', '=', 'action_field_collections']]], fields=['res_id'])[0]['res_id']
+    page.goto(f'http://127.0.0.1:8069/odoo/action-{collections_action}')
+    expect(page.locator('.o_data_row').filter(has_text='החלפת ברז — בדיקת ממשק')).to_be_visible()
+    page.screenshot(path=str(OUTPUT / 'collections-queue-desktop.png'), full_page=True)
+    payouts_action = model('ir.model.data', 'search_read', [[['module', '=', 'field_work_photos'], ['name', '=', 'action_field_payouts']]], fields=['res_id'])[0]['res_id']
+    page.goto(f'http://127.0.0.1:8069/odoo/action-{payouts_action}')
+    expect(page.locator('.o_list_view')).to_be_visible()
+    expect(page.locator('th[data-name="field_contractor_balance"]')).to_be_visible()
+    page.screenshot(path=str(OUTPUT / 'payouts-queue-desktop.png'), full_page=True)
     attention_action = model('ir.model.data', 'search_read', [[['module', '=', 'field_work_photos'], ['name', '=', 'action_field_work_attention']]], fields=['res_id'])[0]['res_id']
     page.goto(f'http://127.0.0.1:8069/odoo/action-{attention_action}')
     expect(page.locator('.o_list_view')).to_be_visible()
@@ -286,4 +347,4 @@ with sync_playwright() as playwright:
     assert not errors, errors
     context.close()
     browser.close()
-print('PASS: real Chrome rendered new draft, desktop/mobile forms, missing-field dialog Continue action, focused pricing input geometry, amount saving and negative values; no JS errors.')
+print('PASS: real Chrome rendered new draft, desktop/mobile forms, missing-field dialog Continue action, focused pricing input geometry, amount saving and negative values; partial receipts, paid closure, contractor payout, cancellation and collection queues; no JS errors.')

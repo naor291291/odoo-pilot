@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_field_payment_register" model="ir.ui.view">
+        <field name="name">field.work.payment.register.form</field><field name="model">field.work.payment.register</field>
+        <field name="arch" type="xml"><form string="רישום תשלום" class="o_field_ui">
+            <div class="alert alert-info" role="status">יש לרשום כסף שהתקבל או שולם בפועל בלבד. הרישום אינו מפיק קבלה או חשבונית במורנינג.</div>
+            <group><field name="lead_id" options="{'no_open': True}"/><field name="kind"/><field name="currency_id" invisible="1"/>
+                <field name="amount"/><field name="payment_date"/><field name="method"/>
+                <field name="reference" placeholder="מספר קבלה, העברה או אסמכתה פנימית ייחודית לעבודה"/><field name="note"/>
+            </group>
+            <footer><button name="action_apply" type="object" string="אישור רישום תשלום" aria-label="אישור רישום תשלום" class="btn-primary"/><button special="cancel" string="ביטול" class="btn-secondary"/></footer>
+        </form></field>
+    </record>
+    <record id="view_field_payment_cancel" model="ir.ui.view">
+        <field name="name">field.work.payment.cancel.form</field><field name="model">field.work.payment.cancel</field>
+        <field name="arch" type="xml"><form string="ביטול רישום שגוי" class="o_field_ui">
+            <p>הרישום יישמר כמבוטל והיתרות יחושבו מחדש. ביטול תקבול בעבודה שנסגרה יפתח אותה מחדש לגבייה. פעולה זו אינה החזר כספי ואינה מבטלת מסמך במורנינג.</p>
+            <group><field name="payment_id" options="{'no_open': True}"/><field name="reason" placeholder="למשל: התשלום נרשם פעמיים בטעות"/></group>
+            <footer><button name="action_apply" type="object" string="ביטול הרישום ושמירת הסיבה" aria-label="ביטול הרישום ושמירת הסיבה" class="btn-primary"/><button special="cancel" string="חזרה" class="btn-secondary"/></footer>
+        </form></field>
+    </record>
+    <record id="view_field_payment_form" model="ir.ui.view">
+        <field name="name">field.work.payment.form</field><field name="model">field.work.payment</field>
+        <field name="arch" type="xml"><form string="רישום תשלום" create="false" edit="false" delete="false" duplicate="false" class="o_field_ui">
+            <header><button name="action_cancel_registration" type="object" string="ביטול רישום שגוי" invisible="state != 'posted'"/></header>
+            <sheet><group><field name="lead_id"/><field name="kind"/><field name="partner_id"/><field name="currency_id" invisible="1"/>
+                <field name="amount"/><field name="payment_date"/><field name="method"/><field name="reference"/><field name="state"/>
+                <field name="note"/><field name="create_uid" string="נרשם על ידי"/><field name="create_date" string="מועד רישום"/>
+            </group><group string="תיעוד ביטול" invisible="state != 'cancelled'"><field name="cancel_reason"/><field name="cancelled_by"/><field name="cancelled_at"/></group></sheet>
+        </form></field>
+    </record>
+    <record id="view_field_lead_collection" model="ir.ui.view">
+        <field name="name">crm.lead.field.collection</field><field name="model">crm.lead</field>
+        <field name="inherit_id" ref="view_field_lead_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('o_field_service_main')]/details" position="before">
+                <div class="o_field_service_card o_field_collection_panel" groups="field_work_photos.group_field_dispatcher">
+                    <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-credit-card"/></span><div><h2>גבייה מהלקוח</h2><p>סכום העסקה הכולל, תקבולים ויתרה בשקלים</p></div></div>
+                    <p class="o_field_help">הזן את הסכום הכולל לתשלום לפי המסמך, כולל מע״מ אם חל. הוא נפרד מסכום העסקה לפני מע״מ המשמש לרווחיות.</p>
+                    <group><field name="field_customer_due" readonly="field_dispatch_code == 'paid'"/>
+                        <field name="field_customer_paid"/><field name="field_customer_balance"/><field name="field_collection_status" widget="badge"/>
+                    </group>
+                    <div class="o_field_message" role="status" invisible="field_customer_due &gt; 0">יש להזין סכום כולל לגבייה לפני רישום תשלום.</div>
+                    <button name="action_register_customer_payment" type="object" string="רישום תשלום מהלקוח" aria-label="רישום תשלום מהלקוח" class="btn btn-primary" invisible="not id or not partner_id or field_customer_due &lt;= 0 or field_customer_balance &lt;= 0 or field_dispatch_code == 'paid'"/>
+                    <field name="field_payment_ids" nolabel="1" readonly="1">
+                        <list create="false" edit="false" delete="false" decoration-muted="state == 'cancelled'">
+                            <field name="currency_id" column_invisible="True"/><field name="payment_date"/><field name="amount"/><field name="method"/><field name="reference"/><field name="state" widget="badge"/>
+                            <button name="action_cancel_registration" type="object" string="ביטול רישום שגוי" icon="fa-undo" invisible="state != 'posted'"/>
+                        </list>
+                    </field>
+                    <div class="o_field_message" role="status" invisible="field_dispatch_code != 'completed' or field_collection_status != 'paid'">הביצוע אושר והסכום נגבה במלואו. אפשר לסגור את העבודה.</div>
+                    <button name="action_close_field_work" type="object" string="סגירת עבודה — טופל ושולם" aria-label="סגירת עבודה — טופל ושולם" class="btn btn-primary" invisible="field_dispatch_code != 'completed' or field_collection_status != 'paid'" confirm="הביצוע אושר וכל התקבולים נרשמו. לסגור את העבודה כטופל ושולם?"/>
+                    <group invisible="field_dispatch_code != 'paid'"><field name="field_closed_at"/><field name="field_closed_by"/></group>
+                    <p class="o_field_help mt-3">רישום תפעולי בלבד. הפקת קבלות וחשבוניות מתבצעת במורנינג. ניתן לתעד מקדמה לפני סיום העבודה.</p>
+                </div>
+                <div class="o_field_service_card o_field_payout_panel" groups="field_work_photos.group_field_finance" invisible="field_execution_type != 'subcontractor'">
+                    <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-handshake-o"/></span><div><h2>התחשבנות עם הקבלן</h2><p>מידע לבעלים בלבד · תשלומים בפועל</p></div></div>
+                    <p class="o_field_help">הסכום הצפוי לפי המחירון הוא לפני מע״מ. הזן בנפרד את הסכום הכולל שסוכם לתשלום לקבלן, כולל מע״מ אם חל.</p>
+                    <group><field name="field_contractor_cost" string="אומדן לפי מחירון לפני מע״מ"/>
+                        <field name="field_contractor_due"/><field name="field_contractor_paid"/><field name="field_contractor_balance"/><field name="field_payout_status" widget="badge"/>
+                    </group>
+                    <button name="action_register_contractor_payment" type="object" string="רישום תשלום לקבלן" aria-label="רישום תשלום לקבלן" class="btn btn-outline-primary" invisible="not id or not field_contractor_id or field_contractor_due &lt;= 0 or field_contractor_balance &lt;= 0"/>
+                    <field name="field_payout_ids" nolabel="1" readonly="1">
+                        <list create="false" edit="false" delete="false" decoration-muted="state == 'cancelled'">
+                            <field name="currency_id" column_invisible="True"/><field name="payment_date"/><field name="amount"/><field name="method"/><field name="reference"/><field name="state" widget="badge"/>
+                            <button name="action_cancel_registration" type="object" string="ביטול רישום שגוי" icon="fa-undo" invisible="state != 'posted'"/>
+                        </list>
+                    </field>
+                    <p class="o_field_help">התשלום לקבלן מנוהל בנפרד מגביית הלקוח ואינו משנה את הרווחיות הצפויה או את סגירת העבודה.</p>
+                </div>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_field_collection_list" model="ir.ui.view">
+        <field name="name">crm.lead.field.collection.list</field><field name="model">crm.lead</field>
+        <field name="arch" type="xml"><list string="ממתין לגבייה וסגירה" create="false" delete="false" class="o_field_ui">
+            <field name="field_pricing_currency_id" column_invisible="True"/><field name="name"/><field name="partner_id"/>
+            <field name="field_customer_due" sum="סך לגבייה"/><field name="field_customer_paid" sum="סך שהתקבל"/><field name="field_customer_balance" sum="סך יתרות"/>
+            <field name="field_collection_status" widget="badge"/><field name="field_report_approved_at" string="אישור ביצוע"/>
+        </list></field>
+    </record>
+    <record id="view_field_collection_search" model="ir.ui.view">
+        <field name="name">crm.lead.field.collection.search</field><field name="model">crm.lead</field>
+        <field name="arch" type="xml"><search><field name="name"/><field name="partner_id"/>
+            <filter name="outstanding" string="יתרה פתוחה" domain="[('field_customer_balance', '&gt;', 0)]"/>
+            <filter name="unset" string="נדרש סכום כולל" domain="[('field_collection_status', '=', 'unset')]"/>
+            <filter name="ready" string="מוכן לסגירה" domain="[('field_collection_status', '=', 'paid')]"/>
+            <group><filter name="customer" string="לקוח" context="{'group_by': 'partner_id'}"/></group>
+        </search></field>
+    </record>
+    <record id="action_field_collections" model="ir.actions.act_window">
+        <field name="name">ממתין לגבייה וסגירה</field><field name="res_model">crm.lead</field><field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_field_collection_search"/>
+        <field name="domain">[('is_field_service', '=', True), ('field_dispatch_code', '=', 'completed')]</field>
+        <field name="view_ids" eval="[(5,0,0),(0,0,{'view_mode':'list','view_id':ref('view_field_collection_list')}),(0,0,{'view_mode':'form','view_id':ref('view_field_lead_form')})]"/>
+        <field name="help" type="html"><p class="o_view_nocontent_smiling_face">אין עבודות מאושרות שממתינות לגבייה או לסגירה</p></field>
+    </record>
+    <menuitem id="menu_field_collections" name="ממתין לגבייה וסגירה" parent="menu_field_service_root" action="action_field_collections" sequence="20" groups="field_work_photos.group_field_dispatcher"/>
+    <record id="view_field_payout_list" model="ir.ui.view">
+        <field name="name">crm.lead.field.payout.list</field><field name="model">crm.lead</field>
+        <field name="arch" type="xml"><list string="התחשבנות קבלנים" create="false" delete="false" class="o_field_ui">
+            <field name="field_pricing_currency_id" column_invisible="True"/><field name="field_contractor_id"/><field name="name"/><field name="stage_id"/>
+            <field name="field_contractor_cost" string="אומדן לפני מע״מ"/><field name="field_contractor_due" sum="סה״כ לתשלום"/>
+            <field name="field_contractor_paid" sum="סה״כ שולם"/><field name="field_contractor_balance" sum="סה״כ יתרות"/><field name="field_payout_status" widget="badge"/>
+        </list></field>
+    </record>
+    <record id="view_field_payout_search" model="ir.ui.view">
+        <field name="name">crm.lead.field.payout.search</field><field name="model">crm.lead</field>
+        <field name="arch" type="xml"><search><field name="name"/><field name="field_contractor_id"/>
+            <filter name="outstanding" string="יתרה לקבלן" domain="[('field_contractor_balance', '&gt;', 0)]"/>
+            <filter name="unset" string="נדרש סכום כולל" domain="[('field_payout_status', '=', 'unset')]"/>
+            <filter name="paid" string="שולם במלואו" domain="[('field_payout_status', '=', 'paid')]"/>
+            <group><filter name="contractor" string="קבלן" context="{'group_by': 'field_contractor_id'}"/></group>
+        </search></field>
+    </record>
+    <record id="action_field_payouts" model="ir.actions.act_window">
+        <field name="name">התחשבנות קבלנים</field><field name="res_model">crm.lead</field><field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_field_payout_search"/>
+        <field name="domain">[('is_field_service', '=', True), ('field_execution_type', '=', 'subcontractor'), ('field_contractor_id', '!=', False)]</field>
+        <field name="view_ids" eval="[(5,0,0),(0,0,{'view_mode':'list','view_id':ref('view_field_payout_list')}),(0,0,{'view_mode':'form','view_id':ref('view_field_lead_form')})]"/>
+        <field name="context">{'search_default_contractor': 1}</field>
+    </record>
+    <menuitem id="menu_field_payouts" name="התחשבנות קבלנים" parent="menu_field_service_root" action="action_field_payouts" sequence="25" groups="field_work_photos.group_field_finance"/>
+</odoo>

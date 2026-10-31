@@ -39,7 +39,9 @@ class CrmLead(models.Model):
             elif lead.field_report_state == 'changes_requested':
                 label = 'ממתינה להמשך טיפול' if lead.field_visit_result in ('followup', 'not_done') else 'ממתינה לתיקון הדיווח'
             elif lead.field_dispatch_code == 'completed':
-                label = 'הביצוע אושר'
+                label = 'ממתינה לגבייה או לסגירה'
+            elif lead.field_dispatch_code == 'paid':
+                label = 'טופל ושולם'
             elif lead.field_missing_fields:
                 label = 'להשלמה: ' + lead.field_missing_fields.splitlines()[0].lstrip('• ')
             else:

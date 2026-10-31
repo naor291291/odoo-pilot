@@ -45,11 +45,11 @@
                     <div class="o_field_service_steps">
                         <field name="stage_id" widget="statusbar" readonly="1" options="{'clickable': False}" domain="[('field_dispatch_code', '!=', False)]"/>
                     </div>
-                    <div class="o_field_service_notice o_field_service_notice_warning" role="status" invisible="not field_missing_fields or field_dispatch_code in ['field', 'completed']">
+                    <div class="o_field_service_notice o_field_service_notice_warning" role="status" invisible="not field_missing_fields or field_dispatch_code in ['field', 'completed', 'paid']">
                         <i class="fa fa-list-ul"/>
                         <div><strong>מה חסר כדי להמשיך?</strong><field name="field_missing_fields" nolabel="1" readonly="1"/></div>
                     </div>
-                    <div class="o_field_service_notice o_field_service_notice_ready" role="status" invisible="field_missing_fields or field_dispatch_code in ['field', 'completed']">
+                    <div class="o_field_service_notice o_field_service_notice_ready" role="status" invisible="field_missing_fields or field_dispatch_code in ['field', 'completed', 'paid']">
                         <i class="fa fa-check-circle"/><div><strong>כל הפרטים לשלב הבא מוכנים</strong><p>אפשר להמשיך באמצעות הכפתור בראש המסך.</p></div>
                     </div>
                     <div class="o_field_service_columns">
@@ -76,7 +76,7 @@
                                 <div class="o_field_service_tip" invisible="field_dispatch_code != 'quote'">לאחר שליחת ההצעה ללקוח, הזן את מספרה ולחץ על המשך. הזנת המספר לבדה אינה מקדמת שלב.</div>
                                 <div class="o_field_service_tip" invisible="field_dispatch_code != 'sent'">קיבלת אישור להצעה? לחץ על אישור הצעה והמשך לתיאום כדי לבחור קבלן ומועד.</div>
                             </div>
-                            <div class="o_field_service_card" invisible="field_dispatch_code not in ['schedule', 'field', 'completed']">
+                            <div class="o_field_service_card" invisible="field_dispatch_code not in ['schedule', 'field', 'completed', 'paid']">
                                 <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-calendar"/></span><div><h2>שיבוץ וביצוע</h2><p>בחר סוג ביצוע, מבצע ומועד, והמערכת תפתח את משימת השטח</p></div></div>
                                 <group>
                                     <group><field name="field_contractor_id" options="{'no_create': True, 'no_open': True}" readonly="field_dispatch_locked"/></group>
