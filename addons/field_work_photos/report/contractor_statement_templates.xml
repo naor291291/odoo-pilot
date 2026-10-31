@@ -23,12 +23,13 @@
                 <span> יש לבדוק את העבודות שסכומן טרם אושר לפני הסתמכות על היתרה.</span>
             </div>
             <h3>תנועות בתקופה</h3>
+            <p t-if="s['rows']" class="o_statement_help">קישורי העבודה ותנועת המקור נפתחים בלשונית חדשה כדי להשאיר את הדוח פתוח.</p>
             <p t-if="not s['rows']" class="o_statement_empty">אין תנועות בתקופה שנבחרה. יתרת הסגירה שווה ליתרת הפתיחה. אפשר לבחור חודש אחר או לבדוק את רשומות הפתיחה.</p>
             <table t-if="s['rows']" class="o_statement_table">
                 <thead><tr><th scope="col">תאריך וסוג</th><th scope="col">עבודה ואסמכתה</th><th scope="col">שינוי ביתרה</th><th scope="col">יתרה מצטברת</th></tr></thead>
                 <tbody><tr t-foreach="s['rows']" t-as="line">
                     <td data-label="תאריך וסוג"><span dir="ltr" t-out="line['date'][8:10] + '/' + line['date'][5:7] + '/' + line['date'][:4]"/><br/><strong t-out="line['type']"/></td>
-                    <td data-label="עבודה ואסמכתה"><a t-att-href="line['work_url']" t-out="line['work']"/><div t-out="line['reference']"/><a class="o_statement_source" t-att-href="line['source_url']">פתיחת תנועת המקור</a>
+                    <td data-label="עבודה ואסמכתה"><a t-att-href="line['work_url']" t-out="line['work']"/><div dir="auto" t-out="line['reference']"/><a class="o_statement_source" t-att-href="line['source_url']">פתיחת תנועת המקור</a>
                         <div class="o_statement_help" t-if="line['kind'] == 'credit'">אומדן היסטורי לפני מע״מ: <span dir="ltr" t-out="'{:,.2f} ₪'.format(line['net_estimate'])"/> · אחוז שמור: <span dir="ltr" t-out="'{:g}%'.format(line['rate'])"/></div>
                     </td>
                     <td data-label="שינוי ביתרה"><span dir="ltr" t-out="'{:+,.2f} ₪'.format(line['amount'])"/></td>

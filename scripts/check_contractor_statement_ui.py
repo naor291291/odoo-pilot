@@ -1,11 +1,12 @@
 """Actual Odoo/Chrome + wkhtmltopdf checks, using disposable synthetic data."""
 import base64
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from io import BytesIO
 import json
 import os
 from pathlib import Path
 import secrets
+import time
 from zoneinfo import ZoneInfo
 
 from PIL import Image
@@ -53,6 +54,15 @@ with sync_playwright() as playwright:
     def xmlid(name):
         return rpc('ir.model.data', 'search_read', [[('module', '=', 'field_work_photos'), ('name', '=', name)]], fields=['res_id'])[0]['res_id']
 
+    for attempt in range(120):
+        try:
+            if owner.request.get(BASE + '/web/login', timeout=3000).ok:
+                break
+        except Exception:
+            pass
+        time.sleep(1)
+    else:
+        raise RuntimeError('Odoo did not become ready for statement verification')
     auth(owner, credentials['login'], credentials['password'])
     page = owner.new_page()
     page.on('pageerror', lambda error: errors.append(str(error)))
@@ -79,7 +89,7 @@ with sync_playwright() as playwright:
             'name': 'החלפת צנרת ובדיקת לחץ מים — רשומת בדיקה מלאכותית עם תיאור ארוך',
             'is_field_service': True, 'partner_id': customer, 'phone': '0500000000',
             'field_site_address': 'רחוב בדיקה 10', 'field_work_description': 'דוגמת התחשבנות בלבד',
-            'field_contractor_id': contractor, 'field_visit_at': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'),
+            'field_contractor_id': contractor, 'field_visit_at': datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S'),
             'field_quote_number': 'STATEMENT-UI', 'field_sale_amount': 1000,
             'field_customer_due': 1180, 'field_contractor_due': 700}])
 
@@ -137,23 +147,34 @@ with sync_playwright() as playwright:
             page.set_viewport_size({'width': width, 'height': 1000})
             capture(f'statement-{width}')
             assert closing.evaluate('el => getComputedStyle(el).direction') == 'ltr'
+            page.locator('.o_statement_table').first.scroll_into_view_if_needed()
+            capture(f'movements-{width}')
 
         # Keyboard focus and both levels of source drill-down.
         page.set_viewport_size({'width': 1440, 'height': 1100})
         source = page.locator('.o_statement_result a.o_statement_source').first
         source.focus()
         expect(source).to_be_focused()
-        source.press('Enter')
+        # Odoo's native readonly HTML field intentionally opens links in a tab.
+        report_page = page
+        with page.expect_popup() as opened:
+            source.press('Enter')
+        page = opened.value
+        page.on('pageerror', lambda error: errors.append(str(error)))
         settle(page)
         expect(page.locator('.o_form_view')).to_contain_text('תנועה כולל מע״מ')
         capture('entitlement-source')
-        page.goto(f'{BASE}/odoo/action-{action_id}/{report_id}')
-        settle(page)
-        page.locator('.o_statement_result a').filter(has_text='החלפת צנרת').first.click()
+        page.close()
+        page = report_page
+        with page.expect_popup() as opened:
+            page.locator('.o_statement_result a').filter(has_text='החלפת צנרת').first.click()
+        page = opened.value
+        page.on('pageerror', lambda error: errors.append(str(error)))
         settle(page)
         expect(page.locator('.o_form_view')).to_contain_text('החלפת צנרת')
         capture('work-source')
-        page.goto(f'{BASE}/odoo/action-{action_id}/{report_id}')
+        page.close()
+        page = report_page
         settle(page)
         page.get_by_text('בדיקת הרשומות שמרכיבות את יתרת הפתיחה', exact=True).click()
         page.get_by_role('button', name='תשלומים לפני התקופה', exact=True).click()
@@ -162,10 +183,13 @@ with sync_playwright() as playwright:
         capture('opening-payments')
 
         # Actual Odoo PDF engine, not browser print-to-PDF.
-        pdf_response = owner.request.get(f'{BASE}/report/pdf/field_work_photos.contractor_statement_pdf/{report_id}', timeout=120000)
-        assert pdf_response.ok and pdf_response.body().startswith(b'%PDF'), 'Odoo did not return a real PDF'
+        page.goto(f'{BASE}/odoo/action-{action_id}/{report_id}')
+        settle(page)
         pdf_path = OUTPUT / 'contractor-statement-example.pdf'
-        pdf_path.write_bytes(pdf_response.body())
+        with page.expect_download(timeout=120000) as printed:
+            page.get_by_role('button', name='הפקת PDF', exact=True).click()
+        printed.value.save_as(str(pdf_path))
+        assert pdf_path.read_bytes().startswith(b'%PDF'), 'Odoo did not return a real PDF'
         reader = PdfReader(pdf_path)
         text = '\n'.join(p.extract_text() for p in reader.pages)
         assert '350.00' in text, 'PDF closing differs from screen snapshot'

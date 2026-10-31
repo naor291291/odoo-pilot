@@ -32,6 +32,7 @@
         <field name="view_mode">form</field><field name="view_id" ref="view_contractor_statement_form"/>
     </record>
     <record id="menu_field_payouts" model="ir.ui.menu"><field name="name">תשלומי קבלנים לפי עבודה</field></record>
+    <record id="action_field_payouts" model="ir.actions.act_window"><field name="name">תשלומי קבלנים לפי עבודה</field></record>
     <menuitem id="menu_contractor_statement" name="התחשבנות קבלנים" parent="menu_field_money" action="action_contractor_statement" sequence="24" groups="field_work_photos.group_field_finance"/>
     <record id="view_entitlement_list" model="ir.ui.view">
         <field name="name">field.work.entitlement.list</field><field name="model">field.work.entitlement</field>

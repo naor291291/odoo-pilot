@@ -28,13 +28,12 @@ jobs:
           python3 -m pip install --quiet --target "$RUNNER_TEMP/field-ui-python" playwright pypdf Pillow
           docker compose -f .devcontainer/compose.yaml run --rm -d --name field-work-ui -p 127.0.0.1:8069:8069 odoo python3 scripts/pilot.py worker
           trap 'docker rm -f field-work-ui >/dev/null 2>&1 || true' EXIT
+          CHROME_BIN="$(command -v google-chrome)" PYTHONPATH="$RUNNER_TEMP/field-ui-python" python3 scripts/check_contractor_statement_ui.py
           FIELD_FLOW_RESULT=0
           CHROME_BIN="$(command -v google-chrome)" PYTHONPATH="$RUNNER_TEMP/field-ui-python" python3 scripts/check_field_ui.py || FIELD_FLOW_RESULT=$?
           CRM_SCREEN_RESULT=0
           CHROME_BIN="$(command -v google-chrome)" PYTHONPATH="$RUNNER_TEMP/field-ui-python" python3 scripts/check_crm_ui.py || CRM_SCREEN_RESULT=$?
-          STATEMENT_RESULT=0
-          CHROME_BIN="$(command -v google-chrome)" PYTHONPATH="$RUNNER_TEMP/field-ui-python" python3 scripts/check_contractor_statement_ui.py || STATEMENT_RESULT=$?
-          if [ "$FIELD_FLOW_RESULT" -ne 0 ] || [ "$CRM_SCREEN_RESULT" -ne 0 ] || [ "$STATEMENT_RESULT" -ne 0 ]; then exit 1; fi
+          if [ "$FIELD_FLOW_RESULT" -ne 0 ] || [ "$CRM_SCREEN_RESULT" -ne 0 ]; then exit 1; fi
       - name: Build visual UI evidence
         env:
           GH_TOKEN: ${{ github.token }}

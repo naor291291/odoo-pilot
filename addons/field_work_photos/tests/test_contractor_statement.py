@@ -100,6 +100,12 @@ class TestContractorStatement(TransactionCase):
         october = self.statement('2026-10-01', '2026-10-31')._build_statement()
         self.assertEqual((september['opening'], september['paid'], september['adjustments'], september['closing']), (700, 200, 0, 500))
         self.assertEqual((october['opening'], october['paid'], october['adjustments'], october['closing']), (500, 0, 200, 700))
+        # A legacy cancellation with no timestamp cannot be placed in a month.
+        self.cr.execute('UPDATE field_work_payment SET cancelled_at = NULL WHERE id = %s', [payment.id])
+        payment.invalidate_recordset()
+        incomplete = self.statement()._build_statement()
+        self.assertEqual(incomplete['unknown_cancellations'], 1)
+        self.assertEqual(incomplete['paid'], 0)
 
     def test_same_month_cancellation_and_replacement(self):
         lead = self.lead()
@@ -186,6 +192,16 @@ class TestContractorStatement(TransactionCase):
         self.assertEqual(str(utc_boundary(date(2026, 11, 1))), '2026-10-31 22:00:00')
         viewer = self.statement().with_context(tz='America/Los_Angeles')
         self.assertEqual(viewer._build_statement()['credit'], 0)
+        # A contractor advance entered from UTC+14 on October 1, while it is
+        # still September 30 in Israel, must reverse in October when voided.
+        edge = self.lead(field_contractor_due=10, field_contractor_id=self.other.id)
+        with freeze_time('2026-09-30 20:30:00'):
+            payment = self.env['field.work.payment'].with_user(self.owner).with_context(tz='Pacific/Kiritimati').create({
+                'lead_id': edge.id, 'kind': 'contractor', 'amount': 1,
+                'payment_date': '2026-10-01', 'reference': 'TIMEZONE-EDGE'})
+            payment._cancel_registration('ביטול רישום באותו רגע')
+        october = self.statement('2026-10-01', '2026-10-31', contractor=self.other)._build_statement()
+        self.assertEqual((october['opening'], october['paid'], october['adjustments'], october['closing']), (0, 1, 1, 0))
 
     def test_period_validation_and_month_picker(self):
         with self.assertRaises(ValidationError):
@@ -213,6 +229,9 @@ class TestContractorStatement(TransactionCase):
                 action()
         defaults = self.env['field.contractor.statement'].with_user(self.owner).with_context(default_payload={'closing': 999}).default_get(['payload'])
         self.assertNotIn('payload', defaults)
+        other_owner = new_test_user(self.env, login='statement_other_owner', groups='field_work_photos.group_field_finance')
+        with self.assertRaises(AccessError), self.cr.savepoint():
+            report.with_user(other_owner).read(['payload'])
         entry = self.env['field.work.entitlement'].with_user(self.owner).search([('lead_id', '=', lead.id)])
         for action in (lambda: entry.write({'amount': 1}), entry.unlink, entry.copy,
                        lambda: entry.create({'amount': 999})):
@@ -286,8 +305,15 @@ class TestContractorStatement(TransactionCase):
         entry = self.env['field.work.entitlement'].search([('lead_id', '=', lead.id)])
         values = entry.copy_data()[0]
         values.pop('reversal_of_id', None)
-        values.update(amount=0.01)
-        super(FieldWorkEntitlement, self.env['field.work.entitlement']).create([dict(values) for _ in range(1000)])
+        # Distinct source jobs ensure that prefetching is tested, rather than
+        # reading the same cached work identity one thousand times. These
+        # historical synthetic snapshots bypass dispatch only in this fixture.
+        jobs = self.env['crm.lead'].with_user(self.owner).create([{
+            'name': f'Synthetic performance job {index}', 'is_field_service': True,
+            'partner_id': self.customer.id, 'field_contractor_id': self.contractor.id,
+        } for index in range(1000)])
+        super(FieldWorkEntitlement, self.env['field.work.entitlement']).create([
+            dict(values, lead_id=job.id, amount=0.01) for job in jobs])
         self.env.flush_all()
         self.env.invalidate_all()
         report = self.statement()

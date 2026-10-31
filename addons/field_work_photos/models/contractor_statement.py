@@ -44,6 +44,8 @@ class ContractorStatement(models.TransientModel):
             raise AccessError('דוח התחשבנות קבלנים זמין לבעל הרשאה כספית בלבד.')
         self.check_access('read')
         for report in self:
+            if report.id and not self.env.su and report.create_uid != self.env.user:
+                raise AccessError('יש להפיק דוח בחשבון הנוכחי. תמונת החישוב שייכת למשתמש שהפיק אותה.')
             if report.company_id not in self.env.companies:
                 raise AccessError('יש לבחור חברה פעילה ומורשית במחליף החברות.')
             report.contractor_id.check_access('read')
@@ -124,7 +126,8 @@ class ContractorStatement(models.TransientModel):
             ['lead_id', 'kind', 'amount', 'event_date', 'reason', 'net_estimate', 'applied_rate'])
         paid_entries = payments.search_fetch(pay_domain + [('payment_date', '>=', start), ('payment_date', '<=', end)],
             ['lead_id', 'amount', 'payment_date', 'reference', 'state', 'cancelled_at'])
-        void_entries = payments.search_fetch(pay_domain + [('cancelled_at', '>=', start_utc), ('cancelled_at', '<', cutoff), ('payment_date', '<=', end)],
+        void_entries = payments.search_fetch(pay_domain + [('cancelled_at', '<', cutoff), ('payment_date', '<=', end),
+            '|', ('cancelled_at', '>=', start_utc), ('payment_date', '>=', start)],
             ['lead_id', 'amount', 'payment_date', 'reference', 'cancelled_at', 'cancel_reason'])
         payout_action = self.env.ref('field_work_photos.action_field_payouts').id
 

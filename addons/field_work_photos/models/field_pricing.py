@@ -41,8 +41,9 @@ class CrmLead(models.Model):
     field_pricing_currency_id = fields.Many2one('res.currency', compute='_compute_field_pricing_currency', default=lambda self: self.env.ref('base.ILS'), string='מטבע תמחור')
 
     def _compute_field_pricing_currency(self):
+        currency = self.env.ref('base.ILS')
         for lead in self:
-            lead.field_pricing_currency_id = self.env.ref('base.ILS')
+            lead.field_pricing_currency_id = currency
 
     field_sale_amount = fields.Monetary(string='סכום עסקה לפני מע״מ', currency_field='field_pricing_currency_id', copy=False)
     field_material_cost = fields.Monetary(string='עלות חומרים לפני מע״מ', currency_field='field_pricing_currency_id', copy=False, groups=FINANCE_GROUP)
@@ -63,8 +64,8 @@ class CrmLead(models.Model):
                  'field_rates_frozen', 'field_rate_small_snapshot',
                  'field_rate_medium_snapshot', 'field_rate_large_snapshot')
     def _compute_field_pricing(self):
+        currency = self.env.ref('base.ILS')
         for lead in self:
-            currency = self.env.ref('base.ILS')
             sale = currency.round(lead.field_sale_amount)
             rate = 0
             if lead.field_execution_type == 'subcontractor' and lead.field_contractor_id:
