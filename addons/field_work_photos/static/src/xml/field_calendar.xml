@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <templates xml:space="preserve">
+    <t t-name="field_work_photos.CalendarMobileFilters">
+        <button t-if="props.model.filterSections.length" type="button" class="o_other_calendar_panel o_field_ui btn btn-light w-100 d-flex align-items-center justify-content-between" t-on-click="props.toggleSideBar" t-att-aria-expanded="props.sideBarShown">
+            <span>סינון תצוגת היומן</span><i t-attf-class="oi oi-chevron-{{caretDirection}}" aria-hidden="true"/>
+        </button>
+    </t>
     <t t-name="field_work_photos.CalendarPopover">
         <t t-if="env.isSmall">
             <Dialog title="props.record.title" contentClass="'o_field_ui o_field_calendar_popup'">

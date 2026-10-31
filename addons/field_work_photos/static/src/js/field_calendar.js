@@ -1,6 +1,7 @@
 /** @odoo-module **/
 
 import { useEffect } from '@odoo/owl';
+import { CalendarMobileFilterPanel } from '@web/views/calendar/mobile_filter_panel/calendar_mobile_filter_panel';
 import { CalendarController } from '@web/views/calendar/calendar_controller';
 import { is24HourFormat } from '@web/core/l10n/dates';
 import { getFormattedDateSpan } from '@web/views/calendar/utils';
@@ -44,7 +45,12 @@ class FieldWorkCalendarRenderer extends CalendarRenderer {
     };
 }
 
+class FieldWorkMobileFilters extends CalendarMobileFilterPanel {
+    static template = 'field_work_photos.CalendarMobileFilters';
+}
+
 class FieldWorkCalendarController extends CalendarController {
+    static components = { ...CalendarController.components, MobileFilterPanel: FieldWorkMobileFilters };
     setup() {
         super.setup();
         // A desktop sidebar left open makes the native mobile controller hide
