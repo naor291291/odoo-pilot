@@ -35,6 +35,8 @@
     h1, h2, h3 { text-wrap: balance; color: var(--work-ink); }
     h2 { font-size: 20px; font-weight: 600; }
     .o_form_label, label { color: var(--work-steel); font-size: 14px; font-weight: 500; }
+    // Computed amounts are essential information; readonly labels must stay legible.
+    .o_form_label.o_form_label_readonly, .o_form_label.o_form_label_empty, .o_form_label.o_form_label_false { opacity: 1; font-weight: 500; }
     .o_field_help, .text-muted { color: var(--work-caption) !important; }
     .btn { min-height: 44px; font-family: inherit; font-size: 15px; font-weight: 600; border-radius: 8px; }
     .btn-primary { background: var(--work-water); border-color: var(--work-water); }

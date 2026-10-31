@@ -169,6 +169,8 @@ with sync_playwright() as playwright:
         assert geometry['frames'] == 1, f'Duplicate monetary borders at {width}px: {geometry}'
         assert geometry['above'] and geometry['contained'] and geometry['width'] > 150, geometry
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), 'Pricing form overflows viewport'
+        metric_label = page.locator('.o_field_finance_metrics label').first
+        assert metric_label.evaluate("el => getComputedStyle(el).opacity") == '1', 'Computed amount labels are faded'
         page.screenshot(path=str(OUTPUT / f'pricing-focused-{width}.png'), full_page=True)
     material.fill('11000')
     material.press('Tab')
