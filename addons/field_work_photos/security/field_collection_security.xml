@@ -1,5 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- TransientModel uses normal ACL/rules in the installed Odoo 18 build.
+         A finance dialog must not become a second, less-restricted ledger. -->
+    <record id="rule_payment_register_private" model="ir.rule">
+        <field name="name">Payment dialog: creator, company and financial role</field>
+        <field name="model_id" ref="model_field_work_payment_register"/>
+        <field name="domain_force">[('create_uid', '=', user.id), ('lead_id.company_id', 'in', company_ids)] + ([] if user.has_group('field_work_photos.group_field_finance') else [('kind', '=', 'customer')])</field>
+    </record>
+    <record id="rule_payment_cancel_private" model="ir.rule">
+        <field name="name">Cancellation dialog: creator, company and financial role</field>
+        <field name="model_id" ref="model_field_work_payment_cancel"/>
+        <field name="domain_force">[('create_uid', '=', user.id), ('payment_id.company_id', 'in', company_ids)] + ([] if user.has_group('field_work_photos.group_field_finance') else [('payment_id.kind', '=', 'customer')])</field>
+    </record>
+    <record id="rule_correction_private" model="ir.rule">
+        <field name="name">Correction dialog: creator and company</field>
+        <field name="model_id" ref="model_field_work_correction"/>
+        <field name="domain_force">[('create_uid', '=', user.id), '|', ('task_id.company_id', '=', False), ('task_id.company_id', 'in', company_ids)]</field>
+    </record>
     <record id="rule_field_payment_company_kind" model="ir.rule">
         <field name="name">Field payments: allowed companies and owner-only payouts</field>
         <field name="model_id" ref="model_field_work_payment"/>

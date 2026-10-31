@@ -92,3 +92,8 @@ Intent: the owner checks what is owed for a contractor and period, explains the 
 Sources: unclecatvn Odoo 18, Interface Design, Impeccable clarify/distill/adapt/craft floor and Anthropic Webapp Testing. Impeccable launcher was unavailable; its binary/detector did not run. Verification boundaries: docs/contractor-statement.md.
 
 Print verification: Qt may apply phone screen media rules at A4 width. The report-only class explicitly restores table/header/body/row/cell display and hides mobile pseudo-labels. Keep data 14px and supporting print text 12px; preserve the 22/38/20/20 column split. Actual wkhtmltopdf output was inspected across a one-page example and four-page long-reference fixture. Native report actions use config=False for this internal layout, avoiding an unrelated company-branding wizard.
+
+
+## Privacy and authorization in UI components
+
+Sensitive financial/correction dialogs belong to their creator and allowed company; create a new dialog instead of opening someone else's transient draft. Disabled/hidden actions never replace server authorization. Portal lists/details and private statement HTML/PDF use no-store responses; a downloaded file cannot be revoked. New photo processing removes metadata and preserves orientation; copy must not promise an archival original. Do not expose protected values in errors, summaries, exports, DOM attributes or UI evidence. Keep test captures synthetic.

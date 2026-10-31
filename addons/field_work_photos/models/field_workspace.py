@@ -120,6 +120,7 @@ class FieldWorkCorrection(models.TransientModel):
 
     def action_apply(self):
         self.ensure_one()
+        self.check_access('write')
         task = self.task_id
         task._require_field_reviewer()
         task.check_access('write')

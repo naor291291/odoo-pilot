@@ -1,0 +1,70 @@
+name: Security checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-and-history:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Secret scan of reachable history with redacted output
+        run: |
+          curl --fail --location --max-time 60 https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz -o "$RUNNER_TEMP/gitleaks.tar.gz"
+          printf '551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  %s\n' "$RUNNER_TEMP/gitleaks.tar.gz" | sha256sum --check -
+          tar --no-same-owner -xzf "$RUNNER_TEMP/gitleaks.tar.gz" -C "$RUNNER_TEMP" gitleaks
+          "$RUNNER_TEMP/gitleaks" git . --log-opts=--all --redact=100 --report-format json --report-path "$RUNNER_TEMP/gitleaks.json"
+      - name: Python source security scan
+        run: |
+          python3 -m venv "$RUNNER_TEMP/security-tools"
+          "$RUNNER_TEMP/security-tools/bin/pip" install bandit==1.9.4
+          "$RUNNER_TEMP/security-tools/bin/bandit" -r addons/field_work_photos -x addons/field_work_photos/tests -ll --confidence-level medium -f json -o "$RUNNER_TEMP/bandit.json"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: security-source-results
+          path: |
+            ${{ runner.temp }}/gitleaks.json
+            ${{ runner.temp }}/bandit.json
+          retention-days: 14
+  dependency-inventory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Inventory the actual development image
+        run: |
+          PILOT_UID="$(id -u)" docker compose -f .devcontainer/compose.yaml build --pull odoo
+          docker compose -f .devcontainer/compose.yaml run --rm --no-deps odoo python3 scripts/security_inventory.py > "$RUNNER_TEMP/runtime-inventory.json"
+          docker compose -f .devcontainer/compose.yaml run --rm --no-deps odoo python3 scripts/security_inventory.py --requirements > "$RUNNER_TEMP/runtime-packages.txt"
+          python3 -m venv "$RUNNER_TEMP/audit-tools"
+          "$RUNNER_TEMP/audit-tools/bin/pip" install pip-audit==2.10.1
+      - name: Audit inventory against advisory database
+        id: audit
+        # Existing upstream/distribution findings require path/backport triage.
+        # Preserve every alert; this is advisory until a reviewed baseline exists.
+        continue-on-error: true
+        run: |
+          "$RUNNER_TEMP/audit-tools/bin/pip-audit" --no-deps --disable-pip -r "$RUNNER_TEMP/runtime-packages.txt" -f json -o "$RUNNER_TEMP/dependency-audit.json" --progress-spinner off
+      - name: Surface unresolved dependency findings
+        if: steps.audit.outcome == 'failure'
+        run: |
+          echo '::warning::Dependency audit requires review. Inspect dependency-inventory artifacts and docs/security/findings.md. No findings are suppressed; production approval remains blocked until triage.'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: dependency-inventory
+          path: |
+            ${{ runner.temp }}/runtime-inventory.json
+            ${{ runner.temp }}/runtime-packages.txt
+            ${{ runner.temp }}/dependency-audit.json
+          retention-days: 14

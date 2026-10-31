@@ -310,6 +310,12 @@ class ProjectTask(models.Model):
 
     _sql_constraints = [('field_service_lead_unique', 'unique(field_service_lead_id)', 'לפנייה כבר קיימת משימת שטח.')]
 
+    @api.model
+    def default_get(self, fields_list):
+        # A linked task is created only by the private dispatch path.
+        return {key: value for key, value in super().default_get(fields_list).items()
+                if key != 'field_service_lead_id'}
+
     @api.model_create_multi
     def create(self, vals_list):
         if any(vals.get('field_service_lead_id') for vals in vals_list):

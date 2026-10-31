@@ -12,7 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
       - name: Build development container and start PostgreSQL
         run: |
           PILOT_UID="$(id -u)" docker compose -f .devcontainer/compose.yaml build odoo
@@ -28,23 +30,37 @@ jobs:
           python3 -m pip install --quiet --target "$RUNNER_TEMP/field-ui-python" playwright pypdf Pillow
           docker compose -f .devcontainer/compose.yaml run --rm -d --name field-work-ui -p 127.0.0.1:8069:8069 odoo python3 scripts/pilot.py worker
           trap 'docker rm -f field-work-ui >/dev/null 2>&1 || true' EXIT
+          docker exec field-work-ui python3 scripts/check_security_runtime.py
           CHROME_BIN="$(command -v google-chrome)" PYTHONPATH="$RUNNER_TEMP/field-ui-python" python3 scripts/check_contractor_statement_ui.py
           FIELD_FLOW_RESULT=0
           CHROME_BIN="$(command -v google-chrome)" PYTHONPATH="$RUNNER_TEMP/field-ui-python" python3 scripts/check_field_ui.py || FIELD_FLOW_RESULT=$?
           CRM_SCREEN_RESULT=0
           CHROME_BIN="$(command -v google-chrome)" PYTHONPATH="$RUNNER_TEMP/field-ui-python" python3 scripts/check_crm_ui.py || CRM_SCREEN_RESULT=$?
           if [ "$FIELD_FLOW_RESULT" -ne 0 ] || [ "$CRM_SCREEN_RESULT" -ne 0 ]; then exit 1; fi
+      - name: Restore synthetic pilot and financial fixtures into a separate database
+        run: docker compose -f .devcontainer/compose.yaml run --rm odoo python3 scripts/check_backup_restore.py
       - name: Build visual UI evidence
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 scripts/build_ui_evidence.py
       - name: Save browser verification screenshots
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: field-work-ui
           path: .local-data/ui-checks/
           if-no-files-found: ignore
+          retention-days: 14
+      - name: Save non-secret runtime security results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: security-runtime-results
+          path: |
+            .local-data/security/
+            .local-data/security-backups/*/result.json
+          if-no-files-found: warn
+          retention-days: 14
       - name: Show startup errors
         if: failure()
         run: test ! -f .local-data/odoo.log || tail -n 120 .local-data/odoo.log

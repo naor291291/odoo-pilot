@@ -1,4 +1,5 @@
 import base64
+import json
 from io import BytesIO
 
 from PIL import Image
@@ -292,3 +293,84 @@ class TestFieldPortal(HttpCase):
         page = html.fromstring(self.url_open(self.detail()).content)
         self.assertFalse(page.xpath('//span[contains(@class,"o_field_portal_brand")]'))
         self.assertTrue(page.xpath('//a[contains(@class,"navbar-brand")]/img[@alt="עסק בדיקה מוגדר"]'))
+
+    def test_private_native_binary_routes_and_logout(self):
+        self.login()
+        own_url = self.detail() + '/photo/before'
+        raw = self.url_open(own_url).content
+        for task in (self.own_task, self.other_task):
+            for route in ('/web/content/project.task/%s/field_before_image',
+                          '/web/image/project.task/%s/field_before_image'):
+                response = self.url_open(route % task.id)
+                self.assertNotEqual(response.content, raw)
+        self.authenticate(None, None)
+        for url in (self.detail(), own_url, '/my/field-work'):
+            response = self.url_open(url, allow_redirects=False)
+            self.assertIn(response.status_code, (302, 303))
+            self.assertNotEqual(response.content, raw)
+
+    def test_extra_photo_id_and_generic_routes_remain_scoped(self):
+        self.other_task._update_field_gallery({'before': [base64.b64encode(self.raw_photo)], 'after': []}, [])
+        extra = self.other_task.field_extra_photo_ids[:1]
+        self.login()
+        self.assertEqual(self.url_open(self.detail() + '/photo/before/%s' % extra.id).status_code, 404)
+        response = self.url_open('/web/content/field.work.photo/%s/image' % extra.id)
+        self.assertNotEqual(response.status_code, 200)
+        response = self.url_open(self.detail() + '/report', data={
+            'csrf_token': self.token(), 'action': 'upload', 'remove_photo': 'before:%s' % extra.id})
+        self.assertIn('alert-danger', response.text)
+        self.assertTrue(extra.exists())
+
+    def test_portal_text_is_escaped_and_pages_are_not_cached(self):
+        self.login()
+        text = '</textarea><script>synthetic_untrusted_text()</script>'
+        response = self.url_open(self.detail() + '/report', data={
+            'csrf_token': self.token(), 'action': 'upload', 'field_visit_notes': text})
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn(text, response.text)
+        self.assertIn('&lt;script&gt;', response.text)
+        self.assertEqual(response.headers['Cache-Control'], 'private, no-store')
+        self.assertEqual(self.url_open('/my/field-work').headers['Cache-Control'], 'private, no-store')
+
+    def test_direct_rpc_actions_and_private_methods_are_denied(self):
+        self.login()
+        for model, method, args in (
+            ('project.task', 'action_approve_field_work', [[self.own_task.id]]),
+            ('crm.lead', 'action_close_field_work', [[self.leads[0].id]]),
+            ('field.work.payment', 'search_read', [[]]),
+            ('field.contractor.statement', 'create', [{}]),
+            ('project.task', '_write_field_review', [[self.own_task.id], {'state': '1_done'}]),
+        ):
+            response = self.url_open('/web/dataset/call_kw', data=json.dumps({
+                'jsonrpc': '2.0', 'method': 'call', 'id': 1,
+                'params': {'model': model, 'method': method, 'args': args, 'kwargs': {}}}),
+                headers={'Content-Type': 'application/json'})
+            self.assertIn('error', response.json(), (model, method))
+        self.own_task.invalidate_recordset()
+        self.assertEqual(self.own_task.field_review_state, 'draft')
+
+    def test_direct_statement_html_pdf_and_attachment_authorization(self):
+        owner = new_test_user(self.env, login='security_http_owner', groups='field_work_photos.group_field_finance')
+        ops = new_test_user(self.env, login='security_http_ops', groups='field_work_photos.group_field_dispatcher')
+        report = self.env['field.contractor.statement'].with_user(owner).create({'contractor_id': self.first.id})
+        report.action_show_report()
+        attachment = self.env['ir.attachment'].create({
+            'name': 'synthetic-private-document.pdf', 'raw': b'%PDF-SYNTHETIC-PRIVATE',
+            'res_model': 'project.task', 'res_id': self.own_task.id, 'public': False})
+        self.authenticate(owner.login, 'synthetic')
+        html_url = '/report/html/field_work_photos.contractor_statement_pdf/%s' % report.id
+        allowed = self.url_open(html_url)
+        self.assertEqual(allowed.status_code, 200)
+        self.assertEqual(allowed.headers['Cache-Control'], 'private, no-store')
+        for user in (ops, self.first, self.second):
+            self.authenticate(user.login, 'synthetic')
+            for converter in ('html', 'pdf'):
+                response = self.url_open('/report/%s/field_work_photos.contractor_statement_pdf/%s' % (converter, report.id))
+                self.assertNotIn('data-statement-closing', response.text)
+                self.assertFalse(response.content.startswith(b'%PDF'))
+            if user.share:
+                response = self.url_open('/web/content/%s' % attachment.id)
+                self.assertNotIn(b'%PDF-SYNTHETIC-PRIVATE', response.content)
+        self.authenticate(None, None)
+        self.assertIn(self.url_open(html_url, allow_redirects=False).status_code, (302, 303))
+        self.assertNotIn(b'%PDF-SYNTHETIC-PRIVATE', self.url_open('/web/content/%s' % attachment.id).content)

@@ -131,10 +131,15 @@ class FieldWorkPhoto(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+        # Validate the effective parent/image, including ordinary form defaults,
+        # before acquiring the same parent locks as explicit uploads.
+        vals_list = [self._add_missing_default_values(dict(vals)) for vals in vals_list]
         tasks = self.env['project.task'].browse([v.get('task_id') for v in vals_list if v.get('task_id')])
         tasks._check_visit_editable()
         for vals in vals_list:
-            self.env['project.task']._validate_field_image_values({'field_before_image': vals.get('image')})
+            image_values = {'field_before_image': vals.get('image')}
+            self.env['project.task']._validate_field_image_values(image_values)
+            vals['image'] = image_values['field_before_image']
         records = super().create(vals_list)
         tasks._check_gallery_limits()
         return records
@@ -144,7 +149,10 @@ class FieldWorkPhoto(models.Model):
         if {'task_id', 'kind'}.intersection(vals):
             raise AccessError('אי אפשר להעביר תמונה לעבודה או לאזור אחר. יש להסיר ולהעלות מחדש.')
         self.mapped('task_id')._check_visit_editable()
-        self.env['project.task']._validate_field_image_values({'field_before_image': vals.get('image')})
+        if vals.get('image'):
+            image_values = {'field_before_image': vals['image']}
+            self.env['project.task']._validate_field_image_values(image_values)
+            vals = dict(vals, image=image_values['field_before_image'])
         return super().write(vals)
 
     def unlink(self):

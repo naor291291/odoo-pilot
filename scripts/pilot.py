@@ -1,4 +1,5 @@
 """Initialize and run the disposable Odoo pilot inside its dev container."""
+import ast
 import fcntl
 import json
 import http.cookiejar
@@ -262,9 +263,12 @@ def test():
         print(result.stdout)
         if result.returncode:
             raise SystemExit(result.returncode)
-        count = len(re.findall(r"Starting Test(FieldWorkPhotos|FieldDispatch|FieldPortal|FieldPricing|FieldWorkspace|FieldVisit|FieldCollection|ContractorStatement)\.test_", result.stdout))
-        if count < 169 or not re.search(r"0 failed, 0 error\(s\)", result.stdout):
-            raise SystemExit("Expected all 169 field-work and contractor-statement tests to pass; inspect the log.")
+        count = len(re.findall(r"Starting Test[A-Za-z0-9_]+\.test_", result.stdout))
+        expected = sum(isinstance(node, ast.FunctionDef) and node.name.startswith("test_")
+                       for path in (ROOT / "addons/field_work_photos/tests").glob("test_*.py")
+                       for node in ast.walk(ast.parse(path.read_text())))
+        if count != expected or not re.search(r"0 failed, 0 error\(s\)", result.stdout):
+            raise SystemExit(f"Expected all {expected} field-work tests to pass; observed {count}. Inspect the log.")
         print(f"Verified {count} Odoo integration tests.")
 
 
