@@ -79,6 +79,78 @@ class TestFieldWorkspace(TransactionCase):
             lead.action_submit_field_report()
         self.assertEqual(lead.field_report_state, 'draft')
 
+    def test_dashboard_counts_only_active_field_work(self):
+        Dashboard = self.env['field.work.dashboard'].with_user(self.ops)
+        dashboard = Dashboard.create({})
+        before = dashboard.new_count
+        field = self.env['crm.lead'].with_user(self.ops).create({'name': 'Dashboard field', 'is_field_service': True})
+        ordinary = self.env['crm.lead'].with_user(self.ops).create({'name': 'Ordinary CRM'})
+        dashboard.invalidate_recordset()
+        self.assertEqual(dashboard.new_count, before + 1)
+        field.active = False
+        dashboard.invalidate_recordset()
+        self.assertEqual(dashboard.new_count, before)
+        self.assertFalse(ordinary.is_field_service)
+
+    def test_dashboard_queues_use_real_stage_domains(self):
+        lead = self.lead()
+        dashboard = self.env['field.work.dashboard'].with_user(self.ops)
+        action = dashboard.action_active_queue()
+        self.assertIn(lead, self.env['crm.lead'].with_user(self.ops).search(action['domain']))
+        action = dashboard.action_schedule_queue()
+        self.assertNotIn(lead, self.env['crm.lead'].with_user(self.ops).search(action['domain']))
+
+    def test_dashboard_denies_contractor_entry(self):
+        Dashboard = self.env['field.work.dashboard'].with_user(self.contractor)
+        for method in ('action_open', 'action_clients', 'action_new_work', 'action_review_queue'):
+            with self.assertRaises(AccessError), self.cr.savepoint():
+                getattr(Dashboard, method)()
+
+    def test_dashboard_finance_fields_are_server_protected(self):
+        dashboard = self.env['field.work.dashboard'].with_user(self.ops).create({})
+        with self.assertRaises(AccessError), self.cr.savepoint():
+            dashboard.read(['collection_balance', 'contractor_balance'])
+
+    def test_dashboard_owner_balance_uses_existing_operational_amounts(self):
+        Dashboard = self.env['field.work.dashboard'].with_user(self.env.ref('base.user_admin'))
+        dashboard = Dashboard.create({})
+        before = dashboard.collection_balance
+        lead = self.env['crm.lead'].with_user(self.ops).create({
+            'name': 'Dashboard amount', 'is_field_service': True, 'partner_id': self.customer.id,
+            'field_customer_due': 123.45})
+        dashboard.invalidate_recordset()
+        self.assertAlmostEqual(dashboard.collection_balance - before, lead.field_customer_balance)
+
+    def test_client_navigation_lists_only_field_work_partners(self):
+        self.lead()
+        other = self.env['res.partner'].create({'name': 'Ordinary client'})
+        self.env['crm.lead'].with_user(self.ops).create({'name': 'Ordinary CRM', 'partner_id': other.id})
+        action = self.env['field.work.dashboard'].with_user(self.ops).action_clients()
+        clients = self.env['res.partner'].with_user(self.ops).search(action['domain'])
+        self.assertIn(self.customer, clients)
+        self.assertNotIn(other, clients)
+
+    def test_new_client_stays_in_client_directory_before_first_work(self):
+        client = self.env['res.partner'].with_user(self.ops).create({'name': 'New field client', 'field_crm_client': True})
+        action = self.env['field.work.dashboard'].with_user(self.ops).action_clients()
+        self.assertIn(client, self.env['res.partner'].with_user(self.ops).search(action['domain']))
+
+    def test_task_and_customer_links_return_scoped_work(self):
+        lead = self.lead()
+        action = lead.field_task_ids.with_user(self.ops).action_open_field_work_card()
+        self.assertEqual(action['res_id'], lead.id)
+        action = self.customer.with_user(self.ops).action_open_field_client_work()
+        self.assertIn(lead, self.env['crm.lead'].with_user(self.ops).search(action['domain']))
+
+    def test_dashboard_arch_hides_finance_for_operations(self):
+        view_id = self.env.ref('field_work_photos.view_field_dashboard').id
+        Dashboard = self.env['field.work.dashboard'].with_user(self.ops)
+        arch = Dashboard.get_view(view_id, 'form')['arch']
+        self.assertNotIn('name="collection_balance"', arch)
+        self.assertIn('name="review_count"', arch)
+        owner_arch = Dashboard.with_user(self.env.ref('base.user_admin')).get_view(view_id, 'form')['arch']
+        self.assertIn('name="collection_balance"', owner_arch)
+
     def test_direct_workspace_link_and_state_writes_are_rejected(self):
         lead = self.lead()
         for name, value in [('field_workspace_task_id', lead.field_task_ids.id), ('field_report_state', 'approved'), ('field_report_note', 'spoof')]:

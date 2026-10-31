@@ -35,7 +35,7 @@
         <field name="arch" type="xml">
             <xpath expr="//div[hasclass('o_field_service_main')]/details" position="before">
                 <div class="o_field_service_card o_field_collection_panel" groups="field_work_photos.group_field_dispatcher">
-                    <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-credit-card"/></span><div><h2>גבייה מהלקוח</h2><p>סכום העסקה הכולל, תקבולים ויתרה בשקלים</p></div></div>
+                    <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-credit-card" aria-hidden="true"/></span><div><h2>גבייה מהלקוח</h2><p>סכום העסקה הכולל, תקבולים ויתרה בשקלים</p></div></div>
                     <p class="o_field_help">הזן את הסכום הכולל לתשלום לפי המסמך, כולל מע״מ אם חל. הוא נפרד מסכום העסקה לפני מע״מ המשמש לרווחיות.</p>
                     <div class="o_field_money_summary">
                         <div class="o_field_pricing_row"><label for="field_customer_due"/><field name="field_customer_due" nolabel="1" readonly="field_dispatch_code == 'paid'"/></div>
@@ -75,7 +75,7 @@
                     <p class="o_field_help mt-3">רישום תפעולי בלבד. הפקת קבלות וחשבוניות מתבצעת במורנינג. ניתן לתעד מקדמה לפני סיום העבודה.</p>
                 </div>
                 <div class="o_field_service_card o_field_payout_panel" groups="field_work_photos.group_field_finance" invisible="field_execution_type != 'subcontractor'">
-                    <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-handshake-o"/></span><div><h2>התחשבנות עם הקבלן</h2><p>מידע לבעלים בלבד · תשלומים בפועל</p></div></div>
+                    <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-handshake-o" aria-hidden="true"/></span><div><h2>התחשבנות עם הקבלן</h2><p>מידע לבעלים בלבד · תשלומים בפועל</p></div></div>
                     <p class="o_field_help">הסכום הצפוי לפי המחירון הוא לפני מע״מ. הזן בנפרד את הסכום הכולל שסוכם לתשלום לקבלן, כולל מע״מ אם חל.</p>
                     <div class="o_field_money_summary">
                         <div class="o_field_pricing_row"><label for="payout_cost" string="אומדן לפי מחירון לפני מע״מ"/><field name="field_contractor_cost" id="payout_cost" nolabel="1" class="o_field_pricing_number"/></div>

@@ -8,7 +8,7 @@
                 <div class="o_field_service_hero o_field_work_header">
                     <div class="o_field_service_heading">
                         <div class="o_field_work_identity"><span class="o_field_service_eyebrow">כרטיס עבודה</span><field name="field_stage_title" nolabel="1" class="o_field_stage_pill"/></div>
-                        <h1><field name="field_workspace_title" nolabel="1" class="o_field_title_text"/></h1>
+                        <div class="o_field_compact_progress" aria-label="התקדמות העבודה"><span>שלב <field name="field_stage_number"/> מתוך 7</span><field name="field_progress" widget="progressbar"/></div><h1><field name="field_workspace_title" nolabel="1" class="o_field_title_text"/></h1>
                         <field name="field_workspace_summary" nolabel="1" class="o_field_work_context"/>
                     </div>
                     <div class="o_field_next_step" role="status"><strong>הפעולה הבאה</strong><field name="field_next_step" nolabel="1"/></div>
@@ -58,10 +58,10 @@
                 <div class="o_field_message" role="status" invisible="not field_dispatch_locked">פרטי העבודה נעולים בזמן בדיקת הדיווח ולאחר אישורו. לשינוי פרטים, החזירו את העבודה לתיקון דרך לשונית ביצוע.</div>
                 <div class="o_field_form_grid">
                     <div class="o_field_control o_field_control_wide"><label for="name" string="שם העבודה"/><field name="name" string="שם העבודה" placeholder="למשל: החלפת ברז במטבח" required="1" readonly="field_dispatch_locked"/></div>
-                    <div class="o_field_control"><label for="partner_id" string="לקוח"/><field name="partner_id" string="לקוח" readonly="field_dispatch_locked"/></div>
-                    <div class="o_field_control"><label for="phone" string="טלפון לתיאום"/><field name="phone" widget="phone" class="o_field_numeric" placeholder="0501234567" readonly="field_dispatch_locked"/></div>
-                    <div class="o_field_control o_field_control_wide"><label for="field_site_address"/><field name="field_site_address" placeholder="רחוב, מספר ועיר" readonly="field_dispatch_locked"/></div>
-                    <div class="o_field_control o_field_control_wide"><label for="field_work_description" string="מה צריך לבצע?"/><field name="field_work_description" placeholder="תיאור קצר וברור שיופיע גם למבצע בשטח" readonly="field_dispatch_locked"/></div>
+                    <div class="o_field_control"><label for="partner_id" string="לקוח"/><field name="partner_id" string="לקוח" readonly="field_dispatch_locked"/><p class="o_field_required_hint" role="status" invisible="partner_id">בחרו לקוח כדי להמשיך להצעת מחיר.</p></div>
+                    <div class="o_field_control"><label for="phone" string="טלפון לתיאום"/><field name="phone" widget="phone" class="o_field_numeric" placeholder="0501234567" readonly="field_dispatch_locked"/><p class="o_field_required_hint" role="status" invisible="phone">הזינו טלפון לתיאום עם הלקוח.</p></div>
+                    <div class="o_field_control o_field_control_wide"><label for="field_site_address"/><field name="field_site_address" placeholder="רחוב, מספר ועיר" readonly="field_dispatch_locked"/><p class="o_field_required_hint" role="status" invisible="field_site_address">הזינו רחוב, מספר ועיר שבהם תבוצע העבודה.</p></div>
+                    <div class="o_field_control o_field_control_wide"><label for="field_work_description" string="מה צריך לבצע?"/><field name="field_work_description" placeholder="תיאור קצר וברור שיופיע גם למבצע בשטח" readonly="field_dispatch_locked"/><p class="o_field_required_hint" role="status" invisible="field_work_description">תארו מה המבצע צריך לבצע בשטח.</p></div>
                 </div>
                 <details class="o_field_arrival_details"><summary>איש קשר ופרטי הגעה נוספים — רשות</summary>
                     <div class="o_field_form_grid">
@@ -76,7 +76,7 @@
                 <field name="field_pricing_currency_id" invisible="1"/>
                 <div class="o_field_form_grid o_field_form_grid_single">
                     <div class="o_field_control"><label for="field_sale_amount"/><field name="field_sale_amount" readonly="field_dispatch_locked"/></div>
-                    <div class="o_field_control"><label for="field_quote_number" string="מספר הצעת מחיר"/><field name="field_quote_number" class="o_field_numeric" placeholder="המספר מההצעה שנשלחה במורנינג" readonly="field_dispatch_locked"/></div>
+                    <div class="o_field_control"><label for="field_quote_number" string="מספר הצעת מחיר"/><field name="field_quote_number" class="o_field_numeric" placeholder="המספר מההצעה שנשלחה במורנינג" readonly="field_dispatch_locked"/><p class="o_field_required_hint" role="status" invisible="field_quote_number or field_dispatch_code not in ['quote','sent']">הזינו את מספר ההצעה שהופקה ונשלחה במורנינג.</p></div>
                 </div>
             </xpath>
             <xpath expr="//div[hasclass('o_field_planning_grid')]/div[.//field[@name='field_visit_at']]" position="attributes">
@@ -87,7 +87,7 @@
                     <div class="o_field_control"><label for="field_execution_type"/><field name="field_execution_type" readonly="field_dispatch_locked"/></div>
                     <div class="o_field_control" invisible="field_execution_type != 'subcontractor'"><label for="planning_contractor" string="קבלן מבצע"/><field name="field_contractor_id" id="planning_contractor" options="{'no_create': True, 'no_open': True}" readonly="field_dispatch_locked"/></div>
                     <div class="o_field_control" invisible="field_execution_type != 'direct'"><label for="field_worker_id"/><field name="field_worker_id" options="{'no_create': True}" readonly="field_dispatch_locked"/></div>
-                    <div class="o_field_control"><label for="field_visit_at"/><field name="field_visit_at" readonly="field_dispatch_locked"/></div>
+                    <div class="o_field_control"><label for="field_visit_at"/><field name="field_visit_at" readonly="field_dispatch_locked"/><p class="o_field_required_hint" role="status" invisible="field_visit_at or field_dispatch_code != 'schedule'">קבעו מועד ביצוע לפני אישור השיבוץ.</p></div>
                 </div>
             </xpath>
             <xpath expr="//div[hasclass('o_field_assignment_card')]//h2" position="replace"><h2>מבצע ומועד</h2></xpath>

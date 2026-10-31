@@ -17,7 +17,7 @@
             </xpath>
             <xpath expr="//field[@name='field_quote_number']/ancestor::div[hasclass('o_field_service_card')][1]" position="inside">
                 <div class="o_field_pricing_card" groups="field_work_photos.group_field_finance">
-                    <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-line-chart"/></span><div><h3>עלות ורווחיות</h3><p>תחזית לבעלים · ₪ לפני מע״מ</p></div></div>
+                    <div class="o_field_service_card_heading"><span class="o_field_service_icon"><i class="fa fa-line-chart" aria-hidden="true"/></span><div><h3>עלות ורווחיות</h3><p>תחזית לבעלים · ₪ לפני מע״מ</p></div></div>
                     <field name="field_low_margin" invisible="1"/>
                     <field name="field_rates_frozen" invisible="1"/>
                     <div class="alert alert-danger" role="alert" invisible="field_gross_profit &gt;= 0">
@@ -74,3 +74,4 @@
     </record>
     <menuitem id="menu_field_contractor_rates" name="מחירוני קבלנים" parent="menu_field_service_root" action="action_field_contractor_rates" sequence="30" groups="field_work_photos.group_field_finance"/>
 </odoo>
+

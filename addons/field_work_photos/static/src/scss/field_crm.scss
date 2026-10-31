@@ -1,0 +1,89 @@
+// Shared field-work surfaces. Native Odoo chrome keeps its own RTL rules.
+.o_field_ui {
+    --work-gap-small: 8px;
+    --work-gap: 16px;
+    --work-section-gap: 24px;
+    --work-focus: #086b74;
+    :is(a, button, summary, input, textarea, select):focus-visible {
+        outline: 3px solid var(--work-focus); outline-offset: 3px;
+        scroll-margin-block: 100px 160px;
+    }
+    .btn, button, summary, a { touch-action: manipulation; }
+    .o_field_wrap_name, h1 .o_field_widget { white-space: normal; overflow-wrap: anywhere; }
+    .o_field_required_hint { color: var(--work-inspection); margin: 8px 0 0; font-size: 14px; }
+    .o_field_compact_progress { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; color: var(--work-steel); font-size: 14px; }
+    .o_field_compact_progress > span { display: flex; gap: 4px; }
+    .o_field_compact_progress .o_field_widget { width: auto; margin: 0; }
+    .o_field_compact_progress > .o_field_widget { min-width: 120px; max-width: 180px; flex: 1; }
+    .o_field_compact_progress .o_progress { min-width: 70px; height: 6px; }
+    .o_field_compact_progress .o_progressbar_value { display: none; }
+    .o_field_hub_header, .o_field_hub_grid, .o_field_hub_balances, .o_field_guide_grid, .o_field_contact_form .o_form_sheet, .o_field_task_form .o_form_sheet, .o_field_rates_form .o_form_sheet {
+        /*rtl:ignore*/
+        direction: rtl;
+        text-align: start;
+    }
+    .o_field_hub_header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 24px; margin-bottom: 24px; }
+    .o_field_hub_header > div { min-width: 0; flex: 1 1 360px; }
+    .o_field_hub_header h1 { margin: 0 0 12px; }
+    .o_field_hub_header p { max-width: 70ch; margin: 0; }
+    .o_field_hub_grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 24px; }
+    button.o_field_queue_tile { display: grid; gap: 8px; min-width: 0; text-align: start; background: var(--work-paper); border: 1px solid var(--work-line); border-radius: 12px; padding: 20px; color: var(--work-ink); white-space: normal; }
+    .o_field_queue_tile > span:first-child { font-size: 18px; font-weight: 600; }
+    .o_field_queue_tile .o_field_widget { font-size: 32px; font-weight: 600; margin: 0; width: auto; }
+    button.o_field_queue_tile:hover { border-color: var(--work-water); background: var(--work-water-tint); }
+    button.o_field_queue_priority { border-inline-start: 4px solid var(--work-water); }
+    .o_field_hub_balances { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 24px; margin: 20px 0; }
+    .o_field_hub_balances label { display: block; margin-bottom: 8px; }
+    .o_field_hub_balances .o_field_widget { font-size: 28px; font-weight: 600; }
+    .o_field_guide_grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; }
+    .o_field_guide_grid h2 { margin-top: 24px; }
+    .o_field_guide_grid h2:first-child { margin-top: 0; }
+    .o_field_rate_grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; margin: 24px 0; }
+    .o_field_rate_tier { min-width: 0; padding: 20px; border: 1px solid var(--work-line); border-radius: 12px; }
+    .o_field_rate_tier h2 { font-size: 18px; min-height: 48px; }
+    .o_field_rate_tier label { display: block; margin: 16px 0 8px; }
+    .o_field_rate_input { display: flex; align-items: center; gap: 8px; font-size: 24px;
+        /*rtl:ignore*/
+        direction: ltr;
+    }
+    .o_field_rate_input .o_field_widget { flex: 1; min-width: 0; }
+    .o_field_rate_tier p { font-size: 14px; margin: 8px 0 0; color: var(--work-steel); }
+    .o_field_rates_form .o_input, .o_field_contact_form .o_input { min-height: 44px; padding: 8px 12px; background: var(--work-input); border: 1px solid var(--work-line); border-radius: 8px; }
+    .o_field_client_kanban .o_kanban_record { border-radius: 12px; }
+    .o_field_client_kanban h2 { white-space: normal; overflow-wrap: anywhere; }
+}
+.o_field_hub_form .o_form_sheet, .o_field_contact_form .o_form_sheet, .o_field_task_form .o_form_sheet { max-width: 1184px; padding: 24px; }
+.o_field_ui.o_field_task_form .o_field_image img { max-height: 320px; object-fit: contain; }
+.o_field_portal {
+    .o_field_skip { position: absolute; inset-inline-start: 16px; top: 0; transform: translateY(-200%); z-index: 100; padding: 12px; background: var(--work-paper); }
+    .o_field_skip:focus { transform: none; }
+    .o_field_wizard_nav { display: flex; gap: 8px; margin-bottom: 20px; padding: 0; list-style: none; }
+    .o_field_wizard_nav li { flex: 1; min-width: 0; }
+    .o_field_wizard_nav button { width: 100%; min-height: 44px; border: 1px solid var(--work-line); border-radius: 8px; background: var(--work-paper); color: var(--work-steel); padding: 8px; }
+    .o_field_wizard_nav button[aria-current="step"] { background: var(--work-water-tint); color: var(--work-water); border-color: var(--work-water); font-weight: 600; }
+    [data-wizard-panel][hidden], [data-wizard-next][hidden], [data-wizard-back][hidden], [data-report-submit][hidden] { display: none !important; }
+    [data-wizard-heading] { scroll-margin-top: 24px; }
+    .o_field_validation_summary { color: var(--work-repair); background: #fff0f1; border-color: var(--work-repair); }
+    [data-report-errors]:focus { outline: 3px solid var(--work-water); }
+    .o_field_review_checklist { padding-inline-start: 24px; line-height: 1.8; }
+    .o_field_portal_actions { position: static; padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+    .o_field_portal_actions .btn { flex: 1 1 160px; }
+    .o_field_photo_dialog { overscroll-behavior: contain; }
+    .o_field_portal_heading h1 { overflow-wrap: anywhere; }
+    .o_field_tabs a, .o_field_back { min-height: 44px; }
+    input, select, textarea { scroll-margin-block: 32px 160px; }
+    [data-report-step-note] { font-weight: 500; color: var(--work-water); }
+    .o_field_photo_placeholder { color: var(--work-steel); }
+}
+@media (max-width: 767px) {
+    .o_field_ui {
+        .o_field_hub_grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+        button.o_field_queue_tile { padding: 16px; }
+        .o_field_queue_tile > span:first-child { font-size: 16px; }
+        .o_field_guide_grid, .o_field_rate_grid, .o_field_hub_balances { grid-template-columns: minmax(0,1fr); }
+        .o_field_rate_tier h2 { min-height: 0; }
+        .o_field_hub_header > .btn { width: 100%; }
+    }
+    .o_field_hub_form .o_form_sheet, .o_field_contact_form .o_form_sheet, .o_field_task_form .o_form_sheet { padding: 16px; min-width: 0; }
+    .o_field_portal .o_field_wizard_nav button { font-size: 14px; }
+}
