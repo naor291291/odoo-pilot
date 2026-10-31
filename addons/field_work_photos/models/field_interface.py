@@ -10,6 +10,7 @@ class CrmLead(models.Model):
 
     field_workspace_summary = fields.Char(compute='_compute_workspace_context', groups=OPS)
     field_workspace_title = fields.Char(compute='_compute_workspace_context', groups=OPS)
+    field_hub_action = fields.Char(compute='_compute_workspace_context', groups=OPS)
     field_next_step = fields.Char(compute='_compute_workspace_context', groups=OPS)
 
     @api.depends('name', 'partner_id.name', 'field_site_address', 'field_dispatch_code',
@@ -41,6 +42,9 @@ class CrmLead(models.Model):
                 elif lead.field_collection_status == 'paid':
                     text = 'הביצוע אושר וכל הסכום התקבל. אפשר לסגור את העבודה בלשונית גבייה.'
             lead.field_next_step = text
+            lead.field_hub_action = ('בדיקת הדיווח' if lead.field_report_state == 'pending' else
+                                     'מעקב אחר הביצוע' if code == 'field' else
+                                     'טיפול בגבייה' if code == 'completed' else 'המשך טיפול')
 
     def _field_workspace_action(self, focus=None):
         self.ensure_one()

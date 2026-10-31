@@ -40,13 +40,14 @@
     <record id="view_field_partner_rates_form" model="ir.ui.view">
         <field name="name">res.partner.field.rates.form</field><field name="model">res.partner</field>
         <field name="arch" type="xml"><form string="מחירון קבלן" create="false" delete="false" class="o_field_ui o_field_rates_form"><sheet>
-            <div class="o_field_panel"><h1><field name="name" readonly="1" class="o_field_wrap_name"/></h1><p>מחירון אישי לביצוע עבודות. כל מדרגה חלה על מלוא סכום העסקה לפני מע״מ.</p>
+            <div class="o_field_rates_content"><h1><field name="name" readonly="1" class="o_field_wrap_name"/></h1><p>מחירון אישי לביצוע עבודות. כל מדרגה חלה על מלוא סכום העסקה לפני מע״מ.</p>
                 <group><field name="phone" readonly="1"/></group>
                 <div class="o_field_rate_grid">
-                    <div class="o_field_rate_tier"><h2>עסקה עד 500 ₪</h2><label for="field_rate_small" string="חלק הקבלן (%)"/><div class="o_field_rate_input"><field name="field_rate_small"/>%</div><p>מדרגה ראשונה</p></div>
-                    <div class="o_field_rate_tier"><h2>מעל 500 ועד 1,250 ₪</h2><label for="field_rate_medium" string="חלק הקבלן (%)"/><div class="o_field_rate_input"><field name="field_rate_medium"/>%</div><p>מדרגה שנייה</p></div>
-                    <div class="o_field_rate_tier"><h2>מעל 1,250 ₪</h2><label for="field_rate_large" string="חלק הקבלן (%)"/><div class="o_field_rate_input"><field name="field_rate_large"/>%</div><p>מדרגה שלישית</p></div>
+                    <div class="o_field_rate_tier"><h2>עסקה עד 500 ₪</h2><label for="field_rate_small" string="חלק הקבלן (%)"/><div class="o_field_rate_input"><field name="field_rate_small"/>%</div></div>
+                    <div class="o_field_rate_tier"><h2>מעל 500 ועד 1,250 ₪</h2><label for="field_rate_medium" string="חלק הקבלן (%)"/><div class="o_field_rate_input"><field name="field_rate_medium"/>%</div></div>
+                    <div class="o_field_rate_tier"><h2>מעל 1,250 ₪</h2><label for="field_rate_large" string="חלק הקבלן (%)"/><div class="o_field_rate_input"><field name="field_rate_large"/>%</div></div>
                 </div>
+                <div class="o_field_rate_example"><h2>דוגמת חישוב מהמחירון הזה</h2><field name="field_rate_example" nolabel="1"/><p class="o_field_help">להמחשה בלבד. בעבודה שכבר שובצה משתמשים במחירון שנשמר בזמן השיבוץ.</p></div>
                 <p class="o_field_help">האחוז חל על כל סכום העסקה, ולא רק על החלק שמעל גבול המדרגה. כל הסכומים לפני מע״מ. אפשר להזין אחוז בין 0 ל־100.</p>
                 <div class="o_field_message" role="status">שינוי המחירון משפיע על שיבוצים חדשים. בעבודות שכבר שובצו נשמר המחירון שהיה בתוקף בזמן השיבוץ.</div>
             </div>

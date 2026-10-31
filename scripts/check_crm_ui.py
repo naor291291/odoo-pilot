@@ -110,6 +110,8 @@ with sync_playwright() as playwright, capture_on_failure():
         open_action(page, 'action_field_dashboard')
         expect(page.get_by_role('heading', name='מה צריך לקדם היום?', exact=True)).to_be_visible()
         expect(page.locator('.o_field_queue_tile')).to_have_count(6)
+        expect(page.get_by_role('heading', name='דורש טיפול היום', exact=True)).to_be_visible()
+        expect(page.locator('.o_field_attention_cards')).to_contain_text('עבודת סקירה')
         assert page.locator('.o_field_queue_tile').first.evaluate('el => getComputedStyle(el).direction') == 'rtl'
         expect(page.locator('[name="collection_balance"]')).to_be_visible()
         count = rpc(owner, 'crm.lead', 'search_count', [[('is_field_service', '=', True), ('field_dispatch_code', '=', 'field')]])
@@ -117,6 +119,12 @@ with sync_playwright() as playwright, capture_on_failure():
         assert all(box['height'] >= 44 for box in page.locator('.o_field_queue_tile').evaluate_all('els => els.map(el => ({height: el.getBoundingClientRect().height}))'))
         capture(page, f'hub-owner-{width}')
     page.set_viewport_size({'width': 1440, 'height': 1100})
+    open_action(page, 'action_field_dashboard')
+    attention_card = page.locator('.o_field_attention_cards .o_kanban_record').filter(has_text='עבודת סקירה')
+    attention_card.get_by_role('button', name='מעקב אחר הביצוע', exact=True).focus()
+    page.keyboard.press('Enter')
+    expect(page.locator('.o_field_report_panel')).to_be_visible()
+    capture(page, 'hub-direct-work-desktop')
     open_action(page, 'action_field_dashboard')
     page.locator('button[name="action_active_queue"]').focus()
     page.keyboard.press('Enter')
@@ -201,11 +209,26 @@ with sync_playwright() as playwright, capture_on_failure():
     page.locator('.modal:visible .modal-header').get_by_role('button', name='סגור', exact=True).click()
     page.set_viewport_size({'width': 1440, 'height': 1100})
 
+    # Today agenda keeps time/client/address/contractor together and opens work directly.
+    for width in (1440, 768, 390):
+        page.set_viewport_size({'width': width, 'height': 844})
+        open_action(page, 'action_field_today')
+        card = page.locator('.o_field_agenda .o_kanban_record').filter(has_text='עבודת סקירה')
+        expect(card).to_contain_text('רחוב')
+        expect(card.locator('.o_field_agenda_time')).to_be_visible()
+        capture(page, f'today-agenda-{width}')
+    card.get_by_role('button', name='המשך טיפול בכרטיס העבודה', exact=True).focus()
+    page.keyboard.press('Enter')
+    expect(page.locator('.o_field_report_panel')).to_be_visible()
+    capture(page, 'today-direct-work-mobile')
+    page.set_viewport_size({'width': 1440, 'height': 1100})
+
     # Tier form: readable semantics, save a valid edit and reject an invalid rate.
     open_action(page, 'action_field_contractor_rates')
     page.locator('.o_data_row').filter(has_text='יוסי').first.locator('.o_list_record_open_form_view button').click()
     expect(page.locator('.o_field_rates_form')).to_be_visible()
     expect(page.locator('.o_field_rate_tier')).to_have_count(3)
+    expect(page.locator('[name="field_rate_example"]')).to_contain_text('1,000')
     capture(page, 'contractor-rate-form-desktop')
     page.set_viewport_size({'width': 390, 'height': 844})
     capture(page, 'contractor-rate-form-mobile')
@@ -223,6 +246,7 @@ with sync_playwright() as playwright, capture_on_failure():
     contractor_partner = rpc(owner, 'res.users', 'read', [[contractor]], fields=['partner_id'])[0]['partner_id'][0]
     saved_rate = rpc(owner, 'res.partner', 'read', [[contractor_partner]], fields=['field_rate_medium'])[0]['field_rate_medium']
     assert saved_rate == 66, 'Valid contractor rate was not saved'
+    expect(page.locator('[name="field_rate_example"]')).to_contain_text('660.00')
     current_applied = rpc(owner, 'crm.lead', 'read', [[lead]], fields=['field_applied_rate'])[0]['field_applied_rate']
     assert current_applied == applied_before, 'Editing the price list changed an already assigned rate'
 
@@ -278,6 +302,13 @@ with sync_playwright() as playwright, capture_on_failure():
     desktop_page.goto(f'{BASE}/my/field-work/{task}')
     settle(desktop_page)
     expect(desktop_page.locator('[data-wizard-nav]')).to_be_visible()
+    details = desktop_page.locator('.o_field_job_more')
+    details.locator('summary').focus()
+    desktop_page.keyboard.press('Enter')
+    expect(details).to_have_attribute('open', '')
+    expect(details).to_contain_text('טלפון')
+    desktop_page.keyboard.press('Enter')
+    expect(details).not_to_have_attribute('open', '')
     capture(desktop_page, 'contractor-report-desktop')
     desktop_page.locator('#field_visit_result').select_option('not_done')
     desktop_page.locator('#field_visit_reason').fill('נדרש תיאום ביקור המשך — בדיקת מחשב')

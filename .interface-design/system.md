@@ -60,3 +60,20 @@ All components use the palette/type/spacing above. Their depth is one bordered p
 For each affected screen record source review, modification, browser verification, viewport and role separately in `docs/crm-ux-coverage.md`. Shared CSS is not proof of per-screen coverage. Use disposable fixtures, wait for dynamic Odoo data/network to settle, inspect DOM before acting, test keyboard/error/empty states, retain screenshots and console errors. Review at 390/768/1024/1440px where applicable.
 
 Skills loaded from upstream source for this work: Interface Design (primary), Vercel Web Design Guidelines (implementation review), Anthropic Webapp Testing (Playwright discipline), UI/UX Pro Max quick-reference (supplemental accessibility/form guidance). They are not installed as global personal skills; no Pro Max search database or Odoo-specific stack recommendation is claimed.
+
+
+## Clarity refinement — 31 October 2026
+
+Base: upstream `main` at `02d74f2`; this pass preserves the palette, Heebo, native controls and all business transitions.
+
+- **Hub:** action records precede counters. Show pending reports first, then dispatched work scheduled before the end of the viewer's local day (including overdue work). State the inclusion rule and total; at most six previews, with an explicit full-list action. Never invent urgency for undated inquiries. Empty queues remain reachable but lose their filled surface and explanatory paragraph. Keep finance summaries owner-only.
+- **Work card:** compact title/current stage and one next-step sentence. Missing-data checklist is a 44px native disclosure; field-level repair hints remain visible. Move the full stage map below the working tabs. Quote and scheduling inputs lead in their respective stages, while customer details remain editable below. Header 22px phone/24px desktop, 12px separation; do not add a second hero box.
+- **Portal:** show job/customer/date/address and a 140-character description preview; provide clearly labelled full description/access details and a reporting anchor. Keep Call/Navigate visible. Reporting steps keep DOM inputs and File objects through Back/Continue. Optional notes use native details. No fixed action bar covers inputs. State invalid upload on the visible picker button, as well as the original input.
+- **Schedule:** local-day agenda is the quick entry; time, customer, address and performer appear together. Each card opens the governed work card directly. Full task evidence, searchable list and calendar remain available. Appointment boundaries use the viewer's time zone and UTC storage; no invented end time.
+- **Rates:** use compact border-bottom rows/columns rather than nested panels. Display an illustrative 1,000 ILS middle-tier calculation using the currently edited contractor rate and ILS rounding. Label it before VAT; distinguish it from frozen rates on dispatched jobs.
+- **Shared chrome:** while a custom field-work view is active, the native navbar uses the same water action color; other Odoo apps keep their own theme. Native direction and icon fonts stay under Odoo control.
+- **Brand:** keep any configured real logo/company identity. On field-portal routes only, replace Odoo's default logo with the company name, or the truthful application name “עבודות שטח” if the name is still “My Company”. Do not rename a real company or infer legal identity from unrelated work. The pilot bootstrap may name only the known default company “עבודות שטח — פיילוט”; existing custom names must remain untouched.
+
+Terminology: “כרטיס העבודה” is the operational source for assignment, approval and collection; “משימה” is the dispatched evidence record; “שמירה והמשך מאוחר יותר” saves a draft; “שליחת דיווח לבדיקה” locks and submits for review, not approval.
+
+Native Kanban integration: the hub's registered relational widget and today's registered renderer preserve Enter activation on nested work-card buttons. Do not apply a global Kanban patch. Outline action hover/focus/active use water fill + white text with the shared visible focus ring.

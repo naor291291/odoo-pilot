@@ -7,11 +7,11 @@
             <xpath expr="//div[hasclass('o_field_service_hero')]" position="replace">
                 <div class="o_field_service_hero o_field_work_header">
                     <div class="o_field_service_heading">
-                        <div class="o_field_work_identity"><span class="o_field_service_eyebrow">כרטיס עבודה</span><field name="field_stage_title" nolabel="1" class="o_field_stage_pill"/></div>
-                        <div class="o_field_compact_progress" aria-label="התקדמות העבודה"><span>שלב <field name="field_stage_number"/> מתוך 7</span><field name="field_progress" widget="progressbar"/></div><h1><field name="field_workspace_title" nolabel="1" class="o_field_title_text"/></h1>
+                        <div class="o_field_work_identity"><field name="field_stage_title" nolabel="1" class="o_field_stage_pill"/></div>
+                        <div class="o_field_compact_progress" aria-label="התקדמות העבודה"><span>שלב <field name="field_stage_number"/> מתוך 7</span></div><h1><field name="field_workspace_title" nolabel="1" class="o_field_title_text"/></h1>
                         <field name="field_workspace_summary" nolabel="1" class="o_field_work_context"/>
                     </div>
-                    <div class="o_field_next_step" role="status"><strong>הפעולה הבאה</strong><field name="field_next_step" nolabel="1"/></div>
+                    <div class="o_field_next_step" role="status"><field name="field_next_step" nolabel="1"/></div>
                 </div>
             </xpath>
             <xpath expr="//div[hasclass('o_field_service_steps')]" position="before">
@@ -23,7 +23,7 @@
             <xpath expr="//div[hasclass('o_field_service_steps')]" position="replace"/>
             <xpath expr="//div[hasclass('o_field_service_columns')]" position="before">
                 <notebook class="o_field_work_tabs">
-                    <page name="field_planning" string="תכנון"><div class="o_field_planning_grid"/></page>
+                    <page name="field_planning" string="תכנון"><div class="o_field_planning_grid"><span class="o_field_focus_quote" invisible="field_dispatch_code not in ['quote','sent']"/><span class="o_field_focus_assignment" invisible="field_dispatch_code != 'schedule'"/></div></page>
                     <page name="field_execution" string="ביצוע" invisible="field_task_count == 0"><div class="o_field_execution_slot"/></page>
                     <page name="field_collection" string="גבייה" groups="field_work_photos.group_field_dispatcher"><div class="o_field_collection_slot"/></page>
                     <page name="field_finance" string="עלויות וקבלן" groups="field_work_photos.group_field_finance"><div class="o_field_finance_slot"/></page>
@@ -46,6 +46,11 @@
                 <div class="o_field_message" role="status" invisible="field_execution_type != 'subcontractor' or field_contractor_id">בחרו קבלן בלשונית תכנון כדי לחשב את חלקו ולנהל את התשלומים אליו.</div>
                 <xpath expr="//div[hasclass('o_field_payout_panel')]" position="move"/>
             </xpath>
+            <xpath expr="//div[hasclass('o_field_service_notice_warning')]" position="replace">
+                <details class="o_field_service_notice o_field_service_notice_warning" invisible="not field_missing_fields or field_dispatch_code in ['field','completed','paid']"><summary>יש פרטים להשלמה — הצגת הרשימה</summary><field name="field_missing_fields" nolabel="1" readonly="1"/></details>
+            </xpath>
+            <xpath expr="//div[hasclass('o_field_service_notice_ready')]" position="replace"><p class="o_field_service_notice_ready" role="status" invisible="field_missing_fields or field_dispatch_code in ['field','completed','paid']">כל הפרטים מוכנים להמשך.</p></xpath>
+            <xpath expr="//notebook[hasclass('o_field_work_tabs')]" position="after"><xpath expr="//details[hasclass('o_field_workflow_details')]" position="move"/></xpath>
             <xpath expr="//details[hasclass('o_field_service_notes')]/summary" position="replace"><summary>פרטים פנימיים והערות לצוות</summary></xpath>
             <xpath expr="//details[hasclass('o_field_service_notes')]" position="inside">
                 <group><xpath expr="//div[hasclass('o_field_service_sidebar')]//field[@name='user_id']" position="move"/><xpath expr="//div[hasclass('o_field_service_sidebar')]//field[@name='company_id']" position="move"/></group>
@@ -75,7 +80,7 @@
             <xpath expr="//div[hasclass('o_field_quote_card')]/group" position="replace">
                 <field name="field_pricing_currency_id" invisible="1"/>
                 <div class="o_field_form_grid o_field_form_grid_single">
-                    <div class="o_field_control"><label for="field_sale_amount"/><field name="field_sale_amount" readonly="field_dispatch_locked"/></div>
+                    <div class="o_field_control"><label for="field_sale_amount"/><field name="field_sale_amount" readonly="field_dispatch_locked"/><p class="o_field_required_hint" role="status" invisible="field_sale_amount &gt; 0 or field_dispatch_code not in ['quote','sent']">הזינו סכום עסקה חיובי לפני מע״מ.</p></div>
                     <div class="o_field_control"><label for="field_quote_number" string="מספר הצעת מחיר"/><field name="field_quote_number" class="o_field_numeric" placeholder="המספר מההצעה שנשלחה במורנינג" readonly="field_dispatch_locked"/><p class="o_field_required_hint" role="status" invisible="field_quote_number or field_dispatch_code not in ['quote','sent']">הזינו את מספר ההצעה שהופקה ונשלחה במורנינג.</p></div>
                 </div>
             </xpath>
@@ -130,6 +135,9 @@
                 <xpath expr="//div[hasclass('o_field_service_mobile_actions')]/button[@name='action_previous_field_stage']" position="move"/>
                 <xpath expr="//div[hasclass('o_field_service_mobile_actions')]/button[@name='action_return_field_report'][contains(@invisible,'field_visit_result in')]" position="move"/>
             </xpath>
+            <xpath expr="//div[hasclass('o_field_customer_card')]//div[hasclass('o_field_service_card_heading')]//p" position="replace"/>
+            <xpath expr="//div[hasclass('o_field_quote_card')]//div[hasclass('o_field_service_card_heading')]//p" position="replace"/>
+            <xpath expr="//div[hasclass('o_field_quote_card')]//div[hasclass('o_field_service_tip')]" position="replace"/>
         </field>
     </record>
     <record id="view_field_lead_execution_focus" model="ir.ui.view">

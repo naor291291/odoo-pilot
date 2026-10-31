@@ -17,6 +17,17 @@ class ResPartner(models.Model):
     field_rate_medium = fields.Float(string='אחוז קבלן — מעל 500 ועד 1,250', default=65, groups=FINANCE_GROUP)
     field_rate_large = fields.Float(string='אחוז קבלן — מעל 1,250', default=50, groups=FINANCE_GROUP)
 
+    field_rate_example = fields.Char(compute='_compute_rate_example', groups=FINANCE_GROUP)
+
+    @api.depends(*RATE_FIELDS)
+    def _compute_rate_example(self):
+        currency = self.env.ref('base.ILS')
+        for partner in self:
+            # An illustrative sale in the middle tier; use this contractor's live rate.
+            rate = partner.field_rate_medium
+            cost = currency.round(1000 * rate / 100)
+            partner.field_rate_example = f'עסקה של 1,000 ₪ × {rate:g}% = {cost:,.2f} ₪ לקבלן (לפני מע״מ).'
+
     @api.constrains(*RATE_FIELDS)
     def _check_field_rates(self):
         for partner in self:
