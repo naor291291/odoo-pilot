@@ -87,7 +87,7 @@ with sync_playwright() as playwright, capture_on_failure():
     def capture(page, name, check_overflow=True):
         settle(page)
         if check_overflow:
-            assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), f'Page overflows: {name}'
+            page.wait_for_function('document.documentElement.scrollWidth <= innerWidth + 1', timeout=5000)
         page.screenshot(path=str(OUTPUT / f'{name}.png'), full_page=True)
         coverage.append({'screen': name, 'width': page.viewport_size['width'], 'screenshot': f'{name}.png', 'passed': True})
 
@@ -173,6 +173,11 @@ with sync_playwright() as playwright, capture_on_failure():
     page.get_by_role('button', name='המשך טיפול בכרטיס העבודה', exact=True).click()
     expect(page.locator('.o_field_report_panel')).to_be_visible()
     page.set_viewport_size({'width': 1440, 'height': 1100})
+    page.locator('.o_field_work_tabs').get_by_role('tab', name='תכנון', exact=True).click()
+    page.locator('.o_field_customer_card [name="partner_id"] .o_external_button').click()
+    expect(page.locator('.modal:visible .o_field_contact_form')).to_be_visible()
+    capture(page, 'client-dialog-from-work-desktop')
+    page.locator('.modal:visible .btn-close').click()
     open_action(page, 'action_field_tasks')
     page.locator('.o_switch_view.o_calendar').click()
     expect(page.locator('.o_calendar_view')).to_be_visible()
@@ -204,6 +209,9 @@ with sync_playwright() as playwright, capture_on_failure():
     medium_rate.fill('66')
     page.locator('.o_form_button_save').click()
     settle(page)
+    contractor_partner = rpc(owner, 'res.users', 'read', [[contractor]], fields=['partner_id'])[0]['partner_id'][0]
+    saved_rate = rpc(owner, 'res.partner', 'read', [[contractor_partner]], fields=['field_rate_medium'])[0]['field_rate_medium']
+    assert saved_rate == 66, 'Valid contractor rate was not saved'
     current_applied = rpc(owner, 'crm.lead', 'read', [[lead]], fields=['field_applied_rate'])[0]['field_applied_rate']
     assert current_applied == applied_before, 'Editing the price list changed an already assigned rate'
 
@@ -213,6 +221,16 @@ with sync_playwright() as playwright, capture_on_failure():
     capture(page, 'guide-desktop')
     page.set_viewport_size({'width': 390, 'height': 844})
     capture(page, 'guide-mobile')
+
+    # Unchanged native layouts are captured as explicit comparison references.
+    page.set_viewport_size({'width': 1440, 'height': 1100})
+    page.goto(f'{BASE}/odoo/action-{xmlid("action_partner_form", "base")}/{customer}')
+    settle(page)
+    capture(page, 'native-client-reference-desktop', check_overflow=False)
+    native_task = rpc(owner, 'crm.lead', 'read', [[lead]], fields=['field_workspace_task_id'])[0]['field_workspace_task_id'][0]
+    page.goto(f'{BASE}/odoo/action-{xmlid("action_view_task", "project")}/{native_task}')
+    settle(page)
+    capture(page, 'native-task-reference-desktop', check_overflow=False)
 
     # Explicit native-surface smoke coverage, not a claim of redesigning core Odoo.
     page.set_viewport_size({'width': 1440, 'height': 1100})
@@ -240,6 +258,24 @@ with sync_playwright() as playwright, capture_on_failure():
     open_action(ops_page, 'action_field_tasks')
     expect(ops_page.locator('.o_data_row').filter(has_text='עבודת סקירה')).to_be_visible()
     ops.close()
+
+    # Desktop portal uses the same governed steps; only phone data submission is exercised above.
+    task = rpc(owner, 'crm.lead', 'read', [[lead]], fields=['field_workspace_task_id'])[0]['field_workspace_task_id'][0]
+    desktop_portal = browser.new_context(viewport={'width': 1440, 'height': 1100}, locale='he-IL')
+    authenticate(desktop_portal, login['contractors'][0]['login'], login['contractors'][0]['password'])
+    desktop_page = page_for(desktop_portal)
+    desktop_page.goto(f'{BASE}/my/field-work/{task}')
+    settle(desktop_page)
+    expect(desktop_page.locator('[data-wizard-nav]')).to_be_visible()
+    capture(desktop_page, 'contractor-report-desktop')
+    desktop_page.locator('#field_visit_result').select_option('not_done')
+    desktop_page.locator('#field_visit_reason').fill('נדרש תיאום ביקור המשך — בדיקת מחשב')
+    desktop_page.locator('[data-wizard-next]').click()
+    desktop_page.locator('[data-wizard-next]').click()
+    expect(desktop_page.locator('[data-review-description]')).to_contain_text('בדיקת מחשב')
+    capture(desktop_page, 'contractor-review-desktop')
+    assert desktop_page.evaluate("(() => {const e = new Event('beforeunload', {cancelable:true}); window.dispatchEvent(e); return e.defaultPrevented;})()"), 'Dirty report has no navigation guard'
+    desktop_portal.close()
 
     # A second contractor cannot open the first contractor's new job.
     portal_context = browser.new_context(viewport={'width': 390, 'height': 844}, locale='he-IL', is_mobile=True, has_touch=True)
