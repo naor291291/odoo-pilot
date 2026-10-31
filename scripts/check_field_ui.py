@@ -107,6 +107,9 @@ with sync_playwright() as playwright:
     expect(page.locator('.o_field_pricing_card')).to_have_count(0)
     page.evaluate('document.fonts.ready')
     assert page.evaluate('document.fonts.check(\'16px "Field Heebo"\')'), 'Bundled Hebrew font failed to load'
+    # RTL text follows its container; it must not be mirrored twice by asset compilation.
+    label_alignment = page.locator('.o_field_customer_card label').first.evaluate("el => ({align: getComputedStyle(el).textAlign, direction: getComputedStyle(el).direction})")
+    assert label_alignment['direction'] == 'rtl' and label_alignment['align'] in ('start', 'right'), label_alignment
     page.screenshot(path=str(OUTPUT / 'desktop-quote.png'), full_page=True)
     page.set_viewport_size({'width': 390, 'height': 844})
     expect(page.locator('.o_field_service_hero')).to_be_visible()
