@@ -305,7 +305,7 @@ with sync_playwright() as playwright, capture_on_failure():
     details.locator('summary').focus()
     desktop_page.keyboard.press('Enter')
     expect(details).to_have_attribute('open', '')
-    expect(details).to_contain_text('רחוב')
+    expect(details).to_contain_text('טלפון')
     desktop_page.keyboard.press('Enter')
     expect(details).not_to_have_attribute('open', '')
     capture(desktop_page, 'contractor-report-desktop')
