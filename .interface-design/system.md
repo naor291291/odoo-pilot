@@ -90,3 +90,5 @@ Intent: the owner checks what is owed for a contractor and period, explains the 
 - Show generation time, Israel timezone, arithmetic and legacy/late-entry limitations. Do not present effective-date reporting as a certified historic month-end snapshot. Current follow-up state is not historical evidence.
 
 Sources: unclecatvn Odoo 18, Interface Design, Impeccable clarify/distill/adapt/craft floor and Anthropic Webapp Testing. Impeccable launcher was unavailable; its binary/detector did not run. Verification boundaries: docs/contractor-statement.md.
+
+Print verification: Qt may apply phone screen media rules at A4 width. The report-only class explicitly restores table/header/body/row/cell display and hides mobile pseudo-labels. Keep data 14px and supporting print text 12px; preserve the 22/38/20/20 column split. Actual wkhtmltopdf output was inspected across a one-page example and four-page long-reference fixture. Native report actions use config=False for this internal layout, avoiding an unrelated company-branding wizard.
