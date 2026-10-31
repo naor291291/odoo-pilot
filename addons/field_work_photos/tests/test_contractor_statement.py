@@ -292,6 +292,14 @@ class TestContractorStatement(TransactionCase):
             report.with_user(self.ops).action_print_pdf()
         with self.assertRaises(AccessError), self.cr.savepoint():
             report.with_user(self.contractor).action_print_pdf()
+        # A fresh pilot has no external document layout. Admins must still
+        # receive the report action, not a business-settings configuration wizard.
+        self.env.company.external_report_layout_id = False
+        admin_report = self.env['field.contractor.statement'].with_user(self.env.ref('base.user_admin')).create({
+            'contractor_id': self.contractor.id, 'period_mode': 'range',
+            'date_from': '2026-09-01', 'date_to': '2026-09-30'})
+        admin_report.action_show_report()
+        self.assertEqual(admin_report.action_print_pdf()['type'], 'ir.actions.report')
         # Actual wkhtmltopdf output is mandatory in the HTTP/Playwright suite.
         # It must run with an HTTP server serving the report font/assets, not
         # inside an isolated TransactionCase lacking such a server.

@@ -202,7 +202,9 @@ class ContractorStatement(models.TransientModel):
         self._require_report_access()
         if not self.payload:
             raise ValidationError('יש ללחוץ על הצגת דוח לפני הפקת PDF.')
-        return self.env.ref('field_work_photos.action_report_contractor_statement').report_action(self)
+        # This report uses its own internal layout. Do not make an admin
+        # configure/write the company's external document layout just to print.
+        return self.env.ref('field_work_photos.action_report_contractor_statement').report_action(self, config=False)
 
     def action_open_opening(self):
         self.ensure_one()
