@@ -203,7 +203,7 @@ with sync_playwright() as playwright:
 
         # Multiple pages with long work names, references and repeated table headings.
         rpc('field.work.payment', 'create', [[{'lead_id': lead, 'kind': 'contractor', 'amount': 1,
-            'payment_date': str(today), 'reference': f'MULTIPAGE-{index:02d}-בדיקת אסמכתה ארוכה'} for index in range(24)]])
+            'payment_date': str(today), 'reference': ('LONG-' + 'X' * 140 if index == 0 else f'MULTIPAGE-{index:02d}-בדיקת אסמכתה ארוכה')} for index in range(24)]])
         rpc('field.contractor.statement', 'action_show_report', [[report_id]])
         pdf_response = owner.request.get(f'{BASE}/report/pdf/field_work_photos.contractor_statement_pdf/{report_id}', timeout=120000)
         multi_path = OUTPUT / 'contractor-statement-multipage.pdf'

@@ -72,18 +72,22 @@
 }
 // Qt WebKit: use fallbacks rather than depending on CSS variables, grid or flex.
 .o_statement_pdf .o_contractor_statement {
-    color: #183044; font-size: 12px;
+    color: #183044; font-size: 14px;
     h2 { font-size: 22px; }
     h3 { font-size: 16px; page-break-after: avoid; }
-    a { color: #086b74; }
+    a { color: #086b74; display: inline; min-height: 0; padding: 0; }
     .o_statement_totals { display: table; width: 100%; border-top: 1px solid #dce4e9; border-bottom: 1px solid #dce4e9; }
     .o_statement_totals > div { display: table-cell; width: 20%; min-width: 0; padding: 8px; }
-    dt, th, .o_statement_help, .o_statement_basis { color: #465d70; font-size: 11px; }
+    dt, th, .o_statement_help, .o_statement_basis { color: #465d70; font-size: 12px; }
     dd { font-size: 16px; }
     .o_statement_closing dd { font-size: 20px; }
-    th, td { padding: 8px 4px; border-bottom: 1px solid #dce4e9; }
-    thead { display: table-header-group; }
-    tr { page-break-inside: avoid; }
-    .o_statement_source { min-height: 0; padding: 0; font-size: 11px; }
+    .o_statement_table { display: table; }
+    thead { display: table-header-group; position: static; width: auto; height: auto; overflow: visible; clip-path: none; }
+    tbody { display: table-row-group; }
+    tr { display: table-row; width: auto; page-break-inside: avoid; }
+    th, td { display: table-cell; padding: 8px 4px; border-bottom: 1px solid #dce4e9; word-wrap: break-word; }
+    td { width: auto; }
+    td::before { display: none; }
+    .o_statement_source { min-height: 0; padding: 0; font-size: 12px; }
     .o_statement_warning, .o_statement_empty { page-break-inside: avoid; }
 }

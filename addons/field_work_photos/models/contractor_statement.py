@@ -137,7 +137,7 @@ class ContractorStatement(models.TransientModel):
         def row(day, kind, amount, lead, source, label, reference, **extra):
             return dict(date=str(day), type=label, kind=kind, amount=amount, work=lead.name,
                         work_url=work_link(lead), source_url=f'/odoo/{source._name}/{source.id}',
-                        reference=reference, **extra)
+                        source_model=source._name, source_id=source.id, reference=reference, **extra)
 
         rows = []
         for entry in entries:
@@ -154,7 +154,7 @@ class ContractorStatement(models.TransientModel):
             if start <= day <= end:
                 rows.append(row(day, 'payment_void', payment.amount, payment.lead_id, payment,
                     'ביטול רישום תשלום', f'{payment.reference} · {payment.cancel_reason}'))
-        rows.sort(key=lambda item: (item['date'], item['source_url'], item['kind'] == 'payment_void'))
+        rows.sort(key=lambda item: (item['date'], item['source_model'], item['source_id'], item['kind'] == 'payment_void'))
         credit = currency.round(sum(item['amount'] for item in rows if item['kind'] == 'credit'))
         paid = currency.round(-sum(item['amount'] for item in rows if item['kind'] == 'payment'))
         adjustments = currency.round(sum(item['amount'] for item in rows if item['kind'] in ('reversal', 'payment_void')))

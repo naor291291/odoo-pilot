@@ -331,5 +331,6 @@ class TestContractorStatement(TransactionCase):
         query_count = self.cr.sql_log_count - queries_before
         self.assertEqual(len(payload['rows']), 1001)
         self.assertEqual(payload['closing'], 710)
+        self.assertEqual([row['source_id'] for row in payload['rows']], sorted(row['source_id'] for row in payload['rows']))
         self.assertLess(query_count, 100, 'Report must use batched queries, not one query per movement')
         self.assertLess(time.monotonic() - started, 10)
