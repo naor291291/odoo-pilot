@@ -142,6 +142,7 @@ with sync_playwright() as playwright, capture_on_failure():
     inputs = page.locator('.o_field_contact_form .o_form_sheet input:visible')
     assert inputs.evaluate_all('els => els.every(el => el.labels.length || el.getAttribute("aria-label") || el.getAttribute("aria-labelledby"))'), 'Client field has no accessible label'
     page.set_viewport_size({'width': 390, 'height': 844})
+    assert page.locator('.o_field_contact_form .o_form_label').evaluate_all('els => els.every(el => getComputedStyle(el).opacity === "1" && parseFloat(getComputedStyle(el).fontSize) >= 14)'), 'Client labels are faded or too small'
     capture(page, 'client-form-mobile')
     page.set_viewport_size({'width': 1440, 'height': 1100})
     open_action(page, 'action_field_clients_open')
@@ -167,6 +168,7 @@ with sync_playwright() as playwright, capture_on_failure():
     expect(page.locator('.o_field_task_form')).to_be_visible()
     capture(page, 'task-detail-desktop')
     page.set_viewport_size({'width': 390, 'height': 844})
+    expect(page.get_by_role('button', name='המשך טיפול בכרטיס העבודה', exact=True)).to_be_visible()
     capture(page, 'task-detail-mobile')
     page.get_by_role('button', name='המשך טיפול בכרטיס העבודה', exact=True).click()
     expect(page.locator('.o_field_report_panel')).to_be_visible()

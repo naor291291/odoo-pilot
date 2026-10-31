@@ -4,6 +4,9 @@
     --work-gap: 16px;
     --work-section-gap: 24px;
     --work-focus: #086b74;
+    // Native group layouts use more specific readonly label rules.
+    .o_form_label { opacity: 1 !important; color: var(--work-steel) !important; font-size: 14px !important; font-weight: 500; }
+    .o_field_phone a, .o_field_email a { display: inline-flex; align-items: center; min-height: 44px; }
     :is(a, button, summary, input, textarea, select):focus-visible {
         outline: 3px solid var(--work-focus); outline-offset: 3px;
         scroll-margin-block: 100px 160px;
@@ -48,7 +51,7 @@
     }
     .o_field_rate_input .o_field_widget { flex: 1; min-width: 0; }
     .o_field_rate_tier p { font-size: 14px; margin: 8px 0 0; color: var(--work-steel); }
-    .o_field_rates_form .o_input, .o_field_contact_form .o_input { min-height: 44px; padding: 8px 12px; background: var(--work-input); border: 1px solid var(--work-line); border-radius: 8px; }
+    &.o_field_rates_form .o_input, &.o_field_contact_form .o_input { min-height: 44px; padding: 8px 12px; background: var(--work-input); border: 1px solid var(--work-line); border-radius: 8px; }
     .o_field_client_kanban .o_kanban_record { border-radius: 12px; }
     .o_field_client_kanban h2 { white-space: normal; overflow-wrap: anywhere; }
 }
@@ -86,4 +89,5 @@
     }
     .o_field_hub_form .o_form_sheet, .o_field_contact_form .o_form_sheet, .o_field_task_form .o_form_sheet { padding: 16px; min-width: 0; }
     .o_field_portal .o_field_wizard_nav button { font-size: 14px; }
+    .o_field_portal .o_field_portal_actions .btn { flex: 0 0 auto; min-height: 44px; }
 }

@@ -304,6 +304,7 @@ with sync_playwright() as playwright, capture_on_failure():
     portal.screenshot(path=str(OUTPUT / 'portal-mobile-selected.png'), full_page=True)
     portal.locator('[data-wizard-next]').click()
     expect(portal.locator('[data-review-description]')).to_contain_text('הוחלף הברז')
+    assert portal.locator('[data-report-submit]').evaluate('el => el.getBoundingClientRect().height >= 44 && el.getBoundingClientRect().height <= 80'), 'Mobile report action is not compact and touch-friendly'
     portal.screenshot(path=str(OUTPUT / 'portal-review-mobile.png'), full_page=True)
     submit_report.click()
     expect(portal.get_by_text('הדיווח והתמונות נשלחו לבדיקת התפעול.', exact=True)).to_be_visible()
