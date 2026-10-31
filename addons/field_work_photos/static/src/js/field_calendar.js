@@ -23,6 +23,9 @@ class FieldWorkCommonRenderer extends CalendarCommonRenderer {
 }
 
 class FieldWorkCalendarRenderer extends CalendarRenderer {
+    // ActionSwiper changes its DOM at the mobile breakpoint. Remount the native
+    // FullCalendar instance so it measures the new container and keeps events visible.
+    get calendarKey() { return `${super.calendarKey}_${this.env.isSmall ? 'mobile' : 'desktop'}`; }
     static components = {
         ...CalendarRenderer.components,
         day: FieldWorkCommonRenderer,

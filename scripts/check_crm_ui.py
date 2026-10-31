@@ -39,6 +39,7 @@ def capture_on_failure():
     try:
         yield
     except Exception:
+        print('BROWSER_PAGE_ERRORS:', json.dumps(errors, ensure_ascii=False))
         active_browser = globals().get('browser')
         if active_browser:
             for context_index, context in enumerate(active_browser.contexts):
