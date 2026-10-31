@@ -19,13 +19,16 @@ parser.add_argument('--observe', action='store_true', help='Capture defects on u
 options = parser.parse_args()
 
 from PIL import Image
-from playwright.sync_api import sync_playwright, expect, TimeoutError as PlaywrightTimeoutError
+from playwright.sync_api import sync_playwright, expect, Error as PlaywrightError, TimeoutError as PlaywrightTimeoutError
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / '.local-data/ui-checks/browser-journeys'
 OUTPUT.mkdir(parents=True, exist_ok=True)
 BASE = 'http://127.0.0.1:8069'
 login = json.loads((ROOT / '.local-data/credentials.json').read_text())
 checks, defects, captures, errors, console_errors, network_errors = [], [], [], [], [], []
+focus_path = []
+completed = False
+failure = None
 
 
 def settle(page):
@@ -147,9 +150,11 @@ with sync_playwright() as p:
         page.locator('[data-report-save]').click()
         expect(page.get_by_text('הדיווח והתמונות נשמרו. אפשר לחזור לעבודה ולהגיש בהמשך.', exact=True)).to_be_visible()
         expect(page.locator('[data-photo-key]')).to_have_count(4)
+        summary.click()
         summary.fill('שינוי נוסף שעדיין לא נשמר')
         check('SAVE-STATE', 'Editing a saved draft replaces old success with unsaved state',
-              page.get_by_text('הדיווח והתמונות נשמרו. אפשר לחזור לעבודה ולהגיש בהמשך.', exact=True).count() == 0)
+              not page.get_by_text('הדיווח והתמונות נשמרו. אפשר לחזור לעבודה ולהגיש בהמשך.', exact=True).is_visible()
+              and page.locator('[data-report-dirty]').is_visible())
         capture(page, 'saved-then-edited-390')
         # An actual reload opens the native beforeunload confirmation. Dismiss it
         # first, then accept and prove the previous persisted text is preserved.
@@ -162,8 +167,11 @@ with sync_playwright() as p:
         page.once('dialog', keep_edit)
         try:
             page.reload(timeout=10000)
-        except Exception:
-            pass  # Chromium aborts the navigation when beforeunload is dismissed.
+        except PlaywrightError as error:
+            # A dismissed native beforeunload intentionally aborts navigation.
+            # Do not conceal unrelated browser failures/timeouts.
+            if 'ERR_ABORTED' not in str(error):
+                raise
         expect(summary).to_have_value('שינוי נוסף שעדיין לא נשמר')
         assert dialogs == ['beforeunload'], dialogs
         page.once('dialog', lambda dialog: dialog.accept())
@@ -174,7 +182,45 @@ with sync_playwright() as p:
         page.locator('[data-wizard-next]').click()
         check('REVIEW-NOTES', 'Review includes optional notes that will be submitted', notes in page.locator('[data-wizard-review]').inner_text())
         capture(page, 'review-notes-390')
-        page.locator('[data-wizard-back]').click()
+
+        # Server-side image decoding can reject a MIME-labelled corrupt file.
+        # The response retains unsaved text; leaving it should still warn, even
+        # before another input event on the newly rendered error page.
+        page.locator('[data-wizard-go="1"]').click()
+        summary.click()
+        summary.fill('לא נשמר בגלל תמונה פגומה — יש לשמור מחדש')
+        page.locator('[data-wizard-next]').click()
+        page.locator('#field_before_image').set_input_files({
+            'name': 'corrupt.png', 'mimeType': 'image/png', 'buffer': b'not a decodable PNG'})
+        page.locator('[data-report-save]').click()
+        expect(page.locator('.o_field_portal .alert-danger')).to_be_visible()
+        expect(summary).to_have_value('לא נשמר בגלל תמונה פגומה — יש לשמור מחדש')
+        expect(page.locator('[data-photo-key]')).to_have_count(4)
+        capture(page, 'rejected-upload-retains-text-390')
+        rejected_dialogs = []
+
+        def keep_rejected_edit(dialog):
+            rejected_dialogs.append(dialog.type)
+            dialog.dismiss()
+
+        page.once('dialog', keep_rejected_edit)
+        try:
+            page.locator('.o_field_back').click()
+        except PlaywrightError as error:
+            if 'ERR_ABORTED' not in str(error):
+                raise
+        page.remove_listener('dialog', keep_rejected_edit)
+        check('ERROR-DRAFT-GUARD', 'Rejected-upload text retains native navigation warning',
+              rejected_dialogs == ['beforeunload'] and summary.is_visible(), rejected_dialogs)
+        persisted = rpc('project.task', 'read', [[task]], fields=['field_visit_summary'])[0]
+        assert persisted['field_visit_summary'] == 'טיוטה שמורה — נבדקו החיבורים', persisted
+        if rejected_dialogs:
+            page.once('dialog', lambda dialog: dialog.accept())
+        page.goto(work_url)
+        settle(page)
+        expect(summary).to_have_value('טיוטה שמורה — נבדקו החיבורים')
+        page.locator('[data-wizard-next]').click()
+
         page.locator('[data-kind="before"] [name="remove_photo"]').first.check()
         page.locator('#field_before_image').set_input_files(files('replacement', 4))
         page.locator('#field_after_image').set_input_files(files('more-after', 3))
@@ -185,14 +231,30 @@ with sync_playwright() as p:
                 check('PHOTO-DENSITY', 'Ten photos keep the photo step within 1500px while preserving targets',
                       page.locator('[data-wizard-panel="2"]').bounding_box()['height'] <= 1500,
                       page.locator('[data-wizard-panel="2"]').bounding_box()['height'])
+            targets = page.locator('[data-wizard-panel="2"] button:visible, [data-wizard-panel="2"] [data-zoom-photo]:visible, [data-wizard-panel="2"] .o_field_photo_remove:visible')
+            assert targets.evaluate_all('els => els.every(el => {const box = el.getBoundingClientRect(); return box.width >= 44 && box.height >= 44;})'), f'Photo target below 44px at {width}'
         page.set_viewport_size({'width': 390, 'height': 844})
         # Keyboard image dialog must contain focus and restore it on Escape.
         zoom = page.locator('[data-kind="after"] [data-zoom-photo]').first
         zoom.focus()
         page.keyboard.press('Enter')
         expect(page.locator('[data-photo-dialog]')).to_be_visible()
-        page.keyboard.press('Tab')
-        assert page.locator('[data-photo-dialog]').evaluate('el => el.contains(document.activeElement)')
+        for key in ('Tab', 'Shift+Tab'):
+            page.keyboard.press(key)
+            focused = page.locator('[data-photo-dialog]').evaluate('''el => ({
+                key: null, tag: document.activeElement.tagName,
+                id: document.activeElement.id, class: document.activeElement.className,
+                inDialog: el.contains(document.activeElement),
+                browserBoundary: document.activeElement === document.body,
+                dialogOpen: el.open
+            })''')
+            focused['key'] = key
+            focus_path.append(focused)
+            # A native dialog may hand Tab to browser chrome after its sole
+            # close button; Chromium reports body as activeElement then. That
+            # is not focus escaping to an underlying page control.
+            assert focused['dialogOpen'] and (focused['inDialog'] or focused['browserBoundary']), focused
+        expect(page.locator('[data-close-photo]')).to_be_focused()
         page.keyboard.press('Escape')
         expect(zoom).to_be_focused()
         page.locator('[data-report-save]').click()
@@ -207,13 +269,16 @@ with sync_playwright() as p:
         assert not errors, errors
         assert not console_errors, console_errors
         assert not network_errors, network_errors
-    except Exception:
+        completed = True
+    except Exception as error:
+        failure = {'type': type(error).__name__, 'message': str(error)}
         page.screenshot(path=str(OUTPUT / 'failure.png'), full_page=True)
         raise
     finally:
         result = {'commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
             'mode': 'observe' if options.observe else 'regression', 'checks': checks, 'defects': defects,
             'screens': captures, 'page_errors': errors, 'console_errors': console_errors, 'network_errors': network_errors,
+            'completed': completed, 'failure': failure, 'dialog_focus_path': focus_path,
             'roles': ['owner (fixtures)', 'contractor (rendered login and journeys)'],
             'environment': 'isolated CI Chromium; synthetic data; localhost only; no live integration'}
         (OUTPUT / 'coverage.json').write_text(json.dumps(result, ensure_ascii=False, indent=2))
