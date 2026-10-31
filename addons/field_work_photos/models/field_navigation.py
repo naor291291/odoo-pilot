@@ -64,7 +64,7 @@ class FieldWorkDashboard(models.TransientModel):
         self._require_ops()
         start, end = self._today_bounds()
         action = self.env['ir.actions.actions']._for_xml_id('field_work_photos.action_field_tasks')
-        action.update(name='העבודות להיום', view_mode='kanban,calendar,list,form',
+        action.update(name='העבודות להיום', display_name='העבודות להיום', view_mode='kanban,calendar,list,form',
                       views=[(self.env.ref('field_work_photos.view_field_task_agenda').id, 'kanban'),
                              (self.env.ref('field_work_photos.view_field_task_calendar').id, 'calendar'),
                              (self.env.ref('field_work_photos.view_field_task_list').id, 'list'),

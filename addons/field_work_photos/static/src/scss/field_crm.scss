@@ -43,6 +43,7 @@
     .o_field_hub_attention { margin-block: 8px 32px; }
     .o_field_hub_attention > .o_field_help .o_field_widget { display: inline; width: auto; }
     .o_field_attention_cards .o_kanban_renderer { padding: 0; gap: 12px; background: transparent; }
+    .o_field_attention_cards .o_kanban_ghost { display: none !important; }
     .o_field_attention_cards .o_kanban_record { flex: 1 1 300px; min-width: 0; border: 0; border-bottom: 1px solid var(--work-line); border-radius: 0; box-shadow: none; }
     .o_field_attention_cards .o_kanban_record h3 { margin: 0 0 8px; overflow-wrap: anywhere; }
     .o_field_attention_cards .o_kanban_record p { margin: 0 0 8px; }
@@ -86,7 +87,7 @@
     .o_field_wizard_nav li { flex: 1; min-width: 0; }
     .o_field_wizard_nav button { width: 100%; min-height: 44px; border: 1px solid var(--work-line); border-radius: 8px; background: var(--work-paper); color: var(--work-steel); padding: 8px; }
     .o_field_wizard_nav button[aria-current="step"] { background: var(--work-water-tint); color: var(--work-water); border-color: var(--work-water); font-weight: 600; }
-    [data-wizard-panel][hidden], [data-wizard-next][hidden], [data-wizard-back][hidden], [data-report-submit][hidden] { display: none !important; }
+    [data-visit-summary][hidden], [data-wizard-panel][hidden], [data-wizard-next][hidden], [data-wizard-back][hidden], [data-report-submit][hidden] { display: none !important; }
     [data-wizard-heading] { scroll-margin-top: 24px; }
     .o_field_validation_summary { color: var(--work-repair); background: #fff0f1; border-color: var(--work-repair); }
     [data-report-errors]:focus { outline: 3px solid var(--work-water); }
@@ -144,6 +145,7 @@
     .o_field_next_step { border: 0; padding: 0; background: transparent; }
     .o_field_next_step .o_field_widget { font-size: 14px; color: var(--work-steel); }
     .o_field_service_notice { padding: 8px 12px; margin: 0 0 12px; }
+    details.o_field_service_notice { display: block; }
     .o_field_service_notice summary { cursor: pointer; min-height: 44px; padding-block: 8px; }
     .o_field_service_notice_ready { margin: 0 0 12px; font-size: 14px; color: var(--work-approved); }
     .o_field_work_tabs > .o_notebook_headers { margin-bottom: 16px; }
@@ -189,4 +191,12 @@
 .o_field_agenda_time { color: var(--work-water); font-weight: 600; font-variant-numeric: tabular-nums; }
 @media (max-width: 767px) {
     .o_field_agenda .o_kanban_record { width: 100%; flex-basis: 100%; }
+}
+
+// Theme only the native chrome while a custom field-work surface is active.
+.o_web_client:has(.o_action_manager .o_field_ui) .o_main_navbar {
+    --NavBar-entry-backgroundColor: #086b74;
+    --NavBar-entry-backgroundColor--hover: #07545c;
+    --NavBar-entry-color: #ffffff;
+    background: #086b74;
 }

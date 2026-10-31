@@ -6,7 +6,7 @@
             <field name="name" invisible="1"/><div class="o_field_hub_header"><div><h1>מה צריך לקדם היום?</h1><p>עבודות שדורשות בדיקה ומעקב, לפי ההרשאות שלכם.</p></div><button name="action_new_work" type="object" string="פתיחת פנייה חדשה" class="btn btn-primary"/></div>
             <section class="o_field_hub_attention" aria-label="דורש טיפול היום">
                 <div class="o_field_section_heading"><h2>דורש טיפול היום</h2><button name="action_attention" type="object" string="לכל העבודות לטיפול" class="btn btn-link"/></div>
-                <p class="o_field_help">דיווחים לבדיקה, ואחריהם עבודות שמועדן היום או עבר. מוצגות עד 6 עבודות מתוך <field name="attention_count"/>.</p>
+                <p class="o_field_help">דיווחים לבדיקה, ואחריהם עבודות שמועדן היום או עבר. עד 6 עבודות בתצוגה · סה״כ לטיפול: <field name="attention_count"/>.</p>
                 <p invisible="attention_count" class="o_field_empty_ledger">אין כרגע דיווחים לבדיקה או עבודות למעקב להיום. אפשר לפתוח פנייה או לבדוק את יתר התורים.</p>
                 <field name="attention_ids" nolabel="1" readonly="1" invisible="not attention_count" mode="kanban">
                     <kanban create="false" edit="false" delete="false" records_draggable="false" class="o_field_attention_cards">

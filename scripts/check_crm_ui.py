@@ -209,7 +209,7 @@ with sync_playwright() as playwright, capture_on_failure():
         open_action(page, 'action_field_today')
         card = page.locator('.o_field_agenda .o_kanban_record').filter(has_text='עבודת סקירה')
         expect(card).to_contain_text('רחוב')
-        expect(card.locator('[name="field_visit_at"]')).to_be_visible()
+        expect(card.locator('.o_field_agenda_time')).to_be_visible()
         capture(page, f'today-agenda-{width}')
     card.get_by_role('button', name='המשך טיפול בכרטיס העבודה', exact=True).click()
     expect(page.locator('.o_field_report_panel')).to_be_visible()
@@ -239,6 +239,7 @@ with sync_playwright() as playwright, capture_on_failure():
     contractor_partner = rpc(owner, 'res.users', 'read', [[contractor]], fields=['partner_id'])[0]['partner_id'][0]
     saved_rate = rpc(owner, 'res.partner', 'read', [[contractor_partner]], fields=['field_rate_medium'])[0]['field_rate_medium']
     assert saved_rate == 66, 'Valid contractor rate was not saved'
+    expect(page.locator('[name="field_rate_example"]')).to_contain_text('660.00')
     current_applied = rpc(owner, 'crm.lead', 'read', [[lead]], fields=['field_applied_rate'])[0]['field_applied_rate']
     assert current_applied == applied_before, 'Editing the price list changed an already assigned rate'
 

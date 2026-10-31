@@ -46,6 +46,8 @@ function setupFieldReports() {
             const completed = result?.value === 'completed';
             if (summary) summary.required = completed;
             if (reason) reason.required = Boolean(result.value) && !completed;
+            const summaryArea = form.querySelector('[data-visit-summary]');
+            if (summaryArea && result) summaryArea.hidden = Boolean(result.value) && !completed;
             const reasonArea = form.querySelector('[data-visit-reason]');
             if (reasonArea && result) reasonArea.hidden = !result.value || completed;
             if (submit) submit.disabled = !result.value || (completed
