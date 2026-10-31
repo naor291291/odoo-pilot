@@ -2,10 +2,10 @@
 <odoo>
     <template id="field_portal_brand" inherit_id="portal.frontend_layout" name="Field portal identity">
         <xpath expr="//a[hasclass('navbar-brand')]/img" position="replace">
-            <t t-if="request.httprequest.path.startswith('/my/field-work') and res_company.uses_default_logo"><span class="o_field_portal_brand" t-out="res_company.name if res_company.name != 'My Company' else 'עבודות שטח'"/></t>
-            <img t-else="" t-att-src="'/logo.png?company=%s' % res_company.id" t-att-alt="res_company.name" t-att-title="res_company.name"/>
+            <t t-nocache="Field identity depends on the current route"><t t-if="request.httprequest.path.startswith('/my/field-work') and res_company.uses_default_logo"><span class="o_field_portal_brand" t-out="res_company.name if res_company.name != 'My Company' else 'עבודות שטח'"/></t>
+            <img t-else="" t-att-src="'/logo.png?company=%s' % res_company.id" t-att-alt="res_company.name" t-att-title="res_company.name"/></t>
         </xpath>
-        <xpath expr="//*[hasclass('o_footer_copyright_name')]/span" position="replace"><span itemprop="name" t-out="'עבודות שטח' if request.httprequest.path.startswith('/my/field-work') and res_company.name == 'My Company' else res_company.name"/></xpath>
+        <xpath expr="//*[hasclass('o_footer_copyright_name')]/span" position="replace"><span itemprop="name" t-nocache="Footer identity depends on the current route" t-out="'עבודות שטח' if request.httprequest.path.startswith('/my/field-work') and res_company.name == 'My Company' else res_company.name"/></xpath>
     </template>
     <template id="portal_field_work_home" inherit_id="portal.portal_my_home" name="עבודות השטח שלי">
         <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">

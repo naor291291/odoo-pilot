@@ -276,3 +276,19 @@ class TestFieldPortal(HttpCase):
         self.assertEqual(self.url_open(url).status_code, 200)
         self.leads[0].write({'field_contractor_id': self.second.id})
         self.assertEqual(self.url_open(url).status_code, 404)
+
+    def test_field_branding_preserves_configured_identity_across_cached_routes(self):
+        self.login()
+        company = self.first.company_id
+        company.name = 'My Company'
+        self.url_open('/my/home')  # Prime the shared native portal header cache.
+        page = self.url_open(self.detail())
+        self.assertEqual(page.status_code, 200)
+        tree = html.fromstring(page.content)
+        self.assertTrue(tree.xpath('//span[contains(@class,"o_field_portal_brand")][text()="עבודות שטח"]'))
+        outside = html.fromstring(self.url_open('/my/home').content)
+        self.assertFalse(outside.xpath('//span[contains(@class,"o_field_portal_brand")]'))
+        company.write({'name': 'עסק בדיקה מוגדר', 'logo': base64.b64encode(self.raw_photo)})
+        page = html.fromstring(self.url_open(self.detail()).content)
+        self.assertFalse(page.xpath('//span[contains(@class,"o_field_portal_brand")]'))
+        self.assertTrue(page.xpath('//a[contains(@class,"navbar-brand")]/img[@alt="עסק בדיקה מוגדר"]'))
