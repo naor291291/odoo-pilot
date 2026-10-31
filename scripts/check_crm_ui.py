@@ -54,8 +54,8 @@ with sync_playwright() as playwright, capture_on_failure():
     browser = playwright.chromium.launch(executable_path=os.environ['CHROME_BIN'], headless=True, args=['--no-sandbox'])
     owner = browser.new_context(viewport={'width': 1440, 'height': 1100}, locale='he-IL')
 
-    def rpc(context, name, method, args, **kwargs):
-        result = context.request.post(f'{BASE}/web/dataset/call_kw/{name}/{method}', data={
+    def rpc(browser_context, name, method, args, **kwargs):
+        result = browser_context.request.post(f'{BASE}/web/dataset/call_kw/{name}/{method}', data={
             'jsonrpc': '2.0', 'method': 'call', 'id': 1,
             'params': {'model': name, 'method': method, 'args': args, 'kwargs': kwargs}}).json()
         if result.get('error'):
