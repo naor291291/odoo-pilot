@@ -138,6 +138,11 @@ class TestFieldWorkspace(TransactionCase):
 
     def test_task_and_customer_links_return_scoped_work(self):
         lead = self.lead()
+        customer_action = lead.with_user(self.ops).action_open_field_customer()
+        self.assertEqual(customer_action['res_id'], self.customer.id)
+        self.assertEqual(customer_action['target'], 'new')
+        with self.assertRaises(AccessError), self.cr.savepoint():
+            lead.with_user(self.contractor).action_open_field_customer()
         action = lead.field_task_ids.with_user(self.ops).action_open_field_work_card()
         self.assertEqual(action['res_id'], lead.id)
         action = self.customer.with_user(self.ops).action_open_field_client_work()

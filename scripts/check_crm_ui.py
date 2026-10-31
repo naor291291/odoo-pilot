@@ -174,7 +174,7 @@ with sync_playwright() as playwright, capture_on_failure():
     expect(page.locator('.o_field_report_panel')).to_be_visible()
     page.set_viewport_size({'width': 1440, 'height': 1100})
     page.locator('.o_field_work_tabs').get_by_role('tab', name='תכנון', exact=True).click()
-    page.locator('.o_field_customer_card [name="partner_id"] .o_external_button').click()
+    page.get_by_role('button', name='פתיחת פרטי הלקוח', exact=True).click()
     expect(page.locator('.modal:visible .o_field_contact_form')).to_be_visible()
     capture(page, 'client-dialog-from-work-desktop')
     page.locator('.modal:visible .btn-close').click()

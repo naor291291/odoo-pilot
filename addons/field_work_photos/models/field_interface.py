@@ -62,3 +62,15 @@ class CrmLead(models.Model):
 
     def action_open_field_workspace(self):
         return self._field_workspace_action()
+
+    def action_open_field_customer(self):
+        self.ensure_one()
+        self._require_dispatcher()
+        self.check_access('read')
+        if not self.is_field_service or not self.partner_id:
+            raise ValidationError('בחרו לקוח בכרטיס העבודה כדי לפתוח את פרטיו.')
+        self.partner_id.check_access('read')
+        return {'type': 'ir.actions.act_window', 'name': 'פרטי הלקוח', 'res_model': 'res.partner',
+                'res_id': self.partner_id.id,
+                'views': [(self.env.ref('field_work_photos.view_field_client_form').id, 'form')],
+                'target': 'new'}
