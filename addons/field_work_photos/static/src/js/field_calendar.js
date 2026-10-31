@@ -2,6 +2,8 @@
 
 import { useEffect } from '@odoo/owl';
 import { CalendarController } from '@web/views/calendar/calendar_controller';
+import { is24HourFormat } from '@web/core/l10n/dates';
+import { getFormattedDateSpan } from '@web/views/calendar/utils';
 import { registry } from '@web/core/registry';
 import { calendarView } from '@web/views/calendar/calendar_view';
 import { CalendarRenderer } from '@web/views/calendar/calendar_renderer';
@@ -17,6 +19,15 @@ class FieldWorkPopover extends CalendarCommonPopover {
         body: 'field_work_photos.CalendarPopoverBody',
         footer: 'field_work_photos.CalendarPopoverFooter',
     };
+    computeDateTimeAndDuration() {
+        super.computeDateTimeAndDuration();
+        const { start, isTimeHidden, isAllDay } = this.props.record;
+        // Only a start appointment is stored. Do not present FullCalendar's
+        // default one-hour block as an agreed end time or work duration.
+        if (!isTimeHidden && !isAllDay) this.time = start.toFormat(is24HourFormat() ? 'HH:mm' : 'hh:mm a');
+        this.timeDuration = null;
+        if (this.date) this.date = getFormattedDateSpan(start, start);
+    }
     get isEventDeletable() { return false; }
 }
 
