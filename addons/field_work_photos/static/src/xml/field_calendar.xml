@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates xml:space="preserve">
+    <t t-name="field_work_photos.CalendarPopover">
+        <t t-if="env.isSmall">
+            <Dialog title="props.record.title" contentClass="'o_field_ui o_field_calendar_popup'">
+                <t t-call="{{ constructor.subTemplates.body }}"/>
+                <t t-set-slot="footer"><t t-call="{{ constructor.subTemplates.footer }}"/></t>
+            </Dialog>
+        </t>
+        <t t-else=""><t t-call="{{ constructor.subTemplates.popover }}"/></t>
+    </t>
+    <t t-name="field_work_photos.CalendarPopoverCard">
+        <div class="o_field_ui o_field_calendar_popup">
+            <header class="d-flex align-items-start gap-3 p-3"><h2 class="flex-grow-1 mb-0" t-esc="props.record.title"/><button type="button" class="btn btn-link" aria-label="סגירת פרטי המועד" t-on-click="() => props.close()"><i class="fa fa-times" aria-hidden="true"/></button></header>
+            <t t-call="{{ constructor.subTemplates.body }}"/>
+            <footer class="p-3"><t t-call="{{ constructor.subTemplates.footer }}"/></footer>
+        </div>
+    </t>
+    <t t-name="field_work_photos.CalendarPopoverFooter">
+        <button type="button" class="btn btn-primary o_field_calendar_open" t-on-click="onEditEvent">פתיחת המשימה</button>
+    </t>
+</templates>

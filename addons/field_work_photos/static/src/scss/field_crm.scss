@@ -91,3 +91,12 @@
     .o_field_portal .o_field_wizard_nav button { font-size: 14px; }
     .o_field_portal .o_field_portal_actions .btn { flex: 0 0 auto; min-height: 44px; }
 }
+
+.o_field_calendar_popup {
+    max-width: 420px;
+    /*rtl:ignore*/
+    direction: rtl;
+    h2 { white-space: normal; overflow-wrap: anywhere; font-size: 20px; }
+    .list-group-item { white-space: normal !important; }
+    .o_field_calendar_open { min-height: 44px; }
+}

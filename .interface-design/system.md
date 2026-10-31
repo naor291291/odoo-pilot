@@ -38,7 +38,7 @@ All components use the palette/type/spacing above. Their depth is one bordered p
 | Work hub | Operations chooses the next queue; review is first in reading order | Six counted queue buttons; one new-inquiry primary action; owner-only actual outstanding balances with scope note |
 | Work card | Manager advances this job; title/state/next action lead | Business tabs; compact 7-stage progress; inline missing-data guidance; optional arrival/internal details collapsed |
 | Client directory | Manager finds a customer/contact and their jobs | Native searchable list/kanban + short form; billing/contact address distinguished from job site |
-| Task schedule | Manager locates a dispatched job or appointment | Native list/calendar + readonly evidence form; primary action returns to the governed work card |
+| Task schedule | Manager locates a dispatched job or appointment | Native list/calendar + readonly evidence form; scoped event popover opens the task and offers no deletion; primary task action returns to the governed work card |
 | Rates | Owner edits one contractor's three percentages | One tier per card, explicit boundaries and percent suffix; explain whole-amount tiers and frozen assignments |
 | Contractor report | Phone user reports, attaches evidence, checks and submits | Three steps with Back/Continue, retained DOM values/files, partial draft save, focused linked error summary and inline errors |
 | Money / dialogs | Operations records actual receipts; owner records payouts | Distinguish net forecast from gross payment; no formula changes; retain confirmation/audit/cancellation controls |

@@ -17,6 +17,7 @@ Skill sources: [Interface Design](https://github.com/Dammyjay93/interface-design
 | P1 | `views/field_portal_templates.xml` | One long report/photo form; missing requirements mostly disable submission | Three report steps, retained values/files, linked error summary + inline repair guidance, draft save |
 | P1 | `static/src/js/field_portal.js` | Newly chosen files may be lost by navigation without warning | Dirty-form navigation warning; current step never submits automatically |
 | P1 | Work planning | Missing data listed away from its field; progress hidden in expanded status list | Inline missing-data guidance and compact stage indicator, same server validation |
+| P1 | Calendar event popover | Native Edit/Delete labels suggested changing a governed assignment from the schedule | Scoped calendar renderer/popover: open readonly task, no deletion, native dialogs and accessible close button |
 | P2 | Clients / Contacts | No short project-specific entry; native generic contact surface has unrelated fields | Scoped directory, short form, client-to-work action, discoverable pre-job clients |
 | P2 | Tasks / Project | Native task has many project controls; unclear path back to governed work flow | Readonly task evidence view + schedule; explicit work-card action |
 | P2 | Shared CSS / portal | Focus target/footer overlap, non-semantic dates, image dimensions, unclear unsaved photos | Shared focus/scroll rules, static report action area, native dates, sized lazy thumbnails |
@@ -40,7 +41,7 @@ Status legend: source-reviewed is distinct from browser-verified. The CI evidenc
 | Client list/search/kanban (new scoped views) | Partner ACLs/native Contacts | Directory/actions | Search/switch/open, new client remains listed |
 | Client form (new scoped view) | Partner/native labels/widgets | Short contact/address groups | Required name, edit/save, phone/email, return to related jobs |
 | Tasks list/detail (new scoped views) | Task/Project/review security | Readonly evidence + work-card link | Dispatched job, details, return to current work stage |
-| Appointment calendar | Native calendar interaction | Dedicated date-start/action | Open calendar and event, phone/desktop |
+| Appointment calendar | Native calendar interaction and popover | Dedicated date-start/action, scoped open-task popover, no deletion | Open calendar and event, phone/desktop |
 | Native Project/CRM surfaces | Upstream XML and installed actions | No core changes | Read-only smoke entry and screenshot where available |
 | Native Odoo settings/users | Upstream XML and installed actions | No core changes or permission edits | Owner-only read-only smoke entry where available; not an exhaustive admin workflow audit |
 | Guide (new) | Current pilot vs specification compared | Workflow/role/integration help | Desktop/phone, actual visible manual/unverified status |

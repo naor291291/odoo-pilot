@@ -29,6 +29,12 @@ Rules fetched from Vercel's `web-interface-guidelines/command.md`, SHA `3eb3a212
 - `views/field_dispatch_views.xml`, `field_collection_views.xml`, `field_pricing_views.xml` — decorative Font Awesome icons hidden from assistive technology.
 - `static/src/scss/field_interface.scss` — local Hebrew font with swap, semantic colors, readable readonly labels, tabular/LTR-isolated values and reduced-motion support retained.
 
+## Scoped calendar extension
+
+- `static/src/js/field_calendar.js` — registers a dedicated view via Odoo's view registry; inherits the native renderers/popover instead of patching core or globally altering calendars.
+- `static/src/xml/field_calendar.xml` — native mobile Dialog, semantic close/open buttons, explicit Hebrew labels and wrapped event title. The action opens the readonly task form.
+- `views/field_navigation_views.xml` — calendar creation, drag editing and deletion disabled; the workflow remains governed in the work card.
+
 ## Native platform boundaries and remaining checks
 
 Odoo owns generic toolbar/search/dialog/list/calendar keyboard behavior, route state and widgets; these were reused rather than patched. Backend notebook selection is expressed through focused native actions, not a new custom URL/tab router. Hebrew has no Title Case; labels use normal Hebrew sentence forms. Native Odoo settings/users/project/CRM entries receive read-only smoke coverage, not a claim that every administrative setting and native widget was redesigned.
