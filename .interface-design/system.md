@@ -75,3 +75,5 @@ Base: upstream `main` at `02d74f2`; this pass preserves the palette, Heebo, nati
 - **Brand:** keep any configured real logo/company identity. On field-portal routes only, replace Odoo's default logo with the company name, or the truthful application name “עבודות שטח” if the name is still “My Company”. Do not rename a real company or infer legal identity from unrelated work. The pilot bootstrap may name only the known default company “עבודות שטח — פיילוט”; existing custom names must remain untouched.
 
 Terminology: “כרטיס העבודה” is the operational source for assignment, approval and collection; “משימה” is the dispatched evidence record; “שמירה והמשך מאוחר יותר” saves a draft; “שליחת דיווח לבדיקה” locks and submits for review, not approval.
+
+Native Kanban integration: the hub's registered relational widget and today's registered renderer preserve Enter activation on nested work-card buttons. Do not apply a global Kanban patch. Outline action hover/focus/active use water fill + white text with the shared visible focus ring.

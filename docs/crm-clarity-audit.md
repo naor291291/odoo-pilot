@@ -53,3 +53,8 @@ Status at initial PR creation: Python/JavaScript/XML syntax and whitespace check
 No pricing formulas, snapshot rules, approval/collection transitions, photo caps, ACLs or existing records are migrated by these UI changes. Dashboard queries use normal requesting-user record rules without sudo. Today previews do not imply that a report is overdue merely because it is pending.
 
 Remaining limits: no live Codespaces session or live Morning API; no physical iPhone/Android camera, Safari/WebKit, actual screen reader or interrupted cellular upload. API-dependent/automatic document delivery and monthly/conversion reporting remain prior specification gaps. General Odoo company chrome retains a genuinely configured business name; actual business identity must be configured by its owner.
+
+
+## Keyboard defect found during verification
+
+A later, explicit Enter test reproduced a real issue in the embedded hub cards: Odoo's native KanbanRenderer registers a card-level Enter hotkey that consumes Enter on a nested action button without activating it. A scoped registered renderer/relational field now handles Enter on our hub/agenda action buttons (and on the card's direct-action entry), leaving unrelated kanbans and native arrow navigation untouched. The focused outline button also inherited an unreadable purple background; scoped focus/active colors now use the shared water/white pair. This was browser-reproduced behavior, not inferred from a screenshot or a source-only risk. Final validation must include these keyboard cases.

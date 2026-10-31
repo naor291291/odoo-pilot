@@ -200,3 +200,7 @@
     --NavBar-entry-color: #ffffff;
     background: #086b74;
 }
+
+.o_field_ui .btn-outline-primary:is(:hover, :focus, :active) {
+    background: var(--work-water); border-color: var(--work-water); color: #ffffff;
+}

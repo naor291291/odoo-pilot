@@ -12,7 +12,7 @@
         "views/field_interface_views.xml", "views/field_navigation_views.xml",
     ],
     "assets": {
-        "web.assets_backend": ["field_work_photos/static/src/js/field_calendar.js", "field_work_photos/static/src/xml/field_calendar.xml", "field_work_photos/static/src/scss/field_theme.scss", "field_work_photos/static/src/scss/field_dispatch.scss", "field_work_photos/static/src/scss/field_interface.scss", "field_work_photos/static/src/scss/field_crm.scss"],
+        "web.assets_backend": ["field_work_photos/static/src/js/field_agenda.js", "field_work_photos/static/src/js/field_calendar.js", "field_work_photos/static/src/xml/field_calendar.xml", "field_work_photos/static/src/scss/field_theme.scss", "field_work_photos/static/src/scss/field_dispatch.scss", "field_work_photos/static/src/scss/field_interface.scss", "field_work_photos/static/src/scss/field_crm.scss"],
         "web.assets_frontend": ["field_work_photos/static/src/scss/field_theme.scss", "field_work_photos/static/src/scss/field_interface.scss", "field_work_photos/static/src/scss/field_crm.scss", "field_work_photos/static/src/js/field_portal.js"],
     },
     "installable": True,
