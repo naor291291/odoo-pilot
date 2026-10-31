@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_contractor_statement_form" model="ir.ui.view">
+        <field name="name">field.contractor.statement.form</field><field name="model">field.contractor.statement</field>
+        <field name="arch" type="xml"><form string="התחשבנות קבלנים" class="o_field_ui o_contractor_statement_form" delete="false" duplicate="false">
+            <sheet><h1 invisible="generated_at">התחשבנות קבלנים</h1><p class="o_field_help" invisible="generated_at">בחרו קבלן ותקופה כדי לבדוק זכאויות, תשלומים ויתרה. הדוח מיועד לבעל הרשאה כספית.</p>
+                <group><group>
+                    <field name="company_id" options="{'no_create': True, 'no_open': True}"/>
+                    <field name="contractor_id" domain="[('groups_id', 'in', [%(group_field_contractor)d])]" context="{'active_test': False}" options="{'no_create': True, 'no_open': True}"/>
+                </group><group>
+                    <field name="period_mode" widget="radio" options="{'horizontal': True}"/>
+                    <field name="month_date" invisible="period_mode != 'month'" required="period_mode == 'month'"/>
+                    <field name="date_from" invisible="period_mode != 'range'"/><field name="date_to" invisible="period_mode != 'range'"/>
+                </group></group>
+                <div class="o_statement_actions"><button name="action_show_report" type="object" string="הצגת דוח" class="btn-primary"/>
+                    <button name="action_print_pdf" type="object" string="הפקת PDF" class="btn-outline-primary" invisible="not generated_at"/>
+                </div>
+                <field name="generated_at" invisible="1"/>
+                <div invisible="not generated_at">
+                    <field name="report_html" widget="html" readonly="1" nolabel="1" class="o_statement_result"/>
+                    <details class="o_statement_opening"><summary>בדיקת הרשומות שמרכיבות את יתרת הפתיחה</summary>
+                        <p>בתשלומים יש לבדוק גם את תאריך הרישום ואת מועד הביטול. ביטול מאוחר אינו מבטל את השפעת התשלום על יתרת חודש קודם.</p>
+                        <button name="action_open_opening" type="object" string="זכאויות לפני התקופה" class="btn-link"/>
+                        <button name="action_open_opening_payments" type="object" string="תשלומים לפני התקופה" class="btn-link"/>
+                    </details>
+                </div>
+            </sheet>
+        </form></field>
+    </record>
+    <record id="action_contractor_statement" model="ir.actions.act_window">
+        <field name="name">התחשבנות קבלנים</field><field name="res_model">field.contractor.statement</field>
+        <field name="view_mode">form</field><field name="view_id" ref="view_contractor_statement_form"/>
+    </record>
+    <record id="menu_field_payouts" model="ir.ui.menu"><field name="name">תשלומי קבלנים לפי עבודה</field></record>
+    <menuitem id="menu_contractor_statement" name="התחשבנות קבלנים" parent="menu_field_money" action="action_contractor_statement" sequence="24" groups="field_work_photos.group_field_finance"/>
+    <record id="view_entitlement_list" model="ir.ui.view">
+        <field name="name">field.work.entitlement.list</field><field name="model">field.work.entitlement</field>
+        <field name="arch" type="xml"><list create="false" edit="false" delete="false" class="o_field_ui">
+            <field name="event_date"/><field name="lead_id"/><field name="contractor_id"/><field name="kind"/>
+            <field name="currency_id" column_invisible="True"/><field name="amount" sum="סך תנועות"/><field name="reason"/>
+        </list></field>
+    </record>
+    <record id="view_entitlement_form" model="ir.ui.view">
+        <field name="name">field.work.entitlement.form</field><field name="model">field.work.entitlement</field>
+        <field name="arch" type="xml"><form create="false" edit="false" delete="false" duplicate="false" class="o_field_ui">
+            <sheet><h1>תנועת זכאות לקבלן</h1><group><field name="lead_id"/><field name="contractor_id"/><field name="company_id"/>
+                <field name="kind"/><field name="event_date"/><field name="event_at"/><field name="currency_id" invisible="1"/>
+                <field name="amount"/><field name="reason"/><field name="reversal_of_id"/>
+            </group><group string="בסיס היסטורי שמור"><field name="closed_at"/><field name="approved_by"/><field name="approved_at"/>
+                <field name="sale_net"/><field name="applied_rate"/><field name="net_estimate"/>
+            </group></sheet>
+        </form></field>
+    </record>
+    <record id="view_payment_statement_list" model="ir.ui.view">
+        <field name="name">field.work.payment.statement.list</field><field name="model">field.work.payment</field>
+        <field name="arch" type="xml"><list create="false" edit="false" delete="false" class="o_field_ui">
+            <field name="payment_date"/><field name="lead_id"/><field name="partner_id"/><field name="currency_id" column_invisible="True"/>
+            <field name="amount"/><field name="reference"/><field name="state"/><field name="cancelled_at"/>
+        </list></field>
+    </record>
+    <record id="view_lead_entitlement_approval" model="ir.ui.view">
+        <field name="name">crm.lead.contractor.entitlement.approval</field><field name="model">crm.lead</field>
+        <field name="inherit_id" ref="view_field_lead_collection"/>
+        <field name="arch" type="xml"><xpath expr="//div[hasclass('o_field_payout_panel')]/button[@name='action_register_contractor_payment']" position="before">
+            <div class="o_statement_approval" groups="field_work_photos.group_field_finance">
+                <field name="field_contractor_amount_approved" invisible="1"/>
+                <p class="o_field_help" invisible="field_contractor_amount_approved">הסכום הכולל טרם אושר ולכן אינו זכאות בדוח. הזינו סכום מוסכם ואשרו אותו; אפשר לאשר גם אפס במפורש.</p>
+                <button name="action_approve_contractor_amount" type="object" string="אישור סכום הקבלן לדוח" class="btn-outline-primary" invisible="field_contractor_amount_approved or not id or not field_contractor_id" confirm="הסכום הכולל שהוזן, כולל אפס אם הוזן, יהיה בסיס הזכאות לקבלן לאחר סגירת העבודה ושולם. לאישור הסכום?"/>
+                <group invisible="not field_contractor_amount_approved"><field name="field_contractor_amount_approved_by"/><field name="field_contractor_amount_approved_at"/></group>
+            </div>
+        </xpath></field>
+    </record>
+</odoo>

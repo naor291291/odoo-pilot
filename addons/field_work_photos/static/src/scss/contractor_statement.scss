@@ -1,0 +1,88 @@
+// Shared by the Odoo screen and the QWeb report bundle.
+@font-face {
+    font-family: "Statement Heebo";
+    src: url("/field_work_photos/static/src/fonts/Heebo-statement.ttf") format("truetype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+.o_contractor_statement {
+    --statement-ink: #183044;
+    --statement-steel: #465d70;
+    --statement-water: #086b74;
+    --statement-line: #dce4e9;
+    font-family: "Statement Heebo", "Field Heebo", sans-serif;
+    color: var(--statement-ink);
+    font-size: 16px;
+    line-height: 1.6;
+    /*rtl:ignore*/
+    direction: rtl;
+    /*rtl:ignore*/
+    text-align: right;
+    h2 { margin: 24px 0 8px; font-size: 24px; font-weight: 600; }
+    h3 { margin: 24px 0 8px; font-size: 20px; font-weight: 600; }
+    p { margin: 8px 0 16px; overflow-wrap: anywhere; }
+    [dir="ltr"] {
+        display: inline-block;
+        /*rtl:ignore*/
+        direction: ltr;
+        unicode-bidi: isolate;
+        font-variant-numeric: tabular-nums;
+    }
+    a { color: var(--statement-water); text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere; }
+    a:hover { color: #07545c; }
+    a:focus-visible { outline: 3px solid var(--statement-water); outline-offset: 3px; }
+    .o_statement_identity { font-size: 20px; overflow-wrap: anywhere; }
+    .o_statement_totals { display: flex; flex-wrap: wrap; gap: 16px 24px; margin: 24px 0 16px; padding: 16px 0; border-block: 1px solid var(--statement-line); }
+    .o_statement_totals > div { min-width: 140px; flex: 1; }
+    dt { color: var(--statement-steel); font-size: 14px; font-weight: 400; }
+    dd { margin: 4px 0 0; font-size: 20px; }
+    .o_statement_closing dd { font-size: 28px; font-weight: 600; }
+    .o_statement_help { color: var(--statement-steel); font-size: 14px; }
+    .o_statement_warning { color: #7b5100; background: #fff6e5; padding: 16px; margin: 16px 0; border-radius: 8px; }
+    .o_statement_empty { background: #edf6f6; padding: 16px; border-radius: 8px; }
+    .o_statement_table { width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 24px; }
+    th, td { padding: 12px 8px; border-bottom: 1px solid var(--statement-line); vertical-align: top; overflow-wrap: anywhere; }
+    th { color: var(--statement-steel); font-size: 14px; font-weight: 600; }
+    th:nth-child(1) { width: 22%; }
+    th:nth-child(2) { width: 38%; }
+    th:nth-child(3), th:nth-child(4) { width: 20%; }
+    .o_statement_source { display: inline-block; padding-block: 8px; min-height: 44px; font-size: 14px; }
+    .o_statement_basis { border-top: 1px solid var(--statement-line); padding-top: 8px; font-size: 14px; color: var(--statement-steel); }
+    .o_statement_basis p { max-width: 80ch; }
+}
+.o_contractor_statement_form {
+    .o_form_sheet { max-width: 1184px !important; min-width: 0 !important; }
+    .o_statement_actions { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0 24px; }
+    .o_statement_result, .o_statement_result > div { width: 100%; }
+    .o_statement_opening { border-top: 1px solid var(--work-line); padding-top: 16px; margin-top: 24px; }
+    .o_statement_opening summary { cursor: pointer; min-height: 44px; }
+}
+@media screen and (max-width: 767px) {
+    .o_contractor_statement {
+        .o_statement_totals > div { flex-basis: calc(50% - 24px); min-width: 0; }
+        .o_statement_closing { flex-basis: 100% !important; }
+        .o_statement_table, tbody, tr, td { display: block; width: 100%; }
+        thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+        tr { border-bottom: 1px solid var(--statement-line); padding-block: 12px; }
+        td { border: 0; padding: 4px 0; }
+        td::before { content: attr(data-label); display: block; font-size: 14px; color: var(--statement-steel); }
+    }
+}
+// Qt WebKit: use fallbacks rather than depending on CSS variables, grid or flex.
+.o_statement_pdf .o_contractor_statement {
+    color: #183044; font-size: 12px;
+    h2 { font-size: 22px; }
+    h3 { font-size: 16px; page-break-after: avoid; }
+    a { color: #086b74; }
+    .o_statement_totals { display: table; width: 100%; border-top: 1px solid #dce4e9; border-bottom: 1px solid #dce4e9; }
+    .o_statement_totals > div { display: table-cell; width: 20%; min-width: 0; padding: 8px; }
+    dt, th, .o_statement_help, .o_statement_basis { color: #465d70; font-size: 11px; }
+    dd { font-size: 16px; }
+    .o_statement_closing dd { font-size: 20px; }
+    th, td { padding: 8px 4px; border-bottom: 1px solid #dce4e9; }
+    thead { display: table-header-group; }
+    tr { page-break-inside: avoid; }
+    .o_statement_source { min-height: 0; padding: 0; font-size: 11px; }
+    .o_statement_warning, .o_statement_empty { page-break-inside: avoid; }
+}

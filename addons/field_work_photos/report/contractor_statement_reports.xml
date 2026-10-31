@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="paperformat_contractor_statement" model="report.paperformat">
+        <field name="name">התחשבנות קבלנים — A4</field><field name="format">A4</field>
+        <field name="orientation">Portrait</field><field name="margin_top">12</field><field name="margin_bottom">12</field>
+        <field name="margin_left">12</field><field name="margin_right">12</field><field name="dpi">90</field>
+    </record>
+    <record id="action_report_contractor_statement" model="ir.actions.report">
+        <field name="name">התחשבנות קבלנים</field><field name="model">field.contractor.statement</field>
+        <field name="report_type">qweb-pdf</field><field name="report_name">field_work_photos.contractor_statement_pdf</field>
+        <field name="report_file">field_work_photos.contractor_statement_pdf</field>
+        <field name="print_report_name">'Contractor-statement-%s' % object.id</field>
+        <field name="groups_id" eval="[(4, ref('group_field_finance'))]"/>
+        <field name="paperformat_id" ref="paperformat_contractor_statement"/>
+        <field name="attachment_use" eval="False"/>
+    </record>
+</odoo>

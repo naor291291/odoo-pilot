@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Shared verbatim by the stored screen snapshot and Odoo's QWeb PDF. -->
+    <template id="contractor_statement_body">
+        <section class="o_contractor_statement" dir="rtl" lang="he">
+            <h2>התחשבנות קבלנים</h2>
+            <p class="o_statement_identity"><strong t-out="s['contractor']"/> · <span t-out="s['company']"/></p>
+            <p>תקופה: <span dir="ltr" t-out="s['date_from'][8:10] + '/' + s['date_from'][5:7] + '/' + s['date_from'][:4]"/> עד <span dir="ltr" t-out="s['date_to'][8:10] + '/' + s['date_to'][5:7] + '/' + s['date_to'][:4]"/></p>
+            <dl class="o_statement_totals">
+                <div><dt>יתרת פתיחה</dt><dd dir="ltr" t-out="'{:,.2f} ₪'.format(s['opening'])"/></div>
+                <div><dt>זכאות שנוספה</dt><dd dir="ltr" t-out="'{:,.2f} ₪'.format(s['credit'])"/></div>
+                <div><dt>תשלומים לקבלן</dt><dd dir="ltr" t-out="'{:,.2f} ₪'.format(s['paid'])"/></div>
+                <div><dt>התאמות וביטולים</dt><dd dir="ltr" t-out="'{:+,.2f} ₪'.format(s['adjustments'])"/></div>
+                <div class="o_statement_closing"><dt>יתרת סגירה</dt><dd dir="ltr" data-statement-closing="true" t-out="'{:,.2f} ₪'.format(s['closing'])"/></div>
+            </dl>
+            <p t-if="s['closing'] &lt; 0">היתרה שלילית: שולמו מקדמות או תשלומים מעבר לזכאות המאושרת שנוצרה עד סוף התקופה.</p>
+            <p class="o_statement_help">כל סכומי היתרה והתנועות הם בשקלים, כולל מע״מ אם חל, לפי הסכום שאישר הבעלים. אומדנים לפני מע״מ מוצגים בנפרד ואינם נכללים ביתרה.</p>
+            <p class="o_statement_warning" t-if="s['missing_closed_count']">היתרה אינה כוללת <span t-out="s['missing_closed_count']"/> עבודות סגורות שסכום הקבלן שלהן טרם אושר. הרשימה בהמשך מציגה את המידע החסר במצבו הנוכחי.</p>
+            <div class="o_statement_warning" t-if="s['legacy_period'] or s['unknown_cancellations']">
+                <strong>המידע ההיסטורי אינו מלא.</strong>
+                <span t-if="s['legacy_period']"> תיעוד זכאויות מסודר החל במועד <span dir="ltr" t-out="s['history_start'] or 'לא ידוע'"/> (UTC). זכאות ישנה שלא תועדה אינה משוחזרת אוטומטית.</span>
+                <span t-if="s['unknown_cancellations']"> קיימים <span t-out="s['unknown_cancellations']"/> תשלומים מבוטלים ללא מועד ביטול; הם אינם כלולים בחישוב.</span>
+                <span> יש לבדוק את העבודות שסכומן טרם אושר לפני הסתמכות על היתרה.</span>
+            </div>
+            <h3>תנועות בתקופה</h3>
+            <p t-if="not s['rows']" class="o_statement_empty">אין תנועות בתקופה שנבחרה. יתרת הסגירה שווה ליתרת הפתיחה. אפשר לבחור חודש אחר או לבדוק את רשומות הפתיחה.</p>
+            <table t-if="s['rows']" class="o_statement_table">
+                <thead><tr><th scope="col">תאריך וסוג</th><th scope="col">עבודה ואסמכתה</th><th scope="col">שינוי ביתרה</th><th scope="col">יתרה מצטברת</th></tr></thead>
+                <tbody><tr t-foreach="s['rows']" t-as="line">
+                    <td data-label="תאריך וסוג"><span dir="ltr" t-out="line['date'][8:10] + '/' + line['date'][5:7] + '/' + line['date'][:4]"/><br/><strong t-out="line['type']"/></td>
+                    <td data-label="עבודה ואסמכתה"><a t-att-href="line['work_url']" t-out="line['work']"/><div t-out="line['reference']"/><a class="o_statement_source" t-att-href="line['source_url']">פתיחת תנועת המקור</a>
+                        <div class="o_statement_help" t-if="line['kind'] == 'credit'">אומדן היסטורי לפני מע״מ: <span dir="ltr" t-out="'{:,.2f} ₪'.format(line['net_estimate'])"/> · אחוז שמור: <span dir="ltr" t-out="'{:g}%'.format(line['rate'])"/></div>
+                    </td>
+                    <td data-label="שינוי ביתרה"><span dir="ltr" t-out="'{:+,.2f} ₪'.format(line['amount'])"/></td>
+                    <td data-label="יתרה מצטברת"><span dir="ltr" t-out="'{:,.2f} ₪'.format(line['balance'])"/></td>
+                </tr></tbody>
+            </table>
+            <h3 t-if="s['pending_count']">מידע נוכחי שאינו נכלל ביתרה</h3>
+            <p t-if="s['pending_count']">עבודות שטרם נסגרו או שסכום הקבלן שלהן טרם אושר. זהו מצבן במועד ההפקה, ולא שחזור מצבן בסוף החודש.</p>
+            <table t-if="s['exceptions']" class="o_statement_table o_statement_exceptions">
+                <thead><tr><th scope="col">עבודה ומצב</th><th scope="col">אומדן לפני מע״מ</th><th scope="col">סכום כולל מאושר</th></tr></thead>
+                <tbody><tr t-foreach="s['exceptions']" t-as="item">
+                    <td data-label="עבודה ומצב"><a t-att-href="item['work_url']" t-out="item['work']"/><div t-out="item['status']"/></td>
+                    <td data-label="אומדן לפני מע״מ"><span dir="ltr" t-out="'{:,.2f} ₪'.format(item['estimate'])"/><div t-if="not item['frozen']" class="o_statement_help">לפני שיבוץ — המחירון טרם נשמר לעבודה</div></td>
+                    <td data-label="סכום כולל מאושר"><span t-if="item['gross'] is None">חסר אישור סכום</span><span t-else="" dir="ltr" t-out="'{:,.2f} ₪'.format(item['gross'])"/></td>
+                </tr></tbody>
+            </table>
+            <p t-if="s['pending_count'] &gt; 100">מוצגות 100 מתוך <span t-out="s['pending_count']"/> עבודות למעקב. רשימת התנועות והסיכומים כוללים את כל התנועות, ללא קיצוץ.</p>
+            <div class="o_statement_basis">
+                <h3>בסיס החישוב</h3>
+                <p>יתרת פתיחה + זכאות שנוספה − תשלומים לקבלן + התאמות וביטולים = יתרת סגירה.</p>
+                <p>זכאות נוצרת כשעבודה נסגרת כטופל ושולם והבעלים אישר את סכום הקבלן. אם הסכום אושר אחרי הסגירה, הזכאות נרשמת במועד האישור. פתיחה מחדש או שינוי סכום מבטלים את הזכאות בתנועה נפרדת.</p>
+                <p>תשלומים משויכים לתאריך התשלום שהוזן, גם עבור עבודה מחודש קודם. ביטול רישום משויך למועד הביטול בישראל ואינו החזר כספי. גבייה מהלקוח אינה תשלום לקבלן ואינה מופחתת בדוח.</p>
+                <p>תאריכי הזכאות והביטול מחושבים לפי שעון ישראל (Asia/Jerusalem). הדוח משקף תנועות לתקופה לפי המידע הידוע במועד ההפקה. הזנה מאוחרת של תשלום לתאריך עבר עשויה לשנות דוח שיופק מחדש; זה אינו שחזור של המידע שהיה ידוע בסוף החודש.</p>
+                <p>הופק: <span dir="ltr" t-out="s['generated_at']"/> לפי שעון ישראל. המסך וה־PDF משתמשים באותה תמונת חישוב. להצגת שינויים חדשים יש להפיק דוח מחדש.</p>
+                <p>דוח תפעולי לעיון בלבד. אינו חשבונית, אינו רושם תשלום ואינו יוצר או שולח מסמך ב־Morning.</p>
+            </div>
+        </section>
+    </template>
+    <template id="contractor_statement_pdf">
+        <t t-call="web.html_container"><t t-foreach="docs" t-as="o"><t t-call="web.basic_layout">
+            <div class="page o_statement_pdf"><t t-set="s" t-value="o.payload"/><t t-call="field_work_photos.contractor_statement_body"/></div>
+            <div class="footer" dir="rtl" style="font-family: 'Statement Heebo', sans-serif; font-size: 10px; text-align: center;">עמוד <span class="page"/> מתוך <span class="topage"/></div>
+        </t></t></t>
+    </template>
+</odoo>
