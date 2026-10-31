@@ -26,10 +26,15 @@ def main():
     if shutil.which('dpkg-query'):
         completed = subprocess.run(['dpkg-query', '-W', '-f=${Package}\t${Version}\n',
                                     'odoo', 'python3-pil', 'python3-werkzeug', 'wkhtmltox',
-                                    'libwebp7', 'libssl3t64'], capture_output=True, text=True, check=False)
+                                    'libwebp7', 'libssl3t64', 'postgresql-client-16'], capture_output=True, text=True, check=False)
         result['distribution_packages'] = completed.stdout.strip().splitlines()
     if shutil.which('wkhtmltopdf'):
         result['pdf_engine'] = subprocess.check_output(['wkhtmltopdf', '--version'], text=True).strip()
+    result['postgres_backup_tools'] = {}
+    for label, command in (('default', shutil.which('pg_dump')),
+                           ('compose_16', '/usr/lib/postgresql/16/bin/pg_dump')):
+        if command and shutil.which(command):
+            result['postgres_backup_tools'][label] = subprocess.check_output([command, '--version'], text=True).strip()
     print(json.dumps(result, indent=2))
 
 

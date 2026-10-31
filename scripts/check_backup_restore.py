@@ -47,7 +47,21 @@ def main():
         backup = Path(tempfile.mkdtemp(prefix='restore-drill-', dir=backup_root))
         with closing(psycopg2.connect(dbname=DATABASE)) as source:
             expected = snapshot(source)
-        subprocess.run(['pg_dump', '-Fc', '-d', DATABASE, '-f', str(backup / 'database.dump')], check=True, timeout=180)
+            server_major = source.server_version // 10000
+        # The Odoo image's default client can be newer than Compose's DB.
+        # Newer dumps may emit SET commands unsupported by an older server.
+        tools = {}
+        for name in ('pg_dump', 'pg_restore'):
+            candidate = Path('/usr/lib/postgresql') / str(server_major) / 'bin' / name
+            command = str(candidate) if candidate.is_file() else shutil.which(name)
+            if not command:
+                raise RuntimeError('Missing PostgreSQL backup/restore tool')
+            version_text = subprocess.check_output([command, '--version'], text=True)
+            match = re.search(r'(\d+)\.\d+', version_text)
+            if not match or int(match.group(1)) != server_major:
+                raise RuntimeError(f'Backup and restore require PostgreSQL {server_major} client tools; rebuild the development image')
+            tools[name] = command
+        subprocess.run([tools['pg_dump'], '-Fc', '-d', DATABASE, '-f', str(backup / 'database.dump')], check=True, timeout=180)
         filestore = LOCAL / 'odoo-data/filestore' / DATABASE
         shutil.copytree(filestore, backup / 'filestore')
         restore_name = 'odoo_pilot_restore_' + uuid.uuid4().hex[:16]
@@ -59,7 +73,7 @@ def main():
                 with admin.cursor() as cursor:
                     cursor.execute(sql.SQL('CREATE DATABASE {} TEMPLATE template0').format(sql.Identifier(restore_name)))
                 created = True
-                subprocess.run(['pg_restore', '--exit-on-error', '--no-owner', '--no-privileges',
+                subprocess.run([tools['pg_restore'], '--exit-on-error', '--no-owner', '--no-privileges',
                                 '-d', restore_name, str(backup / 'database.dump')], check=True, timeout=180)
                 with closing(psycopg2.connect(dbname=restore_name)) as restored:
                     actual = snapshot(restored)
@@ -72,6 +86,7 @@ def main():
                 result = {'database_restore': 'passed', 'record_counts': actual[0],
                           'attachment_checksums_verified': len(actual[1]),
                           'backup_private': (backup.stat().st_mode & 0o077) == 0,
+                          'postgres_client_server_major': server_major,
                           'separate_database': True}
                 (backup / 'result.json').write_text(json.dumps(result, indent=2))
                 print(json.dumps(result))

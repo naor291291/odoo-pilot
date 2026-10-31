@@ -31,3 +31,5 @@ Scanner output is redacted; runtime test helpers log test names/summary flags, n
 ## Release boundary
 
 Review the PR and its exact commit/check results. No merge, deployment, public-port change, account expansion or secret rotation is authorized by this security implementation request. After a separate merge/deployment instruction, back up the target and use a controlled upgrade; do not copy synthetic financial test records into a business database.
+
+Recovery compatibility: the Odoo image can ship a PostgreSQL client newer than the pilot DB. The development image now includes PostgreSQL 16 client tools, and the drill selects the installed binaries matching the actual server major. It refuses a mismatch rather than ignoring `pg_restore` errors. Rebuild the test container to obtain the matching tools; no running Codespace was rebuilt by this PR.

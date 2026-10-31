@@ -45,3 +45,21 @@ Source checks included Odoo 18 `models.py` default injection/field access/transi
 ## CI and release evidence
 
 CI runs the same full suite and official-image startup/restart smoke, mandatory real PDF/runtime checks, the three existing headless Chrome suites, and the restore drill. Source/history scans fail closed; dependency inventory is visibly advisory pending reviewed vendor/path triage. Results and exact executable commit/run references are added after the PR's checks finish. A prepared workflow or a previous PR's screenshots are not evidence that the new branch passed.
+
+
+### Exact source and scanner evidence
+
+Remote executable head: `10ae02c153e8a2e2af6f0dab70b2a104cb3bfb34`; source tree `9a7ffeb2be00bd7b9f18ff40b00285f343b0f78b`, byte-identical to local tested commit `2c77c614907347b875ed869f1c69e5adf4607be8`. GitHub tested its generated PR merge `28fadd734ade3b8882e1fbf8d6d4267afbdc19f8` into unchanged base `24d22c3`. No repository history was force-pushed or overwritten.
+
+[Security workflow 41231106608](https://github.com/naor291291/odoo-pilot/actions/runs/41231106608): source/history passed, **104 commits** scanned with no recognized leak; Bandit passed. [Source results](https://github.com/naor291291/odoo-pilot/actions/runs/41231106608/artifacts/13053816878). Dependency inventory completed, audit emitted its documented warning: **146 raw / 95 distinct primary IDs / 13 packages**; [inventory/advisory artifact](https://github.com/naor291291/odoo-pilot/actions/runs/41231106608/artifacts/13053263894) was downloaded and inspected, including distribution versions and PDF engine. This workflow success does **not** mean the dependency audit is clean.
+
+Final local restore included 4 jobs, 2 tasks, 9 payments, 1 entitlement and 25 attachment rows; all 24 filestore-backed attachment checksums matched. The separate test DB was cleaned up successfully. Local source scan excluded tests and found no issues at any severity.
+
+CI text/artifact inspection: Gitleaks also scanned the downloaded source/dependency job logs and dependency metadata. It flagged two AWS-pattern matches in the third-party PyPDF2 advisory text (`PYSEC-2026-1835`), not repository/runtime credentials: a published presigned example URL dated June 2023 with a 300-second lifetime. These were triaged as expired third-party advisory content, not silently ignored or treated as an active project secret. No service key was tested or rotated. UI archive membership/text and the completed integration log are reviewed separately; no exhaustive screenshot OCR or scan of every historical CI run is claimed.
+
+
+### First official-image integration run and recovery correction
+
+[Integration run 41231106604](https://github.com/naor291291/odoo-pilot/actions/runs/41231106604) at the head above passed all 187 native methods, startup/restart, the mandatory two-session/real-PDF runtime checks and all three Chrome suites. Its **restore step failed**, so the overall run was not successful: the image-selected PostgreSQL client emitted `SET transaction_timeout`, unsupported by the configured PostgreSQL 16 server. This was a compatibility failure in recovery tooling, not a successful restore claim. The local client/server were both 16, explaining why the local drill did not reveal it.
+
+Correction: install `postgresql-client-16` alongside the image default, choose dump/restore binaries matching the queried server major, and fail before backup if a matching client is absent. Report the selected major in restore evidence and both default/matching client versions in the image inventory. This avoids ignoring restore errors or editing a dump to hide them. The corrected official-image run is required below. No business database was overwritten.
