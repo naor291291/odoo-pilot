@@ -84,7 +84,7 @@ class CrmLead(models.Model):
 
     def action_approve_field_report(self):
         self._workspace_task().action_approve_field_work()
-        return True
+        return self._field_workspace_action(focus='collection')
 
     def action_return_field_report(self):
         task = self._workspace_task()

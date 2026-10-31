@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_field_interface" model="ir.ui.view">
+        <field name="name">crm.lead.field.interface</field><field name="model">crm.lead</field>
+        <field name="inherit_id" ref="view_field_lead_form"/><field name="priority">100</field>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('o_field_service_hero')]" position="replace">
+                <div class="o_field_service_hero o_field_work_header">
+                    <div class="o_field_service_heading">
+                        <div class="o_field_work_identity"><span class="o_field_service_eyebrow">כרטיס עבודה</span><field name="field_stage_title" nolabel="1" class="o_field_stage_pill"/></div>
+                        <h1><field name="name" string="שם העבודה" placeholder="למשל: החלפת ברז במטבח" required="1" readonly="field_dispatch_locked"/></h1>
+                        <field name="field_workspace_summary" nolabel="1" class="o_field_work_context"/>
+                    </div>
+                    <div class="o_field_next_step" role="status"><strong>הפעולה הבאה</strong><field name="field_next_step" nolabel="1"/></div>
+                </div>
+            </xpath>
+            <xpath expr="//div[hasclass('o_field_service_steps')]" position="before">
+                <details class="o_field_workflow_details"><summary>כל שלבי העבודה</summary></details>
+            </xpath>
+            <xpath expr="//details[hasclass('o_field_workflow_details')]" position="inside">
+                <xpath expr="//div[hasclass('o_field_service_steps')]/field[@name='stage_id']" position="move"/>
+            </xpath>
+            <xpath expr="//div[hasclass('o_field_service_steps')]" position="replace"/>
+            <xpath expr="//div[hasclass('o_field_service_columns')]" position="before">
+                <notebook class="o_field_work_tabs">
+                    <page name="field_planning" string="תכנון"><div class="o_field_planning_grid"/></page>
+                    <page name="field_execution" string="ביצוע" invisible="field_task_count == 0"><div class="o_field_execution_slot"/></page>
+                    <page name="field_collection" string="גבייה" groups="field_work_photos.group_field_dispatcher"><div class="o_field_collection_slot"/></page>
+                    <page name="field_finance" string="עלויות וקבלן" groups="field_work_photos.group_field_finance"><div class="o_field_finance_slot"/></page>
+                </notebook>
+            </xpath>
+            <xpath expr="//div[hasclass('o_field_planning_grid')]" position="inside">
+                <xpath expr="//field[@name='partner_id']/ancestor::div[hasclass('o_field_service_card')][1]" position="move"/>
+                <xpath expr="//field[@name='field_quote_number']/ancestor::div[hasclass('o_field_service_card')][1]" position="move"/>
+                <xpath expr="//div[hasclass('o_field_service_main')]/div[hasclass('o_field_service_card')][.//field[@name='field_visit_at']]" position="move"/>
+                <xpath expr="//details[hasclass('o_field_service_notes')]" position="move"/>
+            </xpath>
+            <xpath expr="//div[hasclass('o_field_execution_slot')]" position="inside">
+                <xpath expr="//div[hasclass('o_field_report_panel')]" position="move"/>
+            </xpath>
+            <xpath expr="//div[hasclass('o_field_collection_slot')]" position="inside">
+                <xpath expr="//div[hasclass('o_field_collection_panel')]" position="move"/>
+            </xpath>
+            <xpath expr="//div[hasclass('o_field_finance_slot')]" position="inside">
+                <xpath expr="//div[hasclass('o_field_pricing_card')]" position="move"/>
+                <div class="o_field_message" role="status" invisible="field_execution_type != 'subcontractor' or field_contractor_id">בחרו קבלן בלשונית תכנון כדי לחשב את חלקו ולנהל את התשלומים אליו.</div>
+                <xpath expr="//div[hasclass('o_field_payout_panel')]" position="move"/>
+            </xpath>
+            <xpath expr="//details[hasclass('o_field_service_notes')]/summary" position="replace"><summary>פרטים פנימיים והערות לצוות</summary></xpath>
+            <xpath expr="//details[hasclass('o_field_service_notes')]" position="inside">
+                <group><xpath expr="//div[hasclass('o_field_service_sidebar')]//field[@name='user_id']" position="move"/><xpath expr="//div[hasclass('o_field_service_sidebar')]//field[@name='company_id']" position="move"/></group>
+            </xpath>
+            <xpath expr="//sheet" position="inside"><xpath expr="//div[hasclass('o_field_service_sidebar')]//field[@name='field_task_count']" position="move"/></xpath>
+            <xpath expr="//div[hasclass('o_field_service_columns')]" position="replace"/>
+
+            <xpath expr="//div[hasclass('o_field_planning_grid')]/div[.//field[@name='partner_id']]" position="attributes"><attribute name="class" add="o_field_customer_card" separator=" "/></xpath>
+            <xpath expr="//div[hasclass('o_field_customer_card')]/group" position="replace">
+                <div class="o_field_message" role="status" invisible="not field_dispatch_locked">פרטי העבודה נעולים בזמן בדיקת הדיווח ולאחר אישורו. לשינוי פרטים, החזירו את העבודה לתיקון דרך לשונית ביצוע.</div>
+                <div class="o_field_form_grid">
+                    <div class="o_field_control"><label for="partner_id" string="לקוח"/><field name="partner_id" string="לקוח" readonly="field_dispatch_locked"/></div>
+                    <div class="o_field_control"><label for="phone" string="טלפון לתיאום"/><field name="phone" widget="phone" class="o_field_numeric" placeholder="0501234567" readonly="field_dispatch_locked"/></div>
+                    <div class="o_field_control o_field_control_wide"><label for="field_site_address"/><field name="field_site_address" placeholder="רחוב, מספר ועיר" readonly="field_dispatch_locked"/></div>
+                    <div class="o_field_control o_field_control_wide"><label for="field_work_description" string="מה צריך לבצע?"/><field name="field_work_description" placeholder="תיאור קצר וברור שיופיע גם למבצע בשטח" readonly="field_dispatch_locked"/></div>
+                </div>
+                <details class="o_field_arrival_details"><summary>איש קשר ופרטי הגעה נוספים — רשות</summary>
+                    <div class="o_field_form_grid">
+                        <div class="o_field_control"><label for="contact_name" string="איש קשר בשטח"/><field name="contact_name" readonly="field_dispatch_locked"/></div>
+                        <div class="o_field_control"><label for="field_site_unit"/><field name="field_site_unit" placeholder="קומה ודירה" readonly="field_dispatch_locked"/></div>
+                        <div class="o_field_control o_field_control_wide"><label for="field_access_instructions"/><field name="field_access_instructions" placeholder="כניסה, חניה או הנחיות למבצע" readonly="field_dispatch_locked"/></div>
+                    </div>
+                </details>
+            </xpath>
+            <xpath expr="//div[hasclass('o_field_planning_grid')]/div[.//field[@name='field_quote_number']]" position="attributes"><attribute name="class" add="o_field_quote_card" separator=" "/></xpath>
+            <xpath expr="//div[hasclass('o_field_quote_card')]/group" position="replace">
+                <field name="field_pricing_currency_id" invisible="1"/>
+                <div class="o_field_form_grid o_field_form_grid_single">
+                    <div class="o_field_control"><label for="field_sale_amount"/><field name="field_sale_amount" readonly="field_dispatch_locked"/></div>
+                    <div class="o_field_control"><label for="field_quote_number" string="מספר הצעת מחיר"/><field name="field_quote_number" class="o_field_numeric" placeholder="המספר מההצעה שנשלחה במורנינג" readonly="field_dispatch_locked"/></div>
+                </div>
+            </xpath>
+            <xpath expr="//div[hasclass('o_field_planning_grid')]/div[.//field[@name='field_visit_at']]" position="attributes">
+                <attribute name="class" add="o_field_assignment_card" separator=" "/><attribute name="invisible">field_dispatch_code == 'new'</attribute>
+            </xpath>
+            <xpath expr="//div[hasclass('o_field_assignment_card')]/group" position="replace">
+                <div class="o_field_form_grid o_field_form_grid_single">
+                    <div class="o_field_control"><label for="field_execution_type"/><field name="field_execution_type" readonly="field_dispatch_locked"/></div>
+                    <div class="o_field_control" invisible="field_execution_type != 'subcontractor'"><label for="planning_contractor" string="קבלן מבצע"/><field name="field_contractor_id" id="planning_contractor" options="{'no_create': True, 'no_open': True}" readonly="field_dispatch_locked"/></div>
+                    <div class="o_field_control" invisible="field_execution_type != 'direct'"><label for="field_worker_id"/><field name="field_worker_id" options="{'no_create': True}" readonly="field_dispatch_locked"/></div>
+                    <div class="o_field_control"><label for="field_visit_at"/><field name="field_visit_at" readonly="field_dispatch_locked"/></div>
+                </div>
+            </xpath>
+            <xpath expr="//div[hasclass('o_field_assignment_card')]//h2" position="replace"><h2>מבצע ומועד</h2></xpath>
+            <xpath expr="//div[hasclass('o_field_assignment_card')]//div[hasclass('o_field_service_card_heading')]//p" position="replace"><p>אפשר לבחור מבצע מראש. לפני אישור השיבוץ יש לקבוע גם מועד ביצוע.</p></xpath>
+            <xpath expr="//div[hasclass('o_field_assignment_card')]//div[hasclass('o_field_service_tip')]" position="replace"><div class="o_field_service_tip" invisible="field_dispatch_code != 'field'">העבודה שובצה. הדיווח והתמונות נמצאים בלשונית ביצוע.</div></xpath>
+
+            <xpath expr="//div[hasclass('o_field_pricing_card')]" position="attributes"><attribute name="class" add="o_field_service_card o_field_finance_card" separator=" "/></xpath>
+            <xpath expr="//div[hasclass('o_field_pricing_card')]//h3" position="replace"><h2>תחזית רווחיות</h2></xpath>
+            <xpath expr="//div[hasclass('o_field_pricing_fields')]" position="replace">
+                <div class="o_field_control"><label for="field_material_cost"/><field name="field_material_cost" readonly="field_dispatch_locked"/></div>
+                <div class="o_field_finance_metrics" invisible="field_sale_amount &lt;= 0 or (field_execution_type == 'subcontractor' and not field_contractor_id)">
+                    <div class="o_field_metric o_field_metric_outcome"><label for="field_gross_profit"/><field name="field_gross_profit" class="o_field_pricing_number" nolabel="1"/></div>
+                    <div class="o_field_metric"><label for="field_gross_margin" string="שיעור הרווח הגולמי"/><div class="o_field_metric_percent"><field name="field_gross_margin" nolabel="1"/>%</div></div>
+                    <div class="o_field_metric" invisible="field_execution_type != 'subcontractor'"><label for="field_contractor_cost"/><field name="field_contractor_cost" class="o_field_pricing_number" nolabel="1"/><div class="o_field_metric_note">לפי המחירון: <field name="field_applied_rate"/>%</div></div>
+                </div>
+            </xpath>
+            <xpath expr="//div[hasclass('o_field_payout_panel')]" position="attributes"><attribute name="invisible">field_execution_type != 'subcontractor' or not field_contractor_id</attribute></xpath>
+            <xpath expr="//field[@name='field_payment_ids']" position="before"><div class="o_field_empty_ledger" invisible="field_payment_ids">עדיין לא נרשמו תקבולים לעבודה. לאחר קבלת הכסף אפשר לרשום תשלום מלא או חלקי.</div></xpath>
+            <xpath expr="//div[hasclass('o_field_collection_panel')]/div[hasclass('o_field_money_summary')][1]" position="before">
+                <div class="o_field_message" role="status" invisible="partner_id">כדי לרשום תקבול, בחרו תחילה לקוח בלשונית תכנון.</div>
+                <div class="o_field_message o_field_message_success" role="status" invisible="field_collection_status != 'paid' or field_dispatch_code in ['completed','paid']">כל הסכום התקבל. העבודה תיסגר רק לאחר אישור הביצוע.</div>
+            </xpath>
+            <xpath expr="//field[@name='field_payout_ids']" position="before"><div class="o_field_empty_ledger" invisible="field_payout_ids">עדיין לא נרשמו תשלומים לקבלן. לאחר העברת הכסף אפשר לתעד את התשלום כאן.</div></xpath>
+            <xpath expr="//field[@name='field_payment_ids']" position="attributes"><attribute name="invisible">not field_payment_ids</attribute><attribute name="class">o_field_ledger</attribute></xpath>
+            <xpath expr="//field[@name='field_payout_ids']" position="attributes"><attribute name="invisible">not field_payout_ids</attribute><attribute name="class">o_field_ledger</attribute></xpath>
+            <xpath expr="//button[@name='action_dispatch_field_work']" position="attributes"><attribute name="string">אישור השיבוץ</attribute><attribute name="aria-label">אישור השיבוץ</attribute></xpath>
+        </field>
+    </record>
+    <record id="view_field_lead_execution_focus" model="ir.ui.view">
+        <field name="name">crm.lead.field.execution.focus</field><field name="model">crm.lead</field><field name="inherit_id" ref="view_field_lead_form"/><field name="mode">primary</field><field name="priority">110</field>
+        <field name="arch" type="xml"><xpath expr="//page[@name='field_execution']" position="attributes"><attribute name="autofocus">autofocus</attribute></xpath></field>
+    </record>
+    <record id="view_field_lead_collection_focus" model="ir.ui.view">
+        <field name="name">crm.lead.field.collection.focus</field><field name="model">crm.lead</field><field name="inherit_id" ref="view_field_lead_form"/><field name="mode">primary</field><field name="priority">110</field>
+        <field name="arch" type="xml"><xpath expr="//page[@name='field_collection']" position="attributes"><attribute name="autofocus">autofocus</attribute></xpath></field>
+    </record>
+    <record id="view_field_lead_finance_focus" model="ir.ui.view">
+        <field name="name">crm.lead.field.finance.focus</field><field name="model">crm.lead</field><field name="inherit_id" ref="view_field_lead_form"/><field name="mode">primary</field><field name="priority">110</field>
+        <field name="arch" type="xml"><xpath expr="//page[@name='field_finance']" position="attributes"><attribute name="autofocus">autofocus</attribute></xpath></field>
+    </record>
+    <record id="view_field_lead_interface_list" model="ir.ui.view">
+        <field name="name">crm.lead.field.interface.list</field><field name="model">crm.lead</field><field name="inherit_id" ref="view_field_lead_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="attributes"><attribute name="string">שם העבודה</attribute></xpath>
+            <xpath expr="//list" position="inside"><button name="action_open_field_workspace" type="object" string="המשך טיפול"/></xpath>
+        </field>
+    </record>
+    <record id="view_field_lead_interface_kanban" model="ir.ui.view">
+        <field name="name">crm.lead.field.interface.kanban</field><field name="model">crm.lead</field><field name="inherit_id" ref="view_field_lead_kanban"/>
+        <field name="arch" type="xml"><xpath expr="//t[@t-name='card']" position="inside"><button name="action_open_field_workspace" type="object" class="btn btn-link" string="המשך טיפול" aria-label="המשך טיפול"/></xpath></field>
+    </record>
+    <record id="action_field_collections" model="ir.actions.act_window"><field name="view_ids" eval="[(5,0,0),(0,0,{'view_mode':'list','view_id':ref('view_field_collection_list')}),(0,0,{'view_mode':'form','view_id':ref('view_field_lead_collection_focus')})]"/></record>
+    <record id="action_field_payouts" model="ir.actions.act_window"><field name="view_ids" eval="[(5,0,0),(0,0,{'view_mode':'list','view_id':ref('view_field_payout_list')}),(0,0,{'view_mode':'form','view_id':ref('view_field_lead_finance_focus')})]"/></record>
+    <record id="action_field_work_attention" model="ir.actions.act_window"><field name="view_ids" eval="[(5,0,0),(0,0,{'view_mode':'list','view_id':ref('view_field_lead_list')}),(0,0,{'view_mode':'form','view_id':ref('view_field_lead_execution_focus')})]"/></record>
+</odoo>
