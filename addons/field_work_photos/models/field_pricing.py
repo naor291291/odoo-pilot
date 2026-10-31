@@ -104,6 +104,11 @@ class CrmLead(models.Model):
             raise AccessError('מחירון העבודה נשמר אוטומטית בעת השיבוץ.')
         return super().create(vals_list)
 
+    @api.model
+    def default_get(self, fields_list):
+        return {key: value for key, value in super().default_get(fields_list).items()
+                if key not in SNAPSHOT_FIELDS}
+
     def write(self, vals):
         if SNAPSHOT_FIELDS.intersection(vals):
             raise AccessError('לא ניתן לשנות את מחירון העבודה השמור באופן ישיר.')

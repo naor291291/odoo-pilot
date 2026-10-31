@@ -55,8 +55,10 @@ class FieldWorkPortal(CustomerPortal):
         counts = {key: Task.search_count(domain + value) for key, value in scopes.items()}
         pager = portal_pager(url='/my/field-work', total=counts[scope], page=page, step=20, url_args={'scope': scope})
         tasks = Task.search(domain + scopes[scope], order='field_approved_at desc, id desc' if scope == 'completed' else 'field_visit_at, id', limit=20, offset=pager['offset'])
-        return request.render('field_work_photos.portal_field_work_list', {
+        response = request.render('field_work_photos.portal_field_work_list', {
             'tasks': tasks, 'pager': pager, 'page_name': 'field_work', 'scope': scope, 'counts': counts})
+        response.headers['Cache-Control'] = 'private, no-store'
+        return response
 
     @http.route('/my/field-work/<int:task_id>', type='http', auth='user', website=True, methods=['GET'])
     def field_work_detail(self, task_id, notice=None, **kw):
@@ -66,7 +68,7 @@ class FieldWorkPortal(CustomerPortal):
         messages = {'saved': 'הדיווח והתמונות נשמרו. אפשר לחזור לעבודה ולהגיש בהמשך.',
                     'submitted': 'הדיווח והתמונות נשלחו לבדיקת התפעול.'}
         message = messages.get(notice) if notice != 'submitted' or task.field_review_state == 'pending' else None
-        return request.render('field_work_photos.portal_field_work_detail', {
+        response = request.render('field_work_photos.portal_field_work_detail', {
             'task': task, 'page_name': 'field_work', 'error': error, 'notice': message,
             'galleries': {kind: task._field_gallery(kind) for kind in ('before', 'after')},
             'report': report_values or {name: task[name] or '' for name in ('field_visit_result', 'field_visit_summary', 'field_visit_reason', 'field_visit_notes')},
@@ -74,6 +76,8 @@ class FieldWorkPortal(CustomerPortal):
             'navigation_url': 'https://www.google.com/maps/search/?' + urlencode({'api': 1, 'query': task.field_site_address or ''}),
             'editable': task.field_review_state in ('draft', 'changes_requested') and task.state != '1_canceled',
         })
+        response.headers['Cache-Control'] = 'private, no-store'
+        return response
 
     @http.route('/my/field-work/<int:task_id>/report', type='http', auth='user', website=True, methods=['POST'], csrf=True)
     def field_work_report(self, task_id, action=None, **kw):

@@ -316,6 +316,7 @@ class FieldWorkPaymentRegister(models.TransientModel):
 
     def action_apply(self):
         self.ensure_one()
+        self.check_access('write')
         self.lead_id._check_collection_kind(self.kind)
         self.lead_id._lock_collection()
         # A repeated click on the same dialog is idempotent, including after
@@ -340,4 +341,5 @@ class FieldWorkPaymentCancel(models.TransientModel):
 
     def action_apply(self):
         self.ensure_one()
+        self.check_access('write')
         return self.payment_id._cancel_registration(self.reason)

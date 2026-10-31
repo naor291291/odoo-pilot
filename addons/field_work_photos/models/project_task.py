@@ -2,7 +2,9 @@ import base64
 import binascii
 from io import BytesIO
 
-from PIL import Image
+# Odoo preloads only a minimal Pillow plugin set. Register only the additional
+# format this upload contract supports, rather than enabling all decoders.
+from PIL import Image, ImageOps, WebPImagePlugin  # noqa: F401
 from odoo import api, fields, models
 from odoo.exceptions import AccessError, ValidationError
 
@@ -78,6 +80,17 @@ class ProjectTask(models.Model):
     def _review_managed_fields():
         return {"field_review_state", "field_submitted_by", "field_submitted_at", "field_approved_by", "field_approved_at"}
 
+    @api.model
+    def default_get(self, fields_list):
+        # Context/ir.default values arrive after public create() guards. Never
+        # accept workflow evidence from either default channel.
+        protected = self._review_managed_fields() | {'field_review_note'}
+        defaults = {key: value for key, value in super().default_get(fields_list).items()
+                    if key not in protected}
+        if 'field_review_state' in fields_list:
+            defaults['field_review_state'] = 'draft'
+        return defaults
+
     def write(self, vals):
         if self._review_managed_fields().intersection(vals):
             raise AccessError("עדכון מצב בדיקה ופרטי האישור מתבצע באמצעות כפתורי התהליך בלבד.")
@@ -104,17 +117,37 @@ class ProjectTask(models.Model):
                 raw = base64.b64decode(value, validate=True)
                 if len(raw) > 12 * 1024 * 1024:
                     raise ValidationError("גודל תמונה מרבי הוא 12MB.")
-                with Image.open(BytesIO(raw)) as image:
+                with Image.open(BytesIO(raw), formats=('JPEG', 'PNG', 'WEBP')) as image:
                     if image.format not in {"JPEG", "PNG", "WEBP"}:
                         raise ValidationError("יש להעלות תמונת JPG, PNG או WebP.")
                     if image.width * image.height > 50_000_000:
                         raise ValidationError("רזולוציית התמונה גדולה מדי. יש להקטין אותה.")
+                    if getattr(image, 'n_frames', 1) != 1:
+                        raise ValidationError("יש להעלות תמונה רגילה ולא תמונה מונפשת.")
                     image.verify()
             except (ValueError, TypeError, OSError, binascii.Error, Image.DecompressionBombError) as exc:
+                raise ValidationError("הקובץ אינו תמונה תקינה. יש להעלות JPG, PNG או WebP.") from exc
+            # Odoo may return unchanged small images or WebP bytes, retaining
+            # EXIF/GPS or trailing content. Decode and re-encode new uploads,
+            # applying orientation before removing all metadata.
+            try:
+                with Image.open(BytesIO(raw), formats=('JPEG', 'PNG', 'WEBP')) as image:
+                    output_format = image.format
+                    oriented = ImageOps.exif_transpose(image)
+                    oriented.thumbnail((1920, 1920))
+                    mode = 'RGBA' if output_format != 'JPEG' and ('A' in oriented.getbands() or 'transparency' in oriented.info) else 'RGB'
+                    clean = Image.new(mode, oriented.size)
+                    clean.paste(oriented.convert(mode))
+                    stream = BytesIO()
+                    clean.save(stream, output_format, **({'quality': 90} if output_format in ('JPEG', 'WEBP') else {}))
+                    vals[name] = base64.b64encode(stream.getvalue())
+            except (ValueError, TypeError, OSError, SyntaxError) as exc:
                 raise ValidationError("הקובץ אינו תמונה תקינה. יש להעלות JPG, PNG או WebP.") from exc
 
     @api.model_create_multi
     def create(self, vals_list):
+        # Expand defaults once so file limits also cover context/default values.
+        vals_list = [self._add_missing_default_values(dict(vals)) for vals in vals_list]
         for vals in vals_list:
             if any(vals.get(key) for key in self._review_managed_fields() - {"field_review_state"}):
                 raise AccessError("לא ניתן להזין פרטי אישור ישירות ביצירת משימה.")
