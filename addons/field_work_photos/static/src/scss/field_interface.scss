@@ -76,7 +76,10 @@
     .o_field_service_heading h1 { margin: 0 0 8px; font-size: 28px; font-weight: 600; line-height: 1.3; }
     .o_field_service_heading h1 input { font: inherit; color: var(--work-ink); }
     .o_field_service_heading h1 .o_field_title_text { font: inherit; display: block; white-space: normal; overflow-wrap: anywhere; }
-    .o_field_work_header, .o_field_work_tabs, .o_field_service_notice, .o_field_workflow_details { direction: rtl; }
+    .o_field_work_header, .o_field_work_tabs, .o_field_service_notice, .o_field_workflow_details {
+        /*rtl:ignore*/
+        direction: rtl;
+    }
     .o_field_work_context { display: block; width: 100%; margin: 0; color: var(--work-steel); font-size: 15px; white-space: normal; overflow-wrap: anywhere; }
     .o_field_next_step { padding: 16px; background: var(--work-water-tint); border-inline-start: 3px solid var(--work-water); border-radius: 8px; }
     .o_field_next_step strong { display: block; margin-bottom: 4px; color: var(--work-water); font-size: 14px; font-weight: 600; }
@@ -168,6 +171,7 @@
 }
 
 .o_field_portal {
+    /*rtl:ignore*/
     direction: rtl;
     .o_field_panel { border-color: var(--work-line); border-radius: 12px; box-shadow: none; }
     .o_field_job_details dt { color: var(--work-steel); font-weight: 500; }
