@@ -88,3 +88,5 @@ Selected screenshots were visually inspected for work/financial forms, owner and
 ## Subsequent clarity refinement
 
 The 31 October 2026 follow-up starts from merged upstream `main` (`02d74f2`). See [the separate clarity audit](crm-clarity-audit.md) for current findings, affected screens, skill provenance and new verification results. Historical results above belong to PR #12; they are not evidence that this follow-up passed.
+
+Follow-up evidence: [CI 41217828468](https://github.com/naor291291/odoo-pilot/actions/runs/41217828468) passed all 152 tests, startup/restart and both Chrome suites, including the scoped Enter fix. The follow-up generated 66 screenshots (25 core + 41 CRM) and an annotated before/after HTML. Full results, exact tested implementation commit, evidence provenance and remaining device/API limits are in `crm-clarity-audit.md`.
