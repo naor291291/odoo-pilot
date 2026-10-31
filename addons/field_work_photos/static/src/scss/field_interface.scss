@@ -1,0 +1,190 @@
+@font-face {
+    font-family: "Field Heebo";
+    src: url("/field_work_photos/static/src/fonts/Heebo-variable.ttf") format("truetype");
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+// Field-work paper, water actions, steel metadata and inspection states.
+.o_field_ui {
+    --work-paper: #ffffff;
+    --work-desk: #f3f6f7;
+    --work-ink: #183044;
+    --work-steel: #465d70;
+    --work-caption: #5a6d7c;
+    --work-water: #086b74;
+    --work-water-hover: #07545c;
+    --work-water-tint: #edf6f6;
+    --work-line: #dce4e9;
+    --work-input: #f6f8fa;
+    --work-inspection: #7b5100;
+    --work-approved: #216545;
+    --work-repair: #9b2634;
+    --field-ink: var(--work-ink);
+    --field-muted: var(--work-steel);
+    --field-teal: var(--work-water);
+    --field-border: var(--work-line);
+    font-family: "Field Heebo", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--work-ink);
+    text-align: start;
+    -webkit-font-smoothing: antialiased;
+
+    h1, h2, h3 { text-wrap: balance; color: var(--work-ink); }
+    h2 { font-size: 20px; font-weight: 600; }
+    .o_form_label, label { color: var(--work-steel); font-size: 14px; font-weight: 500; }
+    // Computed amounts are essential information; readonly labels must stay legible.
+    .o_form_label.o_form_label_readonly, .o_form_label.o_form_label_empty, .o_form_label.o_form_label_false { opacity: 1; font-weight: 500; }
+    .o_field_help, .text-muted { color: var(--work-caption) !important; }
+    .btn { min-height: 44px; font-family: inherit; font-size: 15px; font-weight: 600; border-radius: 8px; }
+    .btn-primary { background: var(--work-water); border-color: var(--work-water); }
+    .btn-primary:hover { background: var(--work-water-hover); border-color: var(--work-water-hover); }
+    .btn-outline-primary { color: var(--work-water); border-color: var(--work-water); }
+    .o_input, input, textarea, select { font-family: inherit; font-size: 16px; }
+    input::placeholder, textarea::placeholder { color: var(--work-caption); opacity: 1; }
+    .o_field_monetary, .o_field_float, .o_field_integer { font-variant-numeric: tabular-nums; }
+    .o_field_numeric, .o_field_numeric input {
+        /*rtl:ignore*/
+        direction: ltr !important;
+        /*rtl:ignore*/
+        text-align: start !important;
+        unicode-bidi: isolate;
+    }
+    .o_list_table { font-size: 15px; }
+    .o_list_table th { color: var(--work-steel); font-size: 14px; font-weight: 600; }
+    .o_list_table td[name="name"], .o_list_table td[name="field_attention_label"] { white-space: normal; overflow-wrap: anywhere; }
+    .o_list_table .o_data_row { min-height: 44px; }
+}
+
+.o_field_service_form {
+    --field-ink: var(--work-ink);
+    --field-muted: var(--work-steel);
+    --field-teal: var(--work-water);
+    --field-border: var(--work-line);
+    .o_form_sheet_bg { background: var(--work-desk); }
+    .o_form_sheet { width: 100%; min-width: 0 !important; max-width: 1184px !important; padding: 24px; }
+    .o_form_statusbar .btn-primary { background: var(--work-water); border-color: var(--work-water); min-height: 44px; font-size: 15px; }
+    .o_field_service_card { padding: 24px; border: 1px solid var(--work-line); border-radius: 12px; box-shadow: none; min-width: 0; margin: 0; }
+    .o_field_service_card_heading { gap: 12px; margin-bottom: 20px; }
+    .o_field_service_card_heading h2 { font-size: 20px; font-weight: 600; }
+    .o_field_service_card_heading p, .o_field_help, .o_field_service_tip { font-size: 14px; line-height: 1.6; color: var(--work-steel); }
+    .o_field_service_icon { width: 32px; height: 32px; flex-basis: 32px; border-radius: 8px; font-size: 16px; }
+    .o_field_work_header { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(240px, .8fr); align-items: center; gap: 24px; padding: 24px; border-radius: 12px; box-shadow: none; }
+    .o_field_work_identity { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 12px; }
+    .o_field_service_eyebrow { margin: 0; font-size: 14px; color: var(--work-steel); letter-spacing: normal; }
+    .o_field_stage_pill { display: inline-block; width: auto; margin: 0; padding: 4px 12px; background: var(--work-water-tint); color: var(--work-water); border-radius: 8px; font-size: 14px; font-weight: 600; }
+    .o_field_service_heading h1 { margin: 0 0 8px; font-size: 28px; font-weight: 600; line-height: 1.3; }
+    .o_field_service_heading h1 input { font: inherit; color: var(--work-ink); }
+    .o_field_service_heading h1 .o_field_title_text { font: inherit; display: block; white-space: normal; overflow-wrap: anywhere; }
+    .o_field_work_header, .o_field_work_tabs, .o_field_service_notice, .o_field_workflow_details {
+        /*rtl:ignore*/
+        direction: rtl;
+    }
+    .o_field_work_context { display: block; width: 100%; margin: 0; color: var(--work-steel); font-size: 15px; white-space: normal; overflow-wrap: anywhere; }
+    .o_field_next_step { padding: 16px; background: var(--work-water-tint); border-inline-start: 3px solid var(--work-water); border-radius: 8px; }
+    .o_field_next_step strong { display: block; margin-bottom: 4px; color: var(--work-water); font-size: 14px; font-weight: 600; }
+    .o_field_next_step .o_field_widget { display: block; white-space: normal; margin: 0; color: var(--work-ink); line-height: 1.6; }
+    .o_field_workflow_details { margin: 12px 0 20px; min-width: 0; overflow-x: auto; }
+    .o_field_workflow_details summary { width: fit-content; min-height: 44px; padding: 8px 0; color: var(--work-steel); font-size: 14px; cursor: pointer; }
+    .o_field_workflow_details .o_statusbar_status { padding: 8px 0; }
+    .o_field_service_notice { padding: 16px; margin-bottom: 16px; font-size: 15px; }
+    .o_field_work_tabs > .o_notebook_headers { margin-bottom: 24px; }
+    .o_field_work_tabs .nav-tabs { flex-wrap: nowrap; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--work-line); }
+    .o_field_work_tabs .nav-item { flex: 0 0 auto; }
+    .o_field_work_tabs .nav-link { min-height: 48px; padding: 12px 20px; color: var(--work-steel); font-size: 16px; font-weight: 500; border: 0; border-bottom: 3px solid transparent; border-radius: 8px 8px 0 0; white-space: nowrap; }
+    .o_field_work_tabs .nav-link.active { color: var(--work-water); background: var(--work-water-tint); border-bottom-color: var(--work-water); font-weight: 600; }
+    .o_field_planning_grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 24px; }
+    .o_field_customer_card, .o_field_service_notes { grid-column: 1 / -1; }
+    .o_field_form_grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 24px; }
+    .o_field_form_grid_single { grid-template-columns: minmax(0, 1fr); }
+    .o_field_control { min-width: 0; }
+    .o_field_control_wide { grid-column: 1 / -1; }
+    .o_field_control > label { display: block; margin-bottom: 8px; white-space: normal; }
+    .o_field_control > .o_field_widget { display: block; width: 100%; max-width: 100%; min-width: 0; margin-bottom: 0; }
+    .o_field_service_card .o_input { min-height: 44px; padding: 10px 12px; background: var(--work-input); border-color: var(--work-line); border-radius: 8px; color: var(--work-ink); }
+    .o_field_service_card .o_field_monetary > div { min-height: 44px; padding: 10px 12px; background: var(--work-input); border-color: var(--work-line); border-radius: 8px; }
+    .o_field_service_card .o_field_monetary .o_input { min-height: 0; padding: 0; background: transparent; border: 0; box-shadow: none; }
+    .o_field_service_card .o_field_monetary > div > .o_input.position-absolute { inset-inline: 12px; }
+    .o_field_service_card .o_field_text textarea { min-height: 88px; }
+    .o_field_arrival_details { margin-top: 20px; }
+    .o_field_arrival_details summary, .o_field_service_notes summary { min-height: 44px; padding: 8px 0; font-size: 15px; font-weight: 500; color: var(--work-steel); cursor: pointer; }
+    .o_field_arrival_details[open] summary { margin-bottom: 12px; }
+    .o_field_finance_slot { display: grid; gap: 24px; }
+    .o_field_finance_card { border-top: 1px solid var(--work-line); padding-top: 24px; margin-top: 0; }
+    .o_field_finance_card > .o_field_control { max-width: 480px; margin: 20px 0 24px; }
+    .o_field_finance_metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; padding: 20px 0; }
+    .o_field_metric { min-width: 0; }
+    .o_field_metric > label { display: block; margin-bottom: 8px; color: var(--work-steel); font-size: 14px; }
+    .o_field_metric > .o_field_widget { display: block; width: 100%; color: var(--work-ink); font-size: 24px; font-weight: 600; }
+    .o_field_metric_outcome > .o_field_widget { font-size: 28px; }
+    .o_field_metric_percent { display: flex; align-items: baseline; gap: 4px; font-size: 24px; font-weight: 600; width: fit-content;
+        /*rtl:ignore*/
+        direction: ltr;
+    }
+    .o_field_metric_percent .o_field_widget { width: auto; margin: 0; }
+    .o_field_metric_note { font-size: 14px; color: var(--work-steel); margin-top: 8px; }
+    .o_field_metric_note .o_field_widget { width: auto; display: inline; }
+    .o_field_rate_number { display: inline-flex; unicode-bidi: isolate;
+        /*rtl:ignore*/
+        direction: ltr;
+    }
+    .o_field_pricing_number {
+        color: var(--work-ink); font-weight: 600; font-variant-numeric: tabular-nums;
+        /*rtl:ignore*/
+        text-align: right;
+    }
+    .o_field_money_summary { gap: 20px 24px; }
+    .o_field_money_summary .o_field_pricing_number { font-size: 22px; }
+    .o_field_empty_ledger { padding: 16px; margin: 20px 0; background: var(--work-input); border-radius: 8px; color: var(--work-steel); font-size: 15px; }
+    .o_field_ledger { margin: 20px 0; max-width: 100%; }
+    .o_field_ledger .o_list_table tbody > tr:not([class]) { display: none; }
+    .o_field_payment_meta { font-size: 15px; gap: 8px; }
+    .o_field_payment_meta strong { font-size: 20px; color: var(--work-ink); }
+    .o_field_payment_cards .o_kanban_record:not(.o_kanban_ghost) { border-radius: 8px; border-color: var(--work-line); }
+    .o_field_service_notes .o_field_widget { margin-top: 12px; }
+    .o_field_report_panel .o_field_image img { max-height: 360px; }
+
+    @media (max-width: 991px) {
+        .o_field_work_header, .o_field_planning_grid { grid-template-columns: minmax(0, 1fr); }
+        .o_field_customer_card, .o_field_service_notes { grid-column: auto; }
+        .o_field_work_header { gap: 20px; }
+    }
+    @media (max-width: 767px) {
+        .o_form_sheet { padding: 16px; }
+        .o_field_form_grid, .o_field_finance_metrics { grid-template-columns: minmax(0, 1fr); }
+        .o_field_control_wide { grid-column: auto; }
+        .o_field_work_tabs .nav-link { padding: 12px; font-size: 14px; }
+        .o_field_service_mobile_actions { padding: 8px 0; background: var(--work-desk); }
+        .o_field_service_mobile_actions .btn { font-size: 14px; }
+        .o_field_service_mobile_actions .btn-primary { flex: 1 1 auto !important; }
+        .o_field_more_actions { flex: 0 0 auto; position: relative; }
+        .o_field_more_actions summary { min-height: 44px; padding: 10px 12px; border: 1px solid var(--work-line); border-radius: 8px; cursor: pointer; }
+        .o_field_more_actions_panel { display: grid; gap: 8px; position: absolute; inset-inline-end: 0; top: 100%; min-width: 200px; padding: 12px; background: var(--work-paper); border: 1px solid var(--work-line); border-radius: 8px; z-index: 8; }
+        .o_field_more_actions:not([open]) .o_field_more_actions_panel { display: none; }
+    }
+    @media (max-width: 575px) {
+        .o_form_sheet { padding: 12px; }
+        .o_field_service_card, .o_field_work_header { padding: 20px; }
+        .o_field_work_header { padding: 16px; gap: 12px; }
+        .o_field_next_step { padding: 12px; }
+        .o_field_next_step .o_field_widget { font-size: 14px; }
+        .o_field_service_heading h1 { font-size: 24px; }
+        .o_field_work_tabs > .o_notebook_headers { margin-bottom: 16px; }
+        .o_field_form_grid, .o_field_planning_grid { gap: 20px; }
+    }
+}
+
+.o_field_portal {
+    /*rtl:ignore*/
+    direction: rtl;
+    .o_field_panel { border-color: var(--work-line); border-radius: 12px; box-shadow: none; }
+    .o_field_job_details dt { color: var(--work-steel); font-weight: 500; }
+    .o_field_job_details dd { color: var(--work-ink); font-size: 16px; }
+    .o_field_portal_actions { background: var(--work-desk); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .o_field_ui *, .o_field_ui *::before, .o_field_ui *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}

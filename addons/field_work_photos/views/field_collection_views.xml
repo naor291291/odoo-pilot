@@ -114,14 +114,14 @@
     <record id="view_field_collection_list" model="ir.ui.view">
         <field name="name">crm.lead.field.collection.list</field><field name="model">crm.lead</field>
         <field name="arch" type="xml"><list string="ממתין לגבייה וסגירה" create="false" delete="false" class="o_field_ui">
-            <field name="field_pricing_currency_id" column_invisible="True"/><field name="name"/><field name="partner_id"/>
-            <field name="field_customer_due" sum="סך לגבייה"/><field name="field_customer_paid" sum="סך שהתקבל"/><field name="field_customer_balance" sum="סך יתרות"/>
-            <field name="field_collection_status" widget="badge"/><field name="field_report_approved_at" string="אישור ביצוע"/>
+            <field name="field_pricing_currency_id" column_invisible="True"/><field name="name" string="שם העבודה"/><field name="partner_id"/>
+            <field name="field_customer_due" string="סכום כולל" sum="סך לגבייה"/><field name="field_customer_paid" string="התקבל" sum="סך שהתקבל"/><field name="field_customer_balance" string="יתרה לגבייה" sum="סך יתרות"/>
+            <field name="field_collection_status" widget="badge"/><field name="field_report_approved_at" string="אושר בתאריך" widget="date"/>
         </list></field>
     </record>
     <record id="view_field_collection_search" model="ir.ui.view">
         <field name="name">crm.lead.field.collection.search</field><field name="model">crm.lead</field>
-        <field name="arch" type="xml"><search><field name="name"/><field name="partner_id"/>
+        <field name="arch" type="xml"><search><field name="name" string="שם העבודה"/><field name="partner_id"/>
             <filter name="outstanding" string="יתרה פתוחה" domain="[('field_customer_balance', '&gt;', 0)]"/>
             <filter name="unset" string="נדרש סכום כולל" domain="[('field_collection_status', '=', 'unset')]"/>
             <filter name="ready" string="מוכן לסגירה" domain="[('field_collection_status', '=', 'paid')]"/>
@@ -139,9 +139,9 @@
     <record id="view_field_payout_list" model="ir.ui.view">
         <field name="name">crm.lead.field.payout.list</field><field name="model">crm.lead</field>
         <field name="arch" type="xml"><list string="התחשבנות קבלנים" create="false" delete="false" class="o_field_ui">
-            <field name="field_pricing_currency_id" column_invisible="True"/><field name="field_contractor_id"/><field name="name"/><field name="stage_id"/>
-            <field name="field_contractor_cost" string="אומדן לפני מע״מ"/><field name="field_contractor_due" sum="סה״כ לתשלום"/>
-            <field name="field_contractor_paid" sum="סה״כ שולם"/><field name="field_contractor_balance" sum="סה״כ יתרות"/><field name="field_payout_status" widget="badge"/>
+            <field name="field_pricing_currency_id" column_invisible="True"/><field name="field_contractor_id"/><field name="name" string="שם העבודה"/><field name="stage_id"/>
+            <field name="field_contractor_cost" string="אומדן נטו"/><field name="field_contractor_due" string="לתשלום כולל" sum="סה״כ לתשלום"/>
+            <field name="field_contractor_paid" string="שולם" sum="סה״כ שולם"/><field name="field_contractor_balance" string="יתרה לקבלן" sum="סה״כ יתרות"/><field name="field_payout_status" widget="badge"/>
         </list></field>
     </record>
     <record id="view_field_payout_search" model="ir.ui.view">

@@ -104,3 +104,45 @@ class TestFieldWorkspace(TransactionCase):
         views = self.env.ref('field_work_photos.action_field_contractor_rates').view_ids
         self.assertIn(self.env.ref('field_work_photos.view_field_partner_rates_list'), views.view_id)
         self.assertIn(self.env.ref('field_work_photos.view_field_partner_rates_form'), views.view_id)
+
+    def test_workspace_focus_follows_planning_execution_and_collection(self):
+        draft = self.env['crm.lead'].with_user(self.ops).create({'name': 'Plan', 'is_field_service': True})
+        self.assertEqual(draft.action_open_field_workspace()['views'][0][0],
+                         self.env.ref('field_work_photos.view_field_lead_form').id)
+        lead = self.lead()
+        self.assertEqual(lead.action_open_field_workspace()['views'][0][0],
+                         self.env.ref('field_work_photos.view_field_lead_execution_focus').id)
+        lead.write({'field_report_before_image': self.photo, 'field_report_after_image': self.photo})
+        lead.action_submit_field_report()
+        action = lead.action_approve_field_report()
+        self.assertEqual(action['views'][0][0], self.env.ref('field_work_photos.view_field_lead_collection_focus').id)
+        self.assertEqual(action['res_id'], lead.id)
+        from lxml import etree
+        focused_arch = etree.fromstring(lead.get_view(view_id=action['views'][0][0], view_type='form')['arch'])
+        self.assertTrue(focused_arch.xpath('//page[@name="field_collection" and @autofocus="autofocus"]'))
+        self.assertEqual(lead.field_dispatch_code, 'completed')
+
+    def test_private_finance_focus_and_portal_workspace_access(self):
+        lead = self.lead()
+        with self.assertRaises(AccessError), self.cr.savepoint():
+            lead._field_workspace_action(focus='finance')
+        with self.assertRaises(AccessError), self.cr.savepoint():
+            lead.with_user(self.contractor).action_open_field_workspace()
+        owner = lead.with_user(self.env.ref('base.user_admin'))
+        self.assertEqual(owner._field_workspace_action(focus='finance')['views'][0][0],
+                         self.env.ref('field_work_photos.view_field_lead_finance_focus').id)
+
+    def test_workspace_rejects_ordinary_crm_records(self):
+        lead = self.env['crm.lead'].with_user(self.ops).create({'name': 'Ordinary sales record'})
+        with self.assertRaises(ValidationError), self.cr.savepoint():
+            lead.action_open_field_workspace()
+
+    def test_tabs_preserve_customer_collection_and_hide_owner_finances(self):
+        from lxml import etree
+        view_id = self.env.ref('field_work_photos.view_field_lead_form').id
+        arch = etree.fromstring(self.env['crm.lead'].with_user(self.ops).get_view(view_id=view_id, view_type='form')['arch'])
+        self.assertTrue(arch.xpath('//page[@name="field_planning"]'))
+        self.assertTrue(arch.xpath('//page[@name="field_collection"]'))
+        self.assertFalse(arch.xpath('//page[@name="field_finance"]'))
+        owner_arch = etree.fromstring(self.env['crm.lead'].with_user(self.env.ref('base.user_admin')).get_view(view_id=view_id, view_type='form')['arch'])
+        self.assertTrue(owner_arch.xpath('//page[@name="field_finance"]'))

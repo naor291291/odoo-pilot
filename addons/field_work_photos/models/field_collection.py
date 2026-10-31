@@ -297,7 +297,7 @@ class FieldWorkPayment(models.Model):
         # Owner-only payout details must never enter the shared CRM chatter.
         if self.kind == 'customer':
             lead.message_post(body='בוטל רישום תקבול מלקוח. הסיבה ופרטי הביטול שמורים ברשומת התשלום.')
-        return lead._field_workspace_action()
+        return lead._field_workspace_action(focus='collection' if self.kind == 'customer' else 'finance')
 
 
 class FieldWorkPaymentRegister(models.TransientModel):
@@ -328,7 +328,7 @@ class FieldWorkPaymentRegister(models.TransientModel):
                 'reference': self.reference, 'note': self.note, 'request_key': self.request_key})
         elif existing.lead_id != self.lead_id or existing.kind != self.kind:
             raise ValidationError('חלונית התשלום אינה תואמת לעבודה. יש לפתוח אותה מחדש.')
-        return self.lead_id._field_workspace_action()
+        return self.lead_id._field_workspace_action(focus='collection' if self.kind == 'customer' else 'finance')
 
 
 class FieldWorkPaymentCancel(models.TransientModel):
