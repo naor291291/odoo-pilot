@@ -118,6 +118,9 @@ admin.write({{'login': {login['login']!r}, 'password': {login['password']!r}, 'l
 # base.user_admin is noupdate in existing databases, so XML alone cannot grant
 # the new owner role during an upgrade. This pilot login is always the owner.
 admin.write({{'groups_id': [(4, env.ref('field_work_photos.group_field_finance').id)]}})
+# A truthful application identity for the disposable pilot, only for Odoo's known default.
+if admin.company_id.name == 'My Company':
+    admin.company_id.write({{'name': 'עבודות שטח — פיילוט'}})
 Project = env['project.project']
 project = Project.search([('name', '=', 'עבודות שטח - פיילוט')], limit=1)
 if not project:

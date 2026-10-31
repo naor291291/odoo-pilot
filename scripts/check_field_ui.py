@@ -273,6 +273,7 @@ with sync_playwright() as playwright, capture_on_failure():
     expect(portal.locator('[data-kind="before"] [data-select-photo]')).to_be_focused()
     portal.locator('#field_before_image').set_input_files({'name': 'invalid.txt', 'mimeType': 'text/plain', 'buffer': b'not an image'})
     expect(portal.locator('#photo-error-before')).to_contain_text('JPG')
+    expect(portal.locator('[data-kind="before"] [data-select-photo]')).to_have_attribute('aria-invalid', 'true')
     with portal.expect_file_chooser() as chooser:
         portal.get_by_role('button', name='הוספת תמונות לפני ביצוע', exact=True).click()
     chooser.value.set_files([{'name': f'before-{n}.png', 'mimeType': 'image/png', 'buffer': png((200, 50, 20))} for n in range(2)])

@@ -1,4 +1,7 @@
 """Native, permission-aware entry points for the field-work application."""
+from datetime import datetime, time, timedelta
+import pytz
+
 from odoo import api, fields, models
 from odoo.exceptions import AccessError
 
@@ -20,6 +23,54 @@ class FieldWorkDashboard(models.TransientModel):
     currency_id = fields.Many2one('res.currency', default=lambda self: self.env.ref('base.ILS'), readonly=True)
     collection_balance = fields.Monetary(compute='_compute_finance', currency_field='currency_id', groups=FINANCE)
     contractor_balance = fields.Monetary(compute='_compute_finance', currency_field='currency_id', groups=FINANCE)
+
+    attention_ids = fields.Many2many('crm.lead', compute='_compute_attention')
+    attention_count = fields.Integer(compute='_compute_attention')
+
+    @api.model
+    def _today_bounds(self):
+        # Dates are the viewer's local day; stored appointments remain UTC.
+        zone = pytz.timezone(self.env.context.get('tz') or self.env.user.tz or 'UTC')
+        day = fields.Date.context_today(self)
+        start = zone.localize(datetime.combine(day, time.min)).astimezone(pytz.UTC).replace(tzinfo=None)
+        end = zone.localize(datetime.combine(day + timedelta(days=1), time.min)).astimezone(pytz.UTC).replace(tzinfo=None)
+        return start, end
+
+    def _attention_domain(self):
+        _, end = self._today_bounds()
+        return [('is_field_service', '=', True), '|',
+                ('field_task_ids.field_review_state', '=', 'pending'), '&',
+                ('field_dispatch_code', '=', 'field'), ('field_visit_at', '<', end)]
+
+    @api.depends_context('uid', 'allowed_company_ids', 'tz')
+    def _compute_attention(self):
+        self._require_ops()
+        Lead = self.env['crm.lead']
+        domain = self._attention_domain()
+        # Review first, then the oldest scheduled work. No sudo/finance fields.
+        pending = Lead.search([('is_field_service', '=', True),
+                               ('field_task_ids.field_review_state', '=', 'pending')],
+                              order='field_visit_at, id', limit=6)
+        remaining = Lead.search(domain + [('id', 'not in', pending.ids)],
+                                order='field_visit_at, id', limit=max(1, 6 - len(pending))) if len(pending) < 6 else Lead.browse()
+        for dashboard in self:
+            dashboard.attention_ids = pending | remaining
+            dashboard.attention_count = Lead.search_count(domain)
+
+    def action_attention(self):
+        return self._leads(self._attention_domain())
+
+    def action_today(self):
+        self._require_ops()
+        start, end = self._today_bounds()
+        action = self.env['ir.actions.actions']._for_xml_id('field_work_photos.action_field_tasks')
+        action.update(name='העבודות להיום', view_mode='kanban,calendar,list,form',
+                      views=[(self.env.ref('field_work_photos.view_field_task_agenda').id, 'kanban'),
+                             (self.env.ref('field_work_photos.view_field_task_calendar').id, 'calendar'),
+                             (self.env.ref('field_work_photos.view_field_task_list').id, 'list'),
+                             (self.env.ref('field_work_photos.view_field_task_form').id, 'form')], domain=[('field_service_lead_id', '!=', False),
+                      ('state', '!=', '1_canceled'), ('field_visit_at', '>=', start), ('field_visit_at', '<', end)])
+        return action
 
     def _require_ops(self):
         if not self.env.user.has_group(OPS):

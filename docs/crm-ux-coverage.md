@@ -83,3 +83,8 @@ Implementation verified at commit `196032d4d67d8ccad1e1ea0c6610b61d9e9e23ec` in 
 [Download the evidence archive](https://github.com/naor291291/odoo-pilot/actions/runs/41210874114/artifacts/13046347621). All screenshots use disposable synthetic data. Before images are PR #11 (`7ee7394`) rates/portal/work cards; native client/task references are explicitly identified as unchanged original screens captured in the same run. New hub/client/task views are not presented as if an equivalent custom before screen existed.
 
 Selected screenshots were visually inspected for work/financial forms, owner and operations hubs, client/task phone layouts, rate cards and native validation, calendar phone/popup/dialog, guide, contractor report/review and empty states. The review caught and corrected the missing mobile primary action, oversized portal buttons, hidden native customer arrow, empty mobile calendar/sidebar, icon-font replacement, clipped mobile event title and invented appointment duration. Exact per-capture widths and files remain in the machine-readable checklist; shared CSS is not counted as independent coverage of unvisited screens.
+
+
+## Subsequent clarity refinement
+
+The 31 October 2026 follow-up starts from merged upstream `main` (`02d74f2`). See [the separate clarity audit](crm-clarity-audit.md) for current findings, affected screens, skill provenance and new verification results. Historical results above belong to PR #12; they are not evidence that this follow-up passed.

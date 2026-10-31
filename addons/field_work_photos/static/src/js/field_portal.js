@@ -120,6 +120,7 @@ function setupFieldReports() {
             input.tabIndex = -1;
             input.setAttribute('aria-hidden', 'true');
             select.hidden = false;
+            select.setAttribute('aria-describedby', error.id);
             select.addEventListener('click', () => {
                 // The retained File objects are restored after the next choice.
                 input.value = '';
@@ -134,6 +135,7 @@ function setupFieldReports() {
                 error.textContent = invalid ? 'יש לבחור JPG, PNG או WebP בגודל של עד 12MB לתמונה.'
                     : tooMany ? 'אפשר לשמור עד 5 תמונות באזור הזה. הסר תמונה לפני הוספה נוספת.' : '';
                 input.setAttribute('aria-invalid', error.hidden ? 'false' : 'true');
+                select.setAttribute('aria-invalid', error.hidden ? 'false' : 'true');
                 if (!invalid && !tooMany) gallery.files.push(...files);
                 syncFiles();
                 render();
@@ -193,7 +195,7 @@ function setupFieldReports() {
                 form.querySelector('[data-review-description]').textContent = result.value === 'completed' ? summary.value : reason.value;
                 form.querySelector('[data-review-photos]').textContent = `${galleries.map(count)[0]} תמונות לפני · ${galleries.map(count)[1]} תמונות אחרי`;
             }
-            history.replaceState(null, '', `${location.pathname}${location.search}#report-step-${step}`);
+            // A step is unsaved DOM state, not a restorable URL or persisted upload.
             if (focus) panels.find(panel => Number(panel.dataset.wizardPanel) === step).querySelector('[data-wizard-heading]').focus();
         };
         if (nav) {

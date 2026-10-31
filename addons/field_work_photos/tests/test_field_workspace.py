@@ -1,4 +1,6 @@
 import base64
+from datetime import timedelta
+import pytz
 from io import BytesIO
 from PIL import Image
 
@@ -224,3 +226,48 @@ class TestFieldWorkspace(TransactionCase):
         self.assertFalse(arch.xpath('//page[@name="field_finance"]'))
         owner_arch = etree.fromstring(self.env['crm.lead'].with_user(self.env.ref('base.user_admin')).get_view(view_id=view_id, view_type='form')['arch'])
         self.assertTrue(owner_arch.xpath('//page[@name="field_finance"]'))
+
+    def test_today_agenda_uses_viewer_day_and_excludes_adjacent_days(self):
+        dashboard = self.env['field.work.dashboard'].with_user(self.ops).with_context(tz='Asia/Jerusalem')
+        start, end = dashboard._today_bounds()
+        zone = pytz.timezone('Asia/Jerusalem')
+        self.assertEqual(pytz.UTC.localize(start).astimezone(zone).date(), fields.Date.context_today(dashboard))
+        self.assertEqual(pytz.UTC.localize(start).astimezone(zone).hour, 0)
+        work = self.lead()
+        action = dashboard.action_today()
+        self.assertEqual(action['views'][0][1], 'kanban')
+        Task = self.env['project.task'].with_user(self.ops)
+        # Update through the governed lead only, preserving task/lead consistency.
+        for stamp, included in [(start - timedelta(seconds=1), False), (start, True),
+                                (end - timedelta(seconds=1), True), (end, False)]:
+            work.field_visit_at = stamp
+            self.assertEqual(work.field_task_ids.id in Task.search(action['domain']).ids, included)
+
+    def test_hub_attention_contains_due_and_future_pending_but_not_future_drafts(self):
+        dashboard = self.env['field.work.dashboard'].with_user(self.ops).create({})
+        _, end = dashboard._today_bounds()
+        due = self.lead()
+        future = self.lead()
+        future.field_visit_at = end + timedelta(hours=1)
+        self.assertIn(due, self.env['crm.lead'].with_user(self.ops).search(dashboard._attention_domain()))
+        self.assertNotIn(future, self.env['crm.lead'].with_user(self.ops).search(dashboard._attention_domain()))
+        future.write({'field_report_before_image': self.photo, 'field_report_after_image': self.photo})
+        future.action_submit_field_report()
+        dashboard.invalidate_recordset()
+        self.assertIn(future.id, dashboard.attention_ids.ids)
+        self.assertGreaterEqual(dashboard.attention_count, 2)
+        self.assertEqual(dashboard.attention_ids[0].id, future.id)
+        self.assertEqual(future.field_hub_action, 'בדיקת הדיווח')
+        self.assertEqual(future.action_open_field_workspace()['res_id'], future.id)
+        with self.assertRaises(AccessError):
+            self.env['field.work.dashboard'].with_user(self.contractor).action_today()
+
+    def test_rate_example_uses_live_percentage_and_remains_private(self):
+        partner = self.contractor.partner_id
+        partner.field_rate_medium = 62.5
+        self.assertIn('62.5%', partner.field_rate_example)
+        self.assertIn('625.00', partner.field_rate_example)
+        partner.field_rate_medium = 60
+        self.assertIn('600.00', partner.field_rate_example)
+        with self.assertRaises(AccessError):
+            partner.with_user(self.ops).read(['field_rate_example'])

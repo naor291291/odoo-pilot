@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <template id="field_portal_brand" inherit_id="portal.frontend_layout" name="Field portal identity">
+        <xpath expr="//a[hasclass('navbar-brand')]/img" position="replace">
+            <t t-if="request.httprequest.path.startswith('/my/field-work') and res_company.uses_default_logo"><span class="o_field_portal_brand" t-out="res_company.name if res_company.name != 'My Company' else 'עבודות שטח'"/></t>
+            <img t-else="" t-att-src="'/logo.png?company=%s' % res_company.id" t-att-alt="res_company.name" t-att-title="res_company.name"/>
+        </xpath>
+        <xpath expr="//*[hasclass('o_footer_copyright_name')]/span" position="replace"><span itemprop="name" t-out="'עבודות שטח' if request.httprequest.path.startswith('/my/field-work') and res_company.name == 'My Company' else res_company.name"/></xpath>
+    </template>
     <template id="portal_field_work_home" inherit_id="portal.portal_my_home" name="עבודות השטח שלי">
         <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
             <t groups="field_work_photos.group_field_contractor" t-call="portal.portal_docs_entry">
@@ -38,30 +45,24 @@
         <t t-call="portal.portal_layout">
             <div class="container o_field_ui o_field_portal py-4" dir="rtl"><a href="#field-main" class="o_field_skip">דילוג לתוכן העבודה</a><span id="field-main" tabindex="-1"/>
                 <a href="/my/field-work" class="o_field_back">→ חזרה לעבודות שלי</a>
-                <header class="o_field_panel o_field_portal_heading">
-                    <p class="o_field_eyebrow">עבודת שטח</p><h1 t-out="task.name"/>
-                    <span class="o_field_status" t-out="'בוטלה' if task.state == '1_canceled' else dict(task._fields['field_review_state'].selection).get(task.field_review_state)"/>
+                <header class="o_field_portal_heading o_field_job_brief">
+                    <h1 t-out="task.name"/><span class="o_field_status" t-out="'בוטלה' if task.state == '1_canceled' else dict(task._fields['field_review_state'].selection).get(task.field_review_state)"/>
+                    <p><strong t-out="task.field_customer_name"/> · <span t-field="task.field_visit_at" t-options="{'widget': 'datetime', 'hide_seconds': True}"/></p>
+                    <p t-out="task.field_site_address"/>
+                    <p class="o_field_work_description" t-out="(task.field_work_description or '')[:140] + ('…' if len(task.field_work_description or '') &gt; 140 else '')"/>
+                    <div class="o_field_contact_actions"><a t-if="task.field_customer_phone" t-att-href="phone_url" class="btn btn-outline-primary">חיוג ללקוח</a><a t-if="task.field_site_address" t-att-href="navigation_url" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary">ניווט לכתובת</a><a t-if="editable" href="#field-report" class="btn btn-link">מעבר לדיווח</a></div>
+                    <details class="o_field_job_more"><summary>תיאור מלא ופרטי הגעה</summary>
+                        <p class="o_field_work_description" t-out="task.field_work_description"/>
+                        <dl class="o_field_job_details"><div t-if="task.field_site_contact"><dt>איש קשר בשטח</dt><dd t-out="task.field_site_contact"/></div><div t-if="task.field_site_unit"><dt>דירה / קומה</dt><dd t-out="task.field_site_unit"/></div><div><dt>טלפון</dt><dd><bdi t-out="task.field_customer_phone"/></dd></div></dl>
+                        <p t-if="task.field_access_instructions" class="o_field_work_description"><strong>הוראות כניסה והגעה: </strong><t t-out="task.field_access_instructions"/></p>
+                    </details>
                 </header>
-                <div t-if="error" class="alert alert-danger o_field_message" role="alert"><strong t-out="error"/><p>הקבצים שנבחרו בבקשה הזאת לא נשמרו. בדוק ובחר אותם מחדש.</p></div>
+                <div t-if="error" class="alert alert-danger o_field_message" role="alert"><strong t-out="error"/><p>הקבצים שנבחרו בבקשה הזאת לא נשמרו. בדקו ובחרו אותם מחדש.</p></div>
                 <div t-if="notice and not error" class="o_field_message o_field_message_success" role="status" t-out="notice"/>
-                <section class="o_field_panel">
-                    <h2>פרטי העבודה</h2>
-                    <dl class="o_field_job_details">
-                        <div><dt>לקוח</dt><dd t-out="task.field_customer_name"/></div>
-                        <div><dt>מועד ביצוע</dt><dd><span t-field="task.field_visit_at" t-options="{'widget': 'datetime', 'hide_seconds': True}"/></dd></div>
-                        <div><dt>כתובת</dt><dd t-out="task.field_site_address"/></div>
-                        <div t-if="task.field_site_contact"><dt>איש קשר בשטח</dt><dd t-out="task.field_site_contact"/></div>
-                        <div t-if="task.field_site_unit"><dt>דירה / קומה</dt><dd t-out="task.field_site_unit"/></div>
-                        <div><dt>טלפון</dt><dd><bdi t-out="task.field_customer_phone"/></dd></div>
-                    </dl>
-                    <div class="o_field_contact_actions"><a t-if="task.field_customer_phone" t-att-href="phone_url" class="btn btn-outline-primary">חיוג ללקוח</a><a t-if="task.field_site_address" t-att-href="navigation_url" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary">ניווט לכתובת</a></div>
-                    <p t-if="task.field_access_instructions" class="o_field_work_description"><strong>הוראות כניסה והגעה: </strong><t t-out="task.field_access_instructions"/></p>
-                    <p class="o_field_work_description" t-out="task.field_work_description"/>
-                </section>
                 <div t-if="task.field_review_state == 'pending'" class="o_field_message" role="status">הדיווח ממתין לבדיקת התפעול. הדיווח והתמונות נעולים בזמן הבדיקה.</div>
                 <div t-if="task.field_review_state == 'approved'" class="o_field_message o_field_message_success" role="status">הביצוע אושר על ידי התפעול.</div>
                 <div t-if="task.field_review_state == 'changes_requested'" class="o_field_message o_field_message_warning" role="status"><strong t-out="'הנחיות להמשך טיפול' if task.field_visit_result in ('followup','not_done') else 'מה צריך לתקן?'"/><p t-out="task.field_review_note"/></div>
-                <form t-att-action="'/my/field-work/%s/report' % task.id" method="post" enctype="multipart/form-data" data-field-report="1" class="o_field_report_form">
+                <form t-att-action="'/my/field-work/%s/report' % task.id" method="post" enctype="multipart/form-data" id="field-report" data-field-report="1" class="o_field_report_form">
                     <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
                     <nav t-if="editable" data-wizard-nav="1" aria-label="שלבי הדיווח" hidden="hidden"><ol class="o_field_wizard_nav"><li><button type="button" data-wizard-go="1">1. דיווח הביקור</button></li><li><button type="button" data-wizard-go="2">2. תמונות</button></li><li><button type="button" data-wizard-go="3">3. בדיקה ושליחה</button></li></ol></nav>
                     <p t-if="editable" data-report-step-note="1" role="status" aria-live="polite" aria-atomic="true"/>
@@ -86,11 +87,11 @@
                             <textarea t-if="editable" id="field_visit_reason" name="field_visit_reason" rows="3" maxlength="4000" class="form-control" autocomplete="off" placeholder="למשל: הלקוח לא היה בבית; נדרש תיאום ביקור נוסף" t-out="report['field_visit_reason']"/>
                             <p t-else="" class="o_field_work_description" t-out="task.field_visit_reason"/>
                         </div>
-                        <div class="mb-3">
+                        <details class="o_field_optional_notes"><summary>הערות נוספות — רשות</summary>
                             <label for="field_visit_notes" class="form-label">הערות נוספות (רשות)</label>
                             <textarea t-if="editable" id="field_visit_notes" name="field_visit_notes" rows="2" maxlength="4000" class="form-control" autocomplete="off" t-out="report['field_visit_notes']"/>
                             <p t-else="" class="o_field_work_description" t-out="task.field_visit_notes or '—'"/>
-                        </div>
+                        </details>
                         <p t-if="editable" class="o_field_help">ביקור שלא הושלם יישלח לתפעול להמשך טיפול ולא יסמן את העבודה כהושלמה.</p>
                     </section>
                     <section class="o_field_panel" data-wizard-panel="2">

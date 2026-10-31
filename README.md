@@ -258,3 +258,8 @@ python3 scripts/pilot.py test
 בפורטל הקבלן הדיווח מחולק ל־**דיווח הביקור → תמונות → בדיקה ושליחה**. מעבר קדימה בודק את דרישות השלב, מציג סיכום שגיאות מקושר ומסביר ליד השדה מה חסר. חזרה אינה מוחקת ערכים או קבצים שנבחרו; שמירת טיוטה זמינה בכל שלב. קבצים חדשים נשמרים רק לאחר תגובת השרת לשמירה או להגשה.
 
 כללי הרכיבים, הצבעים, הטיפוגרפיה, הריווח וה־RTL נשמרים ב־[.interface-design/system.md](.interface-design/system.md). מיפוי כל מסך, ממצאי הביקורת, גבולות הכיסוי והפערים מול האפיון נמצאים ב־[docs/crm-ux-coverage.md](docs/crm-ux-coverage.md). בדיקות המסכים הנוספות רצות ב־`scripts/check_crm_ui.py` אחרי תהליך הדפדפן המלא. נתוני הבדיקה מלאכותיים; אין בבדיקות שליחת מסמכים או קריאה ל־Morning חי.
+
+
+### Pilot identity
+
+The disposable pilot setup replaces only the exact default company name `My Company` with `עבודות שטח — פיילוט`. Existing business names and custom logos are preserved. Field-portal pages show a text application identity instead of Odoo's default “Your logo”; a configured real logo remains in use. Set the actual business identity in Odoo company settings when it is known.
