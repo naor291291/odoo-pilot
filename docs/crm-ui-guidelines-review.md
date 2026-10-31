@@ -44,3 +44,8 @@ Rules fetched from Vercel's `web-interface-guidelines/command.md`, SHA `3eb3a212
 Odoo owns generic toolbar/search/dialog/list/calendar keyboard behavior, route state and widgets; these were reused rather than patched. Backend notebook selection is expressed through focused native actions, not a new custom URL/tab router. Hebrew has no Title Case; labels use normal Hebrew sentence forms. Native Odoo settings/users/project/CRM entries receive read-only smoke coverage, not a claim that every administrative setting and native widget was redesigned.
 
 Automated browser checks cover visible client labels, queue touch targets, RTL direction, viewport overflow, keyboard activation, file/review errors, Escape/focus return, native required-name validation, rate bounds, draft persistence and role visibility. Physical-device camera/network interruption and real assistive technology remain manual verification items. Exact completed screens and CI results are recorded separately in `crm-ux-coverage.md` and the generated `coverage.json`.
+
+
+## 31 October clarity pass
+
+Reviewed the current Vercel rules against the follow-up native XML, scoped SCSS and portal JS; see [the evidence-labelled audit](crm-clarity-audit.md). The visible upload picker now carries the file error association and invalid state, including after clearing wizard errors. New disclosures use native keyboard behavior and retain persistent labels. Default branding is route-aware and does not replace a real logo. Agenda rows/cards retain full work names and addresses and offer explicit operational buttons. Focus, 44px targets, RTL-ignore and numerical isolation remain shared; no detector or assistive-technology pass is inferred from these source checks.

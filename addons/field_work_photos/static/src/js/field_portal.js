@@ -17,6 +17,11 @@ function setupFieldReports() {
             for (const input of form.querySelectorAll('[data-wizard-invalid]')) {
                 input.removeAttribute('aria-invalid'); input.classList.remove('is-invalid');
                 input.removeAttribute('data-wizard-invalid'); input.removeAttribute('aria-describedby');
+                const fileError = input.matches('[data-select-photo]') && input.closest('.o_field_gallery')?.querySelector('[data-file-error]');
+                if (fileError) {
+                    input.setAttribute('aria-describedby', fileError.id);
+                    if (!fileError.hidden) input.setAttribute('aria-invalid', 'true');
+                }
             }
         };
         const showErrors = errors => {
