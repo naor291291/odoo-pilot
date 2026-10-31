@@ -40,3 +40,8 @@ The image change intentionally recompresses new JPEG/WebP and discards metadata/
 ## Recommendations and methodology limits
 
 Merge only after reviewing the exact branch results and remaining risks. Real-data use remains gated by dependency/vendor triage and an actual hardened hosting/recovery/account plan. The skill workflow was performed through manual source/history/caller tracing and adversarial fixtures, not an installed Trail of Bits command or an independent second reviewer. No subagent or full framework security audit is claimed. Confidence is higher for reproduced custom-code defects and regression outcomes than for untested production infrastructure or third-party components.
+
+
+## Final disposition
+
+The corrected executable head `9adc18ccf89c1ecda7594689335b821d51b246e3` passed official-image integration, all 187 native methods, startup/restart, actual Chrome/PDF/runtime and separate-DB restore in workflow `41232041040`. Security workflow `41232040829` passed source/history gates while visibly retaining dependency advisory findings. The first CI recovery failure is preserved in `verification.md`, along with the matching-client correction and rerun evidence. **Ready for code review for the synthetic pilot; not approved for real-data deployment.** Subsequent documentation-only changes do not alter the tested executable source.
