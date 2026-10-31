@@ -16,7 +16,7 @@
     .o_field_compact_progress .o_field_widget { width: auto; margin: 0; }
     .o_field_compact_progress > .o_field_widget { min-width: 120px; max-width: 180px; flex: 1; }
     .o_field_compact_progress .o_progress { min-width: 70px; height: 6px; }
-    .o_field_compact_progress .o_progressbar_value { display: none; }
+    .o_field_compact_progress .o_progressbar_value { display: none !important; }
     .o_field_hub_header, .o_field_hub_grid, .o_field_hub_balances, .o_field_guide_grid, .o_field_contact_form .o_form_sheet, .o_field_task_form .o_form_sheet, .o_field_rates_form .o_form_sheet {
         /*rtl:ignore*/
         direction: rtl;

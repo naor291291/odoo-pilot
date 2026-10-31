@@ -1,5 +1,6 @@
 """Run the real Odoo form in desktop/mobile Chrome against disposable CI data."""
 import json
+from contextlib import contextmanager
 import os
 import re
 import secrets
@@ -13,7 +14,22 @@ OUTPUT = ROOT / '.local-data' / 'ui-checks'
 OUTPUT.mkdir(parents=True, exist_ok=True)
 login = json.loads((ROOT / '.local-data' / 'credentials.json').read_text())
 
-with sync_playwright() as playwright:
+@contextmanager
+def capture_on_failure():
+    try:
+        yield
+    except Exception:
+        active_browser = globals().get('browser')
+        if active_browser:
+            for context_index, context in enumerate(active_browser.contexts):
+                for page_index, failed_page in enumerate(context.pages):
+                    try:
+                        failed_page.screenshot(path=str(OUTPUT / f'failure-{context_index}-{page_index}.png'), full_page=True)
+                    except Exception:
+                        pass
+        raise
+
+with sync_playwright() as playwright, capture_on_failure():
     browser = playwright.chromium.launch(executable_path=os.environ['CHROME_BIN'], args=['--no-sandbox'])
     context = browser.new_context(viewport={'width': 1440, 'height': 1100}, locale='he-IL')
     for attempt in range(120):
@@ -172,7 +188,13 @@ with sync_playwright() as playwright:
         }""")
         assert geometry['frames'] == 1, f'Duplicate monetary borders at {width}px: {geometry}'
         assert geometry['above'] and geometry['contained'] and geometry['width'] > 150, geometry
-        assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), 'Pricing form overflows viewport'
+        try:
+            page.wait_for_function('document.documentElement.scrollWidth <= innerWidth + 1', timeout=5000)
+        except Exception:
+            page.screenshot(path=str(OUTPUT / f'overflow-pricing-{width}.png'), full_page=True)
+            print('OVERFLOW DETAILS', width, page.evaluate("[...document.querySelectorAll('body *')].filter(el => {const r=el.getBoundingClientRect();return r.width > 0 && (r.left < -1 || r.right > innerWidth+1)}).slice(0,20).map(el => ({tag:el.tagName,cls:el.className,x:el.getBoundingClientRect().x,width:el.getBoundingClientRect().width}))"), flush=True)
+            raise
+
         metric_label = page.locator('.o_field_finance_metrics label').first
         assert metric_label.evaluate("el => getComputedStyle(el).opacity") == '1', 'Computed amount labels are faded'
         page.screenshot(path=str(OUTPUT / f'pricing-focused-{width}.png'), full_page=True)

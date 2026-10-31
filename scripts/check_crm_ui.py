@@ -4,6 +4,7 @@ Runs after check_field_ui.py against disposable CI data. No live integrations.
 """
 import datetime
 import json
+from contextlib import contextmanager
 import os
 from pathlib import Path
 import secrets
@@ -17,7 +18,22 @@ login = json.loads((ROOT / '.local-data' / 'credentials.json').read_text())
 BASE = 'http://127.0.0.1:8069'
 coverage, errors = [], []
 
-with sync_playwright() as playwright:
+@contextmanager
+def capture_on_failure():
+    try:
+        yield
+    except Exception:
+        active_browser = globals().get('browser')
+        if active_browser:
+            for context_index, context in enumerate(active_browser.contexts):
+                for page_index, failed_page in enumerate(context.pages):
+                    try:
+                        failed_page.screenshot(path=str(OUTPUT / f'failure-{context_index}-{page_index}.png'), full_page=True)
+                    except Exception:
+                        pass
+        raise
+
+with sync_playwright() as playwright, capture_on_failure():
     browser = playwright.chromium.launch(executable_path=os.environ['CHROME_BIN'], headless=True, args=['--no-sandbox'])
     owner = browser.new_context(viewport={'width': 1440, 'height': 1100}, locale='he-IL')
 
