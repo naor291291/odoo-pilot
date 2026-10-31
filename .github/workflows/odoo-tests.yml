@@ -10,7 +10,7 @@ permissions:
 jobs:
   field-photos:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -36,7 +36,9 @@ jobs:
           CHROME_BIN="$(command -v google-chrome)" PYTHONPATH="$RUNNER_TEMP/field-ui-python" python3 scripts/check_field_ui.py || FIELD_FLOW_RESULT=$?
           CRM_SCREEN_RESULT=0
           CHROME_BIN="$(command -v google-chrome)" PYTHONPATH="$RUNNER_TEMP/field-ui-python" python3 scripts/check_crm_ui.py || CRM_SCREEN_RESULT=$?
-          if [ "$FIELD_FLOW_RESULT" -ne 0 ] || [ "$CRM_SCREEN_RESULT" -ne 0 ]; then exit 1; fi
+          JOURNEY_RESULT=0
+          CHROME_BIN="$(command -v google-chrome)" PYTHONPATH="$RUNNER_TEMP/field-ui-python" python3 scripts/check_browser_journeys.py --observe || JOURNEY_RESULT=$?
+          if [ "$FIELD_FLOW_RESULT" -ne 0 ] || [ "$CRM_SCREEN_RESULT" -ne 0 ] || [ "$JOURNEY_RESULT" -ne 0 ]; then exit 1; fi
       - name: Restore synthetic pilot and financial fixtures into a separate database
         run: docker compose -f .devcontainer/compose.yaml run --rm odoo python3 scripts/check_backup_restore.py
       - name: Build visual UI evidence
