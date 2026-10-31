@@ -114,9 +114,12 @@
             <xpath expr="//field[@name='field_payment_ids']" position="attributes"><attribute name="invisible">not field_payment_ids</attribute><attribute name="class">o_field_ledger</attribute></xpath>
             <xpath expr="//field[@name='field_payout_ids']" position="attributes"><attribute name="invisible">not field_payout_ids</attribute><attribute name="class">o_field_ledger</attribute></xpath>
             <xpath expr="//button[@name='action_dispatch_field_work']" position="attributes"><attribute name="string">אישור השיבוץ</attribute><attribute name="aria-label">אישור השיבוץ</attribute></xpath>
-            <xpath expr="//button[@aria-label='אישור פרטי ההצעה והמשך']" position="attributes"><attribute name="string">ההצעה נשלחה — המשך</attribute><attribute name="aria-label">ההצעה נשלחה — המשך</attribute></xpath>
-            <xpath expr="//button[@aria-label='אישור הצעה והמשך לתיאום']" position="attributes"><attribute name="string">הלקוח אישר — לתיאום</attribute><attribute name="aria-label">הלקוח אישר — לתיאום</attribute></xpath>
-            <xpath expr="//div[hasclass('o_field_service_mobile_actions')]/button[@aria-label='החזרה להמשך טיפול']" position="attributes"><attribute name="class">btn btn-primary</attribute></xpath>
+            <xpath expr="//div[hasclass('o_field_service_mobile_actions')]/button[@name='action_dispatch_field_work']" position="attributes"><attribute name="string">אישור השיבוץ</attribute><attribute name="aria-label">אישור השיבוץ</attribute></xpath>
+            <xpath expr="//button[@name='action_next_field_stage'][contains(@invisible,'quote')]" position="attributes"><attribute name="string">ההצעה נשלחה — המשך</attribute><attribute name="aria-label">ההצעה נשלחה — המשך</attribute></xpath>
+            <xpath expr="//div[hasclass('o_field_service_mobile_actions')]/button[@name='action_next_field_stage'][contains(@invisible,'quote')]" position="attributes"><attribute name="string">ההצעה נשלחה — המשך</attribute><attribute name="aria-label">ההצעה נשלחה — המשך</attribute></xpath>
+            <xpath expr="//button[@name='action_next_field_stage'][contains(@invisible,'sent')]" position="attributes"><attribute name="string">הלקוח אישר — לתיאום</attribute><attribute name="aria-label">הלקוח אישר — לתיאום</attribute></xpath>
+            <xpath expr="//div[hasclass('o_field_service_mobile_actions')]/button[@name='action_next_field_stage'][contains(@invisible,'sent')]" position="attributes"><attribute name="string">הלקוח אישר — לתיאום</attribute><attribute name="aria-label">הלקוח אישר — לתיאום</attribute></xpath>
+            <xpath expr="//div[hasclass('o_field_service_mobile_actions')]/button[@name='action_return_field_report'][contains(@invisible,'field_visit_result not in')]" position="attributes"><attribute name="class">btn btn-primary</attribute></xpath>
             <xpath expr="//div[hasclass('o_field_service_mobile_actions')]" position="inside">
                 <details class="o_field_more_actions" invisible="field_dispatch_code not in ['new','quote','sent','schedule'] and (field_report_state not in ['pending','approved'] or not field_report_can_review or field_visit_result in ['followup','not_done'])">
                     <summary>עוד</summary><div class="o_field_more_actions_panel"/>
@@ -125,7 +128,7 @@
             <xpath expr="//div[hasclass('o_field_more_actions_panel')]" position="inside">
                 <xpath expr="//div[hasclass('o_field_service_mobile_actions')]/button[@name='action_save_field_draft']" position="move"/>
                 <xpath expr="//div[hasclass('o_field_service_mobile_actions')]/button[@name='action_previous_field_stage']" position="move"/>
-                <xpath expr="//div[hasclass('o_field_service_mobile_actions')]/button[@aria-label='החזרה לתיקון']" position="move"/>
+                <xpath expr="//div[hasclass('o_field_service_mobile_actions')]/button[@name='action_return_field_report'][contains(@invisible,'field_visit_result in')]" position="move"/>
             </xpath>
         </field>
     </record>
