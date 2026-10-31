@@ -6,6 +6,7 @@ STAGES = [
     ('new', 'לקוח חדש / פנייה'), ('quote', 'ממתין להצעת מחיר'),
     ('sent', 'הצעה נשלחה'), ('schedule', 'ממתין לתיאום'),
     ('field', 'בביצוע בשטח'), ('completed', 'הושלם וממתין לתשלום'),
+    ('paid', 'טופל ושולם'),
 ]
 DISPATCH_FIELDS = {
     'field_contractor_id', 'field_visit_at', 'field_site_address',
@@ -62,6 +63,7 @@ class CrmLead(models.Model):
             'schedule': 'בוחרים סוג ביצוע, מבצע ומועד. המשך ייצור משימת שטח אחת המקושרת לפנייה.',
             'field': 'הקבלן מדווח דרך הפורטל. ההשלמה מתבצעת לאחר בדיקת התמונות ואישור העבודה.',
             'completed': 'דיווח השטח אושר. הפנייה ממתינה לטיפול בתשלום.',
+            'paid': 'הביצוע אושר והגבייה הושלמה. העבודה נסגרה.',
         }
         for lead in self:
             code = lead.field_dispatch_code or 'new'
@@ -219,15 +221,15 @@ class CrmLead(models.Model):
             code = lead.field_dispatch_code
             if not code:
                 raise ValidationError('יש לבחור שלב מתוך מסלול עבודות השטח.')
-            if code in ('sent', 'schedule', 'field', 'completed') and not (lead.field_quote_number or '').strip():
+            if code in ('sent', 'schedule', 'field', 'completed', 'paid') and not (lead.field_quote_number or '').strip():
                 raise ValidationError('יש להזין מספר הצעת מחיר ממורנינג לפני המשך הטיפול.')
-            if lead.field_task_ids and code not in ('field', 'completed'):
+            if lead.field_task_ids and code not in ('field', 'completed', 'paid'):
                 raise ValidationError('לא ניתן להחזיר פנייה ששובצה לשלב טרום ביצוע.')
             if code == 'field' and any(t.field_review_state == 'approved' for t in lead.field_task_ids):
                 raise ValidationError('פתיחה מחדש של עבודה מאושרת מחייבת החזרה לתיקון מתוך המשימה.')
-            if code == 'completed' and not (lead.field_task_ids and all(t.field_review_state == 'approved' for t in lead.field_task_ids)):
+            if code in ('completed', 'paid') and not (lead.field_task_ids and all(t.field_review_state == 'approved' for t in lead.field_task_ids)):
                 raise ValidationError('הפנייה תושלם רק לאחר אישור דיווח השטח.')
-            if code in ('field', 'completed'):
+            if code in ('field', 'completed', 'paid'):
                 contractor = lead.field_contractor_id if lead.field_execution_type == 'subcontractor' else self.env['res.users']
                 existing_assignment = bool(lead.field_task_ids and lead.field_task_ids.field_contractor_id == contractor)
                 if lead.field_execution_type == 'subcontractor' and (not contractor or (not existing_assignment and (not contractor.active or not contractor.share or not contractor.has_group('field_work_photos.group_field_contractor')))):

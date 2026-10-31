@@ -71,7 +71,7 @@ class CrmLead(models.Model):
 
     def _field_progress_missing(self, target_code):
         missing = super()._field_progress_missing(target_code)
-        if target_code in ('sent', 'schedule', 'field', 'completed') and self.field_sale_amount <= 0:
+        if target_code in ('sent', 'schedule', 'field', 'completed', 'paid') and self.field_sale_amount <= 0:
             missing.append('סכום עסקה חיובי לפני מע״מ')
         return missing
 
@@ -83,7 +83,7 @@ class CrmLead(models.Model):
             for name in ('field_sale_amount', 'field_material_cost'):
                 if not math.isfinite(record[name]) or record[name] < 0:
                     raise ValidationError('סכום העסקה ועלות החומרים חייבים להיות מספרים לא שליליים.')
-            if record.is_field_service and record.field_dispatch_code in ('sent', 'schedule', 'field', 'completed') and record.field_sale_amount <= 0:
+            if record.is_field_service and record.field_dispatch_code in ('sent', 'schedule', 'field', 'completed', 'paid') and record.field_sale_amount <= 0:
                 raise ValidationError('יש להזין סכום עסקה חיובי לפני מע״מ לפני המשך הטיפול.')
 
     @api.model_create_multi

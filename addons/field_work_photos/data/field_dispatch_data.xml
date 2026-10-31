@@ -32,4 +32,9 @@
         <field name="name">הושלם וממתין לתשלום</field><field name="sequence">60</field>
         <field name="team_id" ref="team_field_service"/><field name="field_dispatch_code">completed</field>
     </record>
+    <record id="stage_field_paid" model="crm.stage">
+        <field name="name">טופל ושולם</field><field name="sequence">70</field>
+        <field name="team_id" ref="team_field_service"/><field name="field_dispatch_code">paid</field>
+        <field name="fold">True</field>
+    </record>
 </odoo>

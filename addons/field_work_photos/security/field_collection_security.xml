@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="rule_field_payment_company_kind" model="ir.rule">
+        <field name="name">Field payments: allowed companies and owner-only payouts</field>
+        <field name="model_id" ref="model_field_work_payment"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)] + ([] if user.has_group('field_work_photos.group_field_finance') else [('kind', '=', 'customer')])</field>
+    </record>
+    <record id="access_field_payment" model="ir.model.access">
+        <field name="name">Field payment operators</field><field name="model_id" ref="model_field_work_payment"/>
+        <field name="group_id" ref="group_field_dispatcher"/>
+        <field name="perm_read">True</field><field name="perm_write">True</field><field name="perm_create">True</field><field name="perm_unlink">False</field>
+    </record>
+    <record id="access_field_payment_register" model="ir.model.access">
+        <field name="name">Field payment registration dialog</field><field name="model_id" ref="model_field_work_payment_register"/>
+        <field name="group_id" ref="group_field_dispatcher"/>
+        <field name="perm_read">True</field><field name="perm_write">True</field><field name="perm_create">True</field><field name="perm_unlink">True</field>
+    </record>
+    <record id="access_field_payment_cancel" model="ir.model.access">
+        <field name="name">Field payment cancellation dialog</field><field name="model_id" ref="model_field_work_payment_cancel"/>
+        <field name="group_id" ref="group_field_dispatcher"/>
+        <field name="perm_read">True</field><field name="perm_write">True</field><field name="perm_create">True</field><field name="perm_unlink">True</field>
+    </record>
+</odoo>
