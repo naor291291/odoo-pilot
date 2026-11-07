@@ -3,6 +3,7 @@ services:
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
+      target: development
       args:
         PILOT_UID: ${PILOT_UID:-1000}
     entrypoint: []

@@ -1,6 +1,7 @@
 """Non-secret runtime inventory for dependency triage, not a clean bill of health."""
 from importlib.metadata import PackageNotFoundError, version
 import json
+import inspect
 import platform
 import shutil
 import subprocess
@@ -37,6 +38,15 @@ def main():
         'pillow_libjpeg_turbo': features.version_feature('libjpeg_turbo'),
         'python_ssl': ssl.OPENSSL_VERSION,
         'cryptography_openssl': backend.openssl_version_text(),
+    }
+    import PyPDF2.generic._data_structures as pdf_structures
+    try:
+        import cryptography.x509.verification as verification
+    except ImportError:
+        verification = None
+    result['security_features'] = {
+        'pdf_eof_guard': 'while peek not in (b"\\r", b"\\n", b""):' in inspect.getsource(pdf_structures.ContentStream),
+        'cryptography_policy_builder': hasattr(verification, 'PolicyBuilder'),
     }
     if shutil.which('wkhtmltopdf'):
         result['pdf_engine'] = subprocess.check_output(['wkhtmltopdf', '--version'], text=True).strip()

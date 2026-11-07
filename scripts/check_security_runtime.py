@@ -58,6 +58,7 @@ def main(skip_pdf=False):
         return session
 
     owner = login()
+    optional_modules = call(owner, 'ir.module.module', 'search_read', [[('name', 'in', ['auth_passkey', 'account', 'base_vat', 'certificate'])]], fields=['name', 'state'])
     customer = call(owner, 'res.partner', 'create', [{'name': 'Synthetic runtime security customer', 'phone': '0500000000'}])
     contractor = call(owner, 'res.users', 'search', [[('login', '=', credentials['contractors'][0]['login'])]])[0]
     lead = call(owner, 'crm.lead', 'create', [{
@@ -144,7 +145,7 @@ def main(skip_pdf=False):
     results = {'parallel_overpayment': 'passed', 'parallel_idempotency': 'passed',
                'statement_html_escape_and_cache': 'passed', 'report_read_only': 'passed',
                'real_pdf': 'not executed (explicit local flag)' if skip_pdf else 'passed',
-               'logout_session_replay': 'passed', 'fixture': 'synthetic local CI pilot'}
+               'logout_session_replay': 'passed', 'fixture': 'synthetic local CI pilot', 'optional_modules': optional_modules}
     output = ROOT / '.local-data/security'
     output.mkdir(mode=0o700, parents=True, exist_ok=True)
     (output / 'runtime-results.json').write_text(json.dumps(results, indent=2))
