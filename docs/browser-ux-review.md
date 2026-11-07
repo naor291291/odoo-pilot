@@ -40,14 +40,14 @@ Keep: governed work-card actions, owner-only finance, explicit draft/submitted/a
 
 ## Screen and process coverage
 
-The following is the test inventory, **not yet a claim that the new run passed**. The final evidence table records executed results. Shared CSS does not imply per-screen verification.
+The inventory below ran in the final CI. Shared CSS does not imply per-screen verification. The coverage JSON and screenshot names record which widths were exercised for each surface.
 
 | Surface | Existing real Chromium journey | New focused journey / boundary |
 | --- | --- | --- |
-| Hub | Owner/operations, counts, direct work action, six queues, Enter activation; 390/768/1024/1440 | Verify localized appointment display after refinement |
-| Inquiries / work card | New partial draft, required-field dialog, stage progression, tab changes, amount save; desktop/phone | Values and business rules remain under existing regression suite |
+| Hub | Owner/operations, counts, direct work action, six queues, Enter activation; 390/768/1024/1440 | Rendered appointment text omits seconds and is LTR |
+| Inquiries / work card | New partial draft, required-field dialog, stage progression, tab changes, amount save; desktop/phone | Owner creates a client and inquiry via rendered CRM at 1440. Required phone blocks the first attempt, Escape returns to entered values, and the corrected form advances |
 | Clients | List/search/cards, new client, name validation, save, linked work, work-to-client dialog | Client creation is through UI; other test customers can be RPC fixtures |
-| Assignment / tasks / today / calendar | Dispatch, task evidence, work link, agenda, event popover/dialog, desktop→phone resize | No native calendar/global navigation replacement |
+| Assignment / tasks / today / calendar | Dispatch, task evidence, work link, agenda, event popover/dialog, desktop→phone resize | Owner enters the quote amount/reference, selects the contractor, enters an appointment and confirms dispatch in the rendered UI. The assigned contractor completes the report journey on that work |
 | Rates | Invalid/valid percentages, example, frozen historical assignment; desktop/phone | No formula or historical amount changes |
 | Contractor portal | Report requirements, photos, draft, correction/resubmission, incomplete visit, second-contractor denial | Rendered login, empty scopes, saved/unsaved transitions, real reload confirmation, file/error recovery, notes review, ten photos and image-dialog keyboard focus at 390/768/1440 |
 | Approval | Completed/incomplete review, correction reason and approval | Existing full work journey rerun |
@@ -58,4 +58,16 @@ The following is the test inventory, **not yet a claim that the new run passed**
 
 ## Results and limitations
 
-Baseline runs [41234157921](https://github.com/naor291291/odoo-pilot/actions/runs/41234157921) and [41235252275](https://github.com/naor291291/odoo-pilot/actions/runs/41235252275) captured issues on unchanged product code. The [first baseline archive](https://github.com/naor291291/odoo-pilot/actions/runs/41234157921/artifacts/13055320087) contains the comparison screenshots. Repaired run results are pending.
+Baseline runs [41234157921](https://github.com/naor291291/odoo-pilot/actions/runs/41234157921) and [41235252275](https://github.com/naor291291/odoo-pilot/actions/runs/41235252275) captured issues on unchanged product code. The [first baseline archive](https://github.com/naor291291/odoo-pilot/actions/runs/41234157921/artifacts/13055320087) contains the comparison screenshots.
+
+The first repaired run verified all focused behaviors except the gallery height target. Its measured panel was 1,564px. The final patch puts the picker before the photos, combines the guidance and avoids duplicate picker labels. The independent review also narrowed the rejected-save state to cases where the returned report values differ from the saved record. The final test separately checks client rejection, server rejection with unchanged text, and server rejection with retained edits.
+
+Final implementation head `b1b8a23eb8f1c7b60029f27732d3a6513a9b3af8` and tested merge `86ddbd1cbcaac69af2940b8b301c44a4bc477951`, module `18.0.14.0.0`. [Integration and Chromium run 42384661370](https://github.com/naor291291/odoo-pilot/actions/runs/42384661370) passed 187 Odoo cases, startup/restart, all four Chromium suites, runtime security checks and an isolated restore with 44 attachment checksums. The new suite passed all 14 named checks and recorded zero uncaught page errors, console errors or same-origin HTTP failures in its portal journey. The manager journey also records uncaught page errors. The role boundary checks cover owner, operations and separate contractor sessions. A one-page and a four-page contractor statement PDF were produced by Odoo.
+
+At 390px the ten-photo panel measured **1,438px**, down from **2,078px** on the baseline, about **31%** shorter. Photo and removal controls measured at least 44×44px at 390, 768 and 1440. The native image dialog kept underlying controls out of the tab sequence and restored focus on Escape. Chromium temporarily reported `body` when focus traversed browser chrome. Evidence includes the measured result, the real `beforeunload` dialogs and retained values after a failed save.
+
+[Final evidence archive](https://github.com/naor291291/odoo-pilot/actions/runs/42384661370/artifacts/13579287056) contains the 19 new journey captures, the 41 CRM screen captures, 15 statement captures, core workflow captures, PDFs and a before/after HTML with seven matched pairs. Selected portal, gallery and appointment screenshots were visually inspected. The [security run 42384661334](https://github.com/naor291291/odoo-pilot/actions/runs/42384661334) passed its source and history checks. Dependency inventory remains advisory.
+
+Separate agents performed UX assessment, implementation review, frontend edits, browser regression authoring and independent follow-up review. Root coordinated the CI runs, completed the owner journey and verified the artifacts. The Impeccable launcher and detector were unavailable. Physical phone/camera, Safari, system zoom and assistive-technology behavior remain outside this run. The shared Codespace did not receive the branch.
+
+The final visual review found two minor polish points. Agenda time is visually separated from the right-aligned card text, and the gallery help can wrap between `12` and `MB` on a phone. The verified draft retains those layouts.
