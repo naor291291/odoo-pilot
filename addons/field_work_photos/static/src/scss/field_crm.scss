@@ -79,6 +79,12 @@
     .o_field_client_kanban h2 { white-space: normal; overflow-wrap: anywhere; }
 }
 .o_field_hub_form .o_form_sheet, .o_field_contact_form .o_form_sheet, .o_field_task_form .o_form_sheet { max-width: 1184px; padding: 24px; }
+.o_field_owner_dashboard {
+    .o_form_sheet_bg { min-width: 0; }
+    .o_form_sheet { width: 100%; min-width: 0 !important; box-sizing: border-box; }
+    .o_field_service_card { min-width: 0; overflow-wrap: anywhere; }
+    .o_field_widget { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+}
 .o_field_ui.o_field_task_form .o_field_image img { max-height: 320px; object-fit: contain; }
 .o_field_portal {
     .o_field_skip { position: absolute; inset-inline-start: 16px; top: 0; transform: translateY(-200%); z-index: 100; padding: 12px; background: var(--work-paper); }

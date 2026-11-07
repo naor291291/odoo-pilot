@@ -15,6 +15,18 @@
             </dl>
             <p t-if="s['closing'] &lt; 0">היתרה שלילית: שולמו מקדמות או תשלומים מעבר לזכאות המאושרת שנוצרה עד סוף התקופה.</p>
             <p class="o_statement_help">כל סכומי היתרה והתנועות הם בשקלים, כולל מע״מ אם חל, לפי הסכום שאישר הבעלים. אומדנים לפני מע״מ מוצגים בנפרד ואינם נכללים ביתרה.</p>
+            <div t-if="s.get('sheet_totals')" class="o_statement_basis">
+                <t t-set="sheet" t-value="s['sheet_totals']"/>
+                <h3>סיכום לפי נוסחאות הגיליון לפני מע״מ</h3>
+                <dl class="o_statement_totals">
+                    <div><dt>העברה</dt><dd dir="ltr" t-out="'{:,.2f} ₪'.format(sheet['regular'])"/></div>
+                    <div><dt>ללא תיעוד לפני קיזוז</dt><dd dir="ltr" t-out="'{:,.2f} ₪'.format(sheet['undocumented'])"/></div>
+                    <div><dt>מזומן שהתקבל אצל הקבלן</dt><dd dir="ltr" t-out="'{:,.2f} ₪'.format(sheet['cash'])"/></div>
+                    <div><dt>מזומן לתשלום אחרי קיזוז</dt><dd dir="ltr" t-out="'{:,.2f} ₪'.format(sheet['cash_due'])"/></div>
+                    <div><dt>איזי האוס</dt><dd dir="ltr" t-out="'{:,.2f} ₪'.format(sheet['easy_house'])"/></div>
+                </dl>
+                <p>נכללות זכאויות והתאמות בתקופה לעבודות שסווגו לפי הגיליון. קיזוז המזומן חל על קטגוריית ״ללא תיעוד״. הסכומים כאן מחושבים לפני מע״מ ומוצגים בנפרד מיתרת התשלומים המאושרת.</p>
+            </div>
             <p class="o_statement_warning" t-if="s['missing_closed_count']">היתרה אינה כוללת <span t-out="s['missing_closed_count']"/> עבודות סגורות שסכום הקבלן שלהן טרם אושר. הרשימה בהמשך מציגה את המידע החסר במצבו הנוכחי.</p>
             <div class="o_statement_warning" t-if="s['legacy_period'] or s['unknown_cancellations']">
                 <strong>המידע ההיסטורי אינו מלא.</strong>
@@ -31,6 +43,7 @@
                     <td data-label="תאריך וסוג"><span dir="ltr" t-out="line['date'][8:10] + '/' + line['date'][5:7] + '/' + line['date'][:4]"/><br/><strong t-out="line['type']"/></td>
                     <td data-label="עבודה ואסמכתה"><a t-att-href="line['work_url']" t-out="line['work']"/><div dir="auto" t-out="line['reference']"/><a class="o_statement_source" t-att-href="line['source_url']">פתיחת תנועת המקור</a>
                         <div class="o_statement_help" t-if="line['kind'] == 'credit'">אומדן היסטורי לפני מע״מ: <span dir="ltr" t-out="'{:,.2f} ₪'.format(line['net_estimate'])"/> · אחוז שמור: <span dir="ltr" t-out="'{:g}%'.format(line['rate'])"/></div>
+                        <div class="o_statement_help" t-if="line.get('sheet_category')">לפי הגיליון לפני מע״מ · <span t-out="line['sheet_category']"/> <span dir="ltr" t-out="'{:,.2f} ₪'.format(line['sheet_amount'])"/> · מזומן אצל הקבלן <span dir="ltr" t-out="'{:,.2f} ₪'.format(line['sheet_cash'])"/></div>
                     </td>
                     <td data-label="שינוי ביתרה"><span dir="ltr" t-out="'{:+,.2f} ₪'.format(line['amount'])"/></td>
                     <td data-label="יתרה מצטברת"><span dir="ltr" t-out="'{:,.2f} ₪'.format(line['balance'])"/></td>
@@ -41,7 +54,7 @@
             <table t-if="s['exceptions']" class="o_statement_table o_statement_exceptions">
                 <thead><tr><th scope="col">עבודה ומצב</th><th scope="col">אומדן לפני מע״מ</th><th scope="col">סכום כולל מאושר</th></tr></thead>
                 <tbody><tr t-foreach="s['exceptions']" t-as="item">
-                    <td data-label="עבודה ומצב"><a t-att-href="item['work_url']" t-out="item['work']"/><div t-out="item['status']"/></td>
+                    <td data-label="עבודה ומצב"><a t-att-href="item['work_url']" t-out="item['work']"/><div t-out="item['status']"/><div t-if="item.get('sheet_incomplete')">חסרים נתונים לחישוב לפי הגיליון</div></td>
                     <td data-label="אומדן לפני מע״מ"><span dir="ltr" t-out="'{:,.2f} ₪'.format(item['estimate'])"/><div t-if="not item['frozen']" class="o_statement_help">לפני שיבוץ — המחירון טרם נשמר לעבודה</div></td>
                     <td data-label="סכום כולל מאושר"><span t-if="item['gross'] is None">חסר אישור סכום</span><span t-else="" dir="ltr" t-out="'{:,.2f} ₪'.format(item['gross'])"/></td>
                 </tr></tbody>

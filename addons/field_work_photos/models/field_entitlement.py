@@ -5,11 +5,27 @@ from zoneinfo import ZoneInfo
 from odoo import api, fields, models
 from odoo.exceptions import AccessError, ValidationError
 
-from .field_collection import OWNER
+from .field_collection import OWNER, _money
 
 BUSINESS_TZ = 'Asia/Jerusalem'
 APPROVAL_FIELDS = {'field_contractor_amount_approved', 'field_contractor_amount_approved_at',
                    'field_contractor_amount_approved_by'}
+SHEET_CATEGORIES = [('regular', 'רגיל'), ('undocumented', 'ללא תיעוד'), ('easy_house', 'איזי האוס')]
+SHEET_MONEY_FIELDS = ('field_sheet_customer_paid', 'field_sheet_contractor_expenses',
+                      'field_sheet_business_expenses', 'field_sheet_cash')
+SHEET_FIELDS = (*SHEET_MONEY_FIELDS, 'field_sheet_category', 'field_sheet_no_commission', 'field_sheet_complete')
+SHEET_OUTPUT_FIELDS = {'field_sheet_profit', 'field_sheet_rate', 'field_sheet_amount'}
+
+
+def sheet_amounts(paid, contractor_expenses, business_expenses, category, no_commission, currency):
+    """Return the workbook's J, K and applicable L/M/N amount before VAT."""
+    profit = currency.round(paid - contractor_expenses - business_expenses) if paid else 0.0
+    if no_commission:
+        return profit, 0, profit
+    rate = 70 if profit <= 500 else 65 if profit <= 1250 else 50
+    if not profit and category == 'regular':
+        return profit, rate, 0.0
+    return profit, rate, round(profit * rate / 100 + contractor_expenses, 4)
 
 
 def business_date(value):
@@ -39,6 +55,9 @@ class FieldWorkEntitlement(models.Model):
     net_estimate = fields.Monetary(string='אומדן היסטורי לפני מע״מ', required=True)
     sale_net = fields.Monetary(string='עסקה היסטורית לפני מע״מ', required=True)
     applied_rate = fields.Float(string='אחוז היסטורי')
+    sheet_category = fields.Selection(SHEET_CATEGORIES, string='קטגוריה לפי הגיליון')
+    sheet_amount = fields.Float(string='תנועה לפי הגיליון לפני מע״מ', digits=(16, 4))
+    sheet_cash = fields.Monetary(string='מזומן שהתקבל אצל הקבלן לפני מע״מ')
 
     _sql_constraints = [('one_reversal', 'unique(reversal_of_id)', 'תנועת הזכאות כבר בוטלה.')]
 
@@ -78,6 +97,8 @@ class FieldWorkEntitlement(models.Model):
                 'approved_at': row.approved_at, 'closed_at': row.closed_at,
                 'net_estimate': row.net_estimate, 'sale_net': row.sale_net,
                 'applied_rate': row.applied_rate,
+                'sheet_category': row.sheet_category, 'sheet_amount': -row.sheet_amount,
+                'sheet_cash': -row.sheet_cash,
             } for row in live_sudo]
         elif (not live_sudo and lead_sudo.field_dispatch_code == 'paid'
               and lead_sudo.field_execution_type == 'subcontractor'
@@ -97,6 +118,9 @@ class FieldWorkEntitlement(models.Model):
                 'sale_net': lead_sudo.field_sale_amount,
                 'applied_rate': lead_sudo.field_applied_rate,
             }]
+            if lead_sudo.field_sheet_category:
+                values[0].update(sheet_category=lead_sudo.field_sheet_category,
+                                 sheet_amount=lead_sudo.field_sheet_amount, sheet_cash=lead_sudo.field_sheet_cash)
         else:
             values = []
         if values:
@@ -109,29 +133,64 @@ class CrmLead(models.Model):
     field_contractor_amount_approved = fields.Boolean(string='סכום הקבלן אושר', readonly=True, copy=False, groups=OWNER)
     field_contractor_amount_approved_at = fields.Datetime(string='סכום הקבלן אושר במועד', readonly=True, copy=False, groups=OWNER)
     field_contractor_amount_approved_by = fields.Many2one('res.users', string='סכום הקבלן אושר על ידי', readonly=True, copy=False, groups=OWNER)
+    field_sheet_category = fields.Selection(SHEET_CATEGORIES, string='קטגוריה לפי הגיליון', copy=False, groups=OWNER)
+    field_sheet_customer_paid = fields.Monetary(string='שולם מהלקוח לפני מע״מ', currency_field='field_pricing_currency_id', copy=False, groups=OWNER)
+    field_sheet_contractor_expenses = fields.Monetary(string='הוצאות הקבלן לפני מע״מ', currency_field='field_pricing_currency_id', copy=False, groups=OWNER)
+    field_sheet_business_expenses = fields.Monetary(string='הוצאות העסק לפני מע״מ', currency_field='field_pricing_currency_id', copy=False, groups=OWNER)
+    field_sheet_cash = fields.Monetary(string='מזומן אצל הקבלן לפני מע״מ', currency_field='field_pricing_currency_id', copy=False, groups=OWNER)
+    field_sheet_no_commission = fields.Boolean(string='אחוז עמלה 0', copy=False, groups=OWNER)
+    field_sheet_complete = fields.Boolean(string='נתוני הגיליון מלאים', copy=False, groups=OWNER)
+    field_sheet_profit = fields.Monetary(string='רווח לחלוקה לפני מע״מ', currency_field='field_pricing_currency_id', compute='_compute_sheet_amounts', groups=OWNER)
+    field_sheet_rate = fields.Float(string='אחוז לפי הגיליון', compute='_compute_sheet_amounts', groups=OWNER)
+    field_sheet_amount = fields.Float(string='תשלום לפי הגיליון לפני מע״מ', digits=(16, 4), compute='_compute_sheet_amounts', groups=OWNER)
+
+    @api.depends(*SHEET_FIELDS)
+    def _compute_sheet_amounts(self):
+        currency = self.env.ref('base.ILS')
+        for lead in self:
+            result = (0.0, 0, 0.0)
+            if lead.field_sheet_category and lead.field_sheet_complete:
+                result = sheet_amounts(lead.field_sheet_customer_paid, lead.field_sheet_contractor_expenses,
+                                       lead.field_sheet_business_expenses, lead.field_sheet_category,
+                                       lead.field_sheet_no_commission, currency)
+            lead.field_sheet_profit, lead.field_sheet_rate, lead.field_sheet_amount = result
+
+    @api.constrains(*SHEET_MONEY_FIELDS)
+    def _check_sheet_money(self):
+        currency = self.env.ref('base.ILS')
+        for lead in self.sudo():
+            for name in SHEET_MONEY_FIELDS:
+                _money(lead[name], currency)
 
     @api.model
     def default_get(self, fields_list):
-        return {key: value for key, value in super().default_get(fields_list).items() if key not in APPROVAL_FIELDS}
+        protected = APPROVAL_FIELDS | SHEET_OUTPUT_FIELDS
+        return {key: value for key, value in super().default_get(fields_list).items() if key not in protected}
 
     @api.model_create_multi
     def create(self, vals_list):
         if any(APPROVAL_FIELDS.intersection(vals) for vals in vals_list):
             raise AccessError('יש לאשר את סכום הקבלן בפעולה הייעודית.')
+        if any(SHEET_OUTPUT_FIELDS.intersection(vals) for vals in vals_list):
+            raise AccessError('תוצאות הגיליון מחושבות לפי הנתונים שהוזנו.')
         return super().create(vals_list)
 
     def write(self, vals):
         if APPROVAL_FIELDS.intersection(vals):
             raise AccessError('פרטי אישור סכום הקבלן נשמרים אוטומטית.')
+        if SHEET_OUTPUT_FIELDS.intersection(vals):
+            raise AccessError('תוצאות הגיליון מחושבות לפי הנתונים שהוזנו.')
         sensitive = {'field_contractor_due', 'field_contractor_id', 'field_execution_type', 'company_id'}
+        sheet_inputs = tuple(name for name in SHEET_FIELDS if name in vals)
         old = {}
-        if sensitive.intersection(vals):
+        if sensitive.intersection(vals) or sheet_inputs:
             service = self.filtered('is_field_service')
             service._lock_collection()
             entries_sudo = self.env['field.work.entitlement'].sudo().search([('lead_id', 'in', service.ids)])
             historic_ids = set(entries_sudo.mapped('lead_id').ids)
             for lead in service.sudo():
-                old[lead.id] = (lead.field_contractor_due, lead.field_contractor_id.id, lead.field_execution_type, lead.company_id.id)
+                old[lead.id] = (lead.field_contractor_due, lead.field_contractor_id.id, lead.field_execution_type,
+                                lead.company_id.id, tuple(lead[name] for name in sheet_inputs))
                 if lead.id in historic_ids and any(
                     key in vals and vals[key] != (lead[key].id if key.endswith('_id') else lead[key])
                     for key in ('field_contractor_id', 'field_execution_type', 'company_id')
@@ -141,7 +200,8 @@ class CrmLead(models.Model):
         for lead in self:
             if lead.id in old:
                 lead_sudo = lead.sudo()
-                current = (lead_sudo.field_contractor_due, lead.field_contractor_id.id, lead.field_execution_type, lead.company_id.id)
+                current = (lead_sudo.field_contractor_due, lead.field_contractor_id.id, lead.field_execution_type,
+                           lead.company_id.id, tuple(lead_sudo[name] for name in sheet_inputs))
                 if old[lead.id] != current:
                     self.env['field.work.entitlement']._append(lead, reversal=True, reason='שינוי סכום או פרטי התחשבנות — נדרש אישור מחדש')
                     super(CrmLead, lead_sudo).write({
@@ -156,6 +216,8 @@ class CrmLead(models.Model):
         self._lock_collection()
         if self.field_execution_type != 'subcontractor' or not self.field_contractor_id:
             raise ValidationError('יש לבחור קבלן משנה לפני אישור הסכום.')
+        if self.field_sheet_category and not self.field_sheet_complete:
+            raise ValidationError('יש להשלים את נתוני הגיליון ולסמן שהם מלאים לפני אישור הסכום.')
         if not self.field_contractor_amount_approved:
             super().write({'field_contractor_amount_approved': True,
                            'field_contractor_amount_approved_at': fields.Datetime.now(),

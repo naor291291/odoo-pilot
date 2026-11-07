@@ -53,6 +53,9 @@
                 <group string="בסיס היסטורי שמור"><group><field name="closed_at"/><field name="approved_by"/><field name="approved_at"/></group>
                     <group><field name="sale_net"/><field name="applied_rate"/><field name="net_estimate"/></group>
                 </group>
+                <group string="נתוני הגיליון השמורים" invisible="not sheet_category">
+                    <field name="sheet_category"/><field name="sheet_amount"/><field name="sheet_cash"/>
+                </group>
             </sheet>
         </form></field>
     </record>
@@ -71,6 +74,19 @@
             <xpath expr="//div[hasclass('o_field_payout_panel')]/button[@name='action_register_contractor_payment']" position="before">
             <div class="o_statement_approval" groups="field_work_photos.group_field_finance">
                 <field name="field_contractor_amount_approved" invisible="1"/>
+                <group string="חישוב לפי הגיליון לפני מע״מ">
+                    <field name="field_sheet_category" placeholder="בחרו קטגוריה כדי להפעיל את החישוב"/>
+                    <field name="field_sheet_customer_paid" invisible="not field_sheet_category"/>
+                    <field name="field_sheet_contractor_expenses" invisible="not field_sheet_category"/>
+                    <field name="field_sheet_business_expenses" invisible="not field_sheet_category"/>
+                    <field name="field_sheet_cash" invisible="not field_sheet_category"/>
+                    <field name="field_sheet_no_commission" invisible="not field_sheet_category"/>
+                    <field name="field_sheet_complete" invisible="not field_sheet_category"/>
+                    <p colspan="2" class="o_field_help" invisible="not field_sheet_category">הזינו סכומים לפני מע״מ. הזינו אפס כשידוע שאין סכום, וסמנו שהנתונים מלאים רק לאחר בדיקה. הסכום לתשלום כולל מע״מ מאושר בנפרד.</p>
+                    <field name="field_sheet_profit" invisible="not field_sheet_category or not field_sheet_complete"/>
+                    <field name="field_sheet_rate" invisible="not field_sheet_category or not field_sheet_complete"/>
+                    <field name="field_sheet_amount" digits="[16, 2]" invisible="not field_sheet_category or not field_sheet_complete"/>
+                </group>
                 <p class="o_field_help" invisible="not field_contractor_amount_approved or field_contractor_due != 0">אושר סכום של אפס לקבלן. אין סכום לתשלום; הזכאות בדוח תהיה אפס לאחר סגירת העבודה.</p>
                 <p class="o_field_help" invisible="field_contractor_amount_approved">הסכום הכולל טרם אושר ולכן אינו זכאות בדוח. הזינו סכום מוסכם ואשרו אותו; אפשר לאשר גם אפס במפורש.</p>
                 <button name="action_approve_contractor_amount" type="object" string="אישור סכום הקבלן לדוח" class="btn-outline-primary" invisible="field_contractor_amount_approved or not id or not field_contractor_id" confirm="הסכום הכולל שהוזן, כולל אפס אם הוזן, יהיה בסיס הזכאות לקבלן לאחר סגירת העבודה כטופל ושולם. לאישור הסכום?"/>

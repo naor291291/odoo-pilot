@@ -25,6 +25,14 @@ The second condition can be satisfied before closure. If approval is later, the 
 - Within a date, entitlement entries precede payments, with numeric source IDs and an original payment before its same-day cancellation. This is a stable ledger order, not a reconstruction of payment times (payments store dates only).
 - Every amount is rounded with Odoo's ILS currency precision. Signed movements and running balances are rounded to agorot. Net estimates and approved gross amounts are labelled separately. No tax rate or contractor tax status is invented.
 
+## Spreadsheet calculation before VAT
+
+In the work card's contractor payment panel, select a spreadsheet category to enable the calculation. Enter the customer's actual payment, contractor expenses, business expenses, and cash received directly by the contractor, all before VAT. Confirm that the inputs are complete. A job with missing inputs can close after collection, but its contractor amount cannot be approved until the inputs are complete.
+
+Profit is the customer payment minus both sets of expenses, or zero if the payment is zero. One rate applies to the entire profit: 70% up to and including ₪500, 65% above ₪500 through ₪1,250, and 50% above ₪1,250. The contractor's expenses are added after applying the rate. In the zero-commission case, use the entire profit without adding expenses. For a regular job, zero profit yields zero payment. The other two categories still reimburse expenses at zero profit unless zero commission was selected.
+
+The statement shows transfer, undocumented and Easy House totals before VAT. Cash received by the contractor across all categories reduces the undocumented total only. The calculation uses existing entitlement dates and its results are saved on the entitlement movements, with signed reversals for corrections. The approved payable and payment ledger remain the basis for the balance including VAT. Spreadsheet inputs are entered explicitly; no historic work or payments are imported from the spreadsheet.
+
 ## Historical limits and reproducibility
 
 `field_work_photos.statement_history_start` is initialized once on installation/upgrade, without inferring old entitlements. Existing closed jobs need owner approval; approval today creates a movement today. Earlier reopening, former gross amounts and former approval decisions cannot be recovered reliably from current rows. The report labels this limitation, including the history-start timestamp, and warns about closed jobs awaiting approval.
