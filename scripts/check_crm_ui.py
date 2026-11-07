@@ -7,6 +7,7 @@ import json
 from contextlib import contextmanager
 import os
 from pathlib import Path
+import re
 import secrets
 
 from playwright.sync_api import sync_playwright, expect, TimeoutError as PlaywrightTimeoutError
@@ -98,6 +99,8 @@ with sync_playwright() as playwright, capture_on_failure():
         'is_field_service': True, 'partner_id': customer, 'phone': '0501234567',
         'field_site_address': 'רחוב לדוגמה 123, גבעתיים, כניסה מהחצר האחורית',
         'field_work_description': 'בדיקת תהליך העבודה המלא ללא שינוי בנתוני הלקוח האמיתיים.',
+        'contact_name': 'איש קשר לבדיקה', 'field_site_unit': 'קומה 2, דירה 4',
+        'field_access_instructions': 'כניסה מהשער האחורי — פרטי הגעה נוספים לבדיקה.',
         'field_quote_number': 'CRM-UX-2026', 'field_sale_amount': 1000,
         'field_contractor_id': contractor, 'field_visit_at': datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}])
     for _ in range(4):
@@ -112,6 +115,10 @@ with sync_playwright() as playwright, capture_on_failure():
         expect(page.locator('.o_field_queue_tile')).to_have_count(6)
         expect(page.get_by_role('heading', name='דורש טיפול היום', exact=True)).to_be_visible()
         expect(page.locator('.o_field_attention_cards')).to_contain_text('עבודת סקירה')
+        appointment = page.locator('.o_field_attention_cards .o_kanban_record').filter(has_text='עבודת סקירה').locator('.o_field_numeric')
+        assert re.search(r'\d{1,2}:\d{2}', appointment.inner_text())
+        assert not re.search(r'\d{1,2}:\d{2}:\d{2}', appointment.inner_text()), 'Hub shows unnecessary seconds'
+        assert appointment.evaluate('el => getComputedStyle(el).direction') == 'ltr'
         assert page.locator('.o_field_queue_tile').first.evaluate('el => getComputedStyle(el).direction') == 'rtl'
         expect(page.locator('[name="collection_balance"]')).to_be_visible()
         count = rpc(owner, 'crm.lead', 'search_count', [[('is_field_service', '=', True), ('field_dispatch_code', '=', 'field')]])
@@ -216,6 +223,8 @@ with sync_playwright() as playwright, capture_on_failure():
         card = page.locator('.o_field_agenda .o_kanban_record').filter(has_text='עבודת סקירה')
         expect(card).to_contain_text('רחוב')
         expect(card.locator('.o_field_agenda_time')).to_be_visible()
+        assert not re.search(r'\d{1,2}:\d{2}:\d{2}', card.locator('.o_field_agenda_time').inner_text()), 'Agenda shows unnecessary seconds'
+        assert card.locator('.o_field_numeric').evaluate('el => getComputedStyle(el).direction') == 'ltr'
         capture(page, f'today-agenda-{width}')
     card.get_by_role('button', name='המשך טיפול בכרטיס העבודה', exact=True).focus()
     page.keyboard.press('Enter')
@@ -307,6 +316,7 @@ with sync_playwright() as playwright, capture_on_failure():
     desktop_page.keyboard.press('Enter')
     expect(details).to_have_attribute('open', '')
     expect(details).to_contain_text('טלפון')
+    expect(details).to_contain_text('כניסה מהשער האחורי')
     desktop_page.keyboard.press('Enter')
     expect(details).not_to_have_attribute('open', '')
     capture(desktop_page, 'contractor-report-desktop')
@@ -332,7 +342,7 @@ with sync_playwright() as playwright, capture_on_failure():
     capture(portal_page, 'contractor-home-mobile')
     portal_page.goto(f'{BASE}/my/field-work?scope=pending')
     settle(portal_page)
-    expect(portal_page.get_by_role('heading', name='אין כרגע עבודות ברשימה הזאת', exact=True)).to_be_visible()
+    expect(portal_page.get_by_role('heading', name='אין כרגע דיווחים לבדיקה', exact=True)).to_be_visible()
     capture(portal_page, 'contractor-empty-mobile')
     portal_context.close()
 

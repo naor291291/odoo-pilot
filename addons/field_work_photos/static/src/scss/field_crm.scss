@@ -100,6 +100,17 @@
     input, select, textarea { scroll-margin-block: 32px 160px; }
     [data-report-step-note] { font-weight: 500; color: var(--work-water); }
     .o_field_photo_placeholder { color: var(--work-steel); }
+    .o_field_unsaved_state { color: var(--work-inspection); margin: 0 0 12px; font-weight: 500; }
+    .o_field_work_description { overflow-wrap: anywhere; }
+    // Saved and newly chosen images share rows without another panel per photo.
+    .o_field_gallery_items { gap: 8px; margin-block: 8px; }
+    .o_field_new_photos { display: contents; }
+    .o_field_gallery_item { display: flex; flex-direction: column; gap: 4px; padding: 0; border: 0; border-radius: 0; }
+    .o_field_gallery_item .o_field_photo_state { display: block; margin: 0; font-size: 14px; line-height: 1.4; }
+    .o_field_gallery_item .o_field_photo_remove { margin: 0; }
+    .o_field_gallery_item .btn-link { min-width: 44px; min-height: 44px; padding: 4px 0; text-align: start; white-space: normal; }
+    .o_field_gallery_image { height: 128px; }
+    .o_field_photo_zoom, [data-zoom-photo] { display: block; min-width: 44px; min-height: 44px; }
 }
 @media (max-width: 767px) {
     .o_field_ui {
@@ -117,6 +128,7 @@
     .o_field_hub_form .o_form_sheet, .o_field_contact_form .o_form_sheet, .o_field_task_form .o_form_sheet { padding: 16px; min-width: 0; }
     .o_field_portal .o_field_wizard_nav button { font-size: 14px; }
     .o_field_portal .o_field_portal_actions .btn { flex: 0 0 auto; min-height: 44px; }
+    .o_field_portal .o_field_gallery_image { height: 96px; }
 }
 
 .o_field_calendar_popup {

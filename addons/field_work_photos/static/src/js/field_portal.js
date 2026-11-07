@@ -9,7 +9,17 @@ function setupFieldReports() {
         const result = form.querySelector('[name="field_visit_result"]');
         const summary = form.querySelector('[name="field_visit_summary"]');
         const reason = form.querySelector('[name="field_visit_reason"]');
+        const notes = form.querySelector('[name="field_visit_notes"]');
+        const savedFeedback = form.parentElement.querySelector('[data-report-saved]');
+        const dirtyFeedback = form.querySelector('[data-report-dirty]');
         let dirty = false;
+        const markDirty = () => {
+            dirty = true;
+            if (savedFeedback) savedFeedback.hidden = true;
+            if (dirtyFeedback) dirtyFeedback.hidden = false;
+        };
+        // A rejected upload can return text that the server did not save.
+        if (form.dataset.reportRejected === '1') markDirty();
         const errorSummary = form.querySelector('[data-report-errors]');
         const clearErrors = () => {
             if (errorSummary) { errorSummary.hidden = true; errorSummary.replaceChildren(); }
@@ -58,8 +68,14 @@ function setupFieldReports() {
             if (submit) submit.disabled = !result.value || (completed
                 ? !before || !after || !summary.value.trim()
                 : !reason.value.trim());
-            form.querySelector('[data-report-summary]').textContent = `${before} תמונות לפני · ${after} תמונות אחרי` +
+            const photoSummary = form.querySelector('[data-report-summary]');
+            const photoSummaryText = `${before} תמונות לפני · ${after} תמונות אחרי` +
                 (result && completed && (!before || !after) ? ' — להשלמת עבודה נדרשת תמונה אחת לפחות בכל אזור.' : '');
+            if (photoSummary.textContent !== photoSummaryText) photoSummary.textContent = photoSummaryText;
+            for (const gallery of galleries) {
+                const placeholder = gallery.root.querySelector('[data-photo-placeholder]');
+                if (placeholder) placeholder.hidden = gallery.files.length > 0;
+            }
         };
         const dialog = form.parentElement.querySelector('[data-photo-dialog]');
         const zoom = src => {
@@ -78,6 +94,18 @@ function setupFieldReports() {
             if (!input) continue;
             const error = root.querySelector('[data-file-error]');
             const select = root.querySelector('[data-select-photo]');
+            let errorKind = null;
+            const showFileError = (kind, message = '') => {
+                errorKind = kind;
+                error.hidden = !kind;
+                error.textContent = message;
+                input.setAttribute('aria-invalid', kind ? 'true' : 'false');
+                select.setAttribute('aria-invalid', kind ? 'true' : 'false');
+            };
+            const clearCapacityError = () => {
+                // Removing a photo repairs capacity, not a rejected file's format.
+                if (errorKind === 'capacity') showFileError(null);
+            };
             const syncFiles = () => {
                 const transfer = new DataTransfer();
                 for (const file of gallery.files) transfer.items.add(file);
@@ -105,17 +133,20 @@ function setupFieldReports() {
                     enlarge.append(img);
                     enlarge.addEventListener('click', () => zoom(url));
                     const label = document.createElement('p');
-                    label.className = 'o_field_help';
-                    label.textContent = 'תמונה חדשה — עדיין לא נשמרה';
+                    label.className = 'o_field_help o_field_photo_state';
+                    label.textContent = 'חדשה — עדיין לא נשמרה';
                     const remove = document.createElement('button');
                     remove.type = 'button';
                     remove.className = 'btn btn-link';
-                    remove.textContent = 'הסרת התמונה החדשה';
+                    remove.textContent = 'הסרת תמונה';
+                    remove.setAttribute('aria-label', `הסרת תמונה חדשה ${index + 1}`);
                     remove.addEventListener('click', () => {
                         gallery.files.splice(index, 1);
                         syncFiles();
+                        clearCapacityError();
                         render();
                         update();
+                        markDirty();
                         select.focus();
                     });
                     item.append(enlarge, label, remove);
@@ -138,12 +169,13 @@ function setupFieldReports() {
                 const files = [...input.files];
                 const invalid = files.some(file => !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 12 * 1024 * 1024);
                 const tooMany = count(gallery) + files.length > 5;
-                error.hidden = !invalid && !tooMany;
-                error.textContent = invalid ? 'יש לבחור JPG, PNG או WebP בגודל של עד 12MB לתמונה.'
-                    : tooMany ? 'אפשר לשמור עד 5 תמונות באזור הזה. הסר תמונה לפני הוספה נוספת.' : '';
-                input.setAttribute('aria-invalid', error.hidden ? 'false' : 'true');
-                select.setAttribute('aria-invalid', error.hidden ? 'false' : 'true');
-                if (!invalid && !tooMany) gallery.files.push(...files);
+                showFileError(invalid ? 'file' : tooMany ? 'capacity' : null,
+                    invalid ? 'יש לבחור JPG, PNG או WebP בגודל של עד 12MB לתמונה.'
+                        : tooMany ? 'אפשר לשמור עד 5 תמונות באזור הזה. הסר תמונה לפני הוספה נוספת.' : '');
+                if (!invalid && !tooMany && files.length) {
+                    gallery.files.push(...files);
+                    markDirty();
+                }
                 syncFiles();
                 render();
                 update();
@@ -152,10 +184,11 @@ function setupFieldReports() {
                 checkbox.addEventListener('change', () => {
                     if (count(gallery) > 5) {
                         checkbox.checked = true;
-                        error.hidden = false;
-                        error.textContent = 'יש להסיר תמונה חדשה לפני ביטול ההסרה: עד 5 תמונות באזור.';
-                    }
-                    checkbox.closest('[data-photo-key]').classList.toggle('o_field_photo_marked', checkbox.checked);
+                        showFileError('capacity', 'יש להסיר תמונה חדשה לפני ביטול ההסרה: עד 5 תמונות באזור.');
+                    } else clearCapacityError();
+                    const item = checkbox.closest('[data-photo-key]');
+                    item.classList.toggle('o_field_photo_marked', checkbox.checked);
+                    item.querySelector('[data-photo-state]').textContent = checkbox.checked ? 'תוסר בשמירה' : 'נשמרה';
                     update();
                 });
             }
@@ -200,6 +233,9 @@ function setupFieldReports() {
             if (step === 3) {
                 form.querySelector('[data-review-result]').textContent = `תוצאת הביקור: ${result.selectedOptions[0].textContent}`;
                 form.querySelector('[data-review-description]').textContent = result.value === 'completed' ? summary.value : reason.value;
+                const reviewNotes = form.querySelector('[data-review-notes]');
+                reviewNotes.hidden = !notes.value.trim();
+                reviewNotes.querySelector('[data-review-notes-text]').textContent = notes.value;
                 form.querySelector('[data-review-photos]').textContent = `${galleries.map(count)[0]} תמונות לפני · ${galleries.map(count)[1]} תמונות אחרי`;
             }
             // A step is unsaved DOM state, not a restorable URL or persisted upload.
@@ -213,8 +249,13 @@ function setupFieldReports() {
             nav.querySelectorAll('[data-wizard-go]').forEach(button => button.addEventListener('click', () => go(Number(button.dataset.wizardGo))));
             go(1, false);
         }
-        form.addEventListener('change', () => { dirty = true; });
-        form.addEventListener('input', () => { dirty = true; });
+        const markChangedField = event => {
+            // File inputs can emit events for a rejected or cancelled choice.
+            // Accepted additions mark dirty only after validation above.
+            if (!event.target.matches('input[type="file"]')) markDirty();
+        };
+        form.addEventListener('change', markChangedField);
+        form.addEventListener('input', markChangedField);
         window.addEventListener('beforeunload', event => {
             if (dirty && form.dataset.submitting !== '1') { event.preventDefault(); event.returnValue = ''; }
         });

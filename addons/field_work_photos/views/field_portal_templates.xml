@@ -19,19 +19,23 @@
     <template id="portal_field_work_list" name="רשימת עבודות לקבלן">
         <t t-call="portal.portal_layout">
             <div class="container o_field_ui o_field_portal py-4" dir="rtl"><a href="#field-main" class="o_field_skip">דילוג לתוכן העבודה</a><span id="field-main" tabindex="-1"/>
-                <header class="o_field_panel o_field_portal_heading"><p class="o_field_eyebrow">עבודות שטח</p><h1>עבודות השטח שלי</h1><p>בחר עבודה לצפייה בפרטים, לתיעוד ולשליחת הדיווח לבדיקה.</p></header>
+                <header class="o_field_panel o_field_portal_heading"><h1>עבודות השטח שלי</h1><p>בחר עבודה לצפייה בפרטים, לתיעוד ולשליחת הדיווח לבדיקה.</p></header>
                 <nav class="o_field_tabs" aria-label="סינון העבודות">
                     <a t-att-href="'/my/field-work?scope=active'" t-att-class="'active' if scope == 'active' else ''" t-att-aria-current="'page' if scope == 'active' else None">לביצוע <span t-out="counts['active']"/></a>
                     <a href="/my/field-work?scope=pending" t-att-class="'active' if scope == 'pending' else ''" t-att-aria-current="'page' if scope == 'pending' else None">בבדיקה <span t-out="counts['pending']"/></a>
                     <a href="/my/field-work?scope=completed" t-att-class="'active' if scope == 'completed' else ''" t-att-aria-current="'page' if scope == 'completed' else None">הסתיימו <span t-out="counts['completed']"/></a>
                 </nav>
-                <div t-if="not tasks" class="o_field_panel"><h2>אין כרגע עבודות ברשימה הזאת</h2><p>עבודות חדשות יופיעו כאן לאחר שיבוץ על ידי התפעול.</p></div>
+                <div t-if="not tasks" class="o_field_panel">
+                    <t t-if="scope == 'active'"><h2>אין כרגע עבודות לביצוע</h2><p>עבודות חדשות יופיעו כאן לאחר שיבוץ על ידי התפעול.</p></t>
+                    <t t-elif="scope == 'pending'"><h2>אין כרגע דיווחים לבדיקה</h2><p>דיווחים ששלחתם יופיעו כאן עד לבדיקת התפעול. אפשר לחזור ללשונית לביצוע כדי להשלים דיווח.</p></t>
+                    <t t-else=""><h2>עדיין אין עבודות שהסתיימו</h2><p>עבודות שהביצוע שלהן אושר או שבוטלו יופיעו כאן. עבודות שעדיין בטיפול נמצאות בלשוניות לביצוע ובבדיקה.</p></t>
+                </div>
                 <div class="o_field_job_grid">
                     <t t-foreach="tasks" t-as="task">
                         <a t-att-href="'/my/field-work/%s' % task.id" class="o_field_panel o_field_job_link">
                             <span class="o_field_status" t-out="'בוטלה' if task.state == '1_canceled' else dict(task._fields['field_review_state'].selection).get(task.field_review_state)"/>
                             <h2 t-out="task.name"/><p t-out="task.field_customer_name"/>
-                            <p t-out="task.field_site_address"/><p><span t-field="task.field_visit_at" t-options="{'widget': 'datetime', 'hide_seconds': True}"/></p>
+                            <p t-out="task.field_site_address"/><p><bdi><span t-field="task.field_visit_at" t-options="{'widget': 'datetime', 'hide_seconds': True}"/></bdi></p>
                             <strong t-if="task.field_review_state == 'changes_requested'">נדרש עדכון הדיווח</strong>
                             <span class="o_field_job_cta">פתיחת העבודה ←</span>
                         </a>
@@ -46,24 +50,27 @@
             <div class="container o_field_ui o_field_portal py-4" dir="rtl"><a href="#field-main" class="o_field_skip">דילוג לתוכן העבודה</a><span id="field-main" tabindex="-1"/>
                 <a href="/my/field-work" class="o_field_back">→ חזרה לעבודות שלי</a>
                 <header class="o_field_portal_heading o_field_job_brief">
+                    <t t-set="has_extra_details" t-value="len(task.field_work_description or '') &gt; 140 or (task.field_site_contact and task.field_site_contact != task.field_customer_name) or task.field_site_unit or task.field_access_instructions"/>
                     <h1 t-out="task.name"/><span class="o_field_status" t-out="'בוטלה' if task.state == '1_canceled' else dict(task._fields['field_review_state'].selection).get(task.field_review_state)"/>
-                    <p><strong t-out="task.field_customer_name"/> · <span t-field="task.field_visit_at" t-options="{'widget': 'datetime', 'hide_seconds': True}"/></p>
+                    <p><strong t-out="task.field_customer_name"/> · <bdi><span t-field="task.field_visit_at" t-options="{'widget': 'datetime', 'hide_seconds': True}"/></bdi></p>
                     <p t-out="task.field_site_address"/>
                     <p class="o_field_work_description" t-out="(task.field_work_description or '')[:140] + ('…' if len(task.field_work_description or '') &gt; 140 else '')"/>
+                    <p t-if="task.field_customer_phone and not has_extra_details" class="o_field_contact_phone">טלפון: <bdi t-out="task.field_customer_phone"/></p>
                     <div class="o_field_contact_actions"><a t-if="task.field_customer_phone" t-att-href="phone_url" class="btn btn-outline-primary">חיוג ללקוח</a><a t-if="task.field_site_address" t-att-href="navigation_url" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary">ניווט לכתובת</a><a t-if="editable" href="#field-report" class="btn btn-link">מעבר לדיווח</a></div>
-                    <details class="o_field_job_more"><summary>תיאור מלא ופרטי הגעה</summary>
-                        <p class="o_field_work_description" t-out="task.field_work_description"/>
+                    <details t-if="has_extra_details" class="o_field_job_more"><summary>תיאור מלא ופרטי הגעה</summary>
+                        <p t-if="len(task.field_work_description or '') &gt; 140" class="o_field_work_description" t-out="task.field_work_description"/>
                         <dl class="o_field_job_details"><div t-if="task.field_site_contact"><dt>איש קשר בשטח</dt><dd t-out="task.field_site_contact"/></div><div t-if="task.field_site_unit"><dt>דירה / קומה</dt><dd t-out="task.field_site_unit"/></div><div><dt>טלפון</dt><dd><bdi t-out="task.field_customer_phone"/></dd></div></dl>
                         <p t-if="task.field_access_instructions" class="o_field_work_description"><strong>הוראות כניסה והגעה: </strong><t t-out="task.field_access_instructions"/></p>
                     </details>
                 </header>
                 <div t-if="error" class="alert alert-danger o_field_message" role="alert"><strong t-out="error"/><p>הקבצים שנבחרו בבקשה הזאת לא נשמרו. בדקו ובחרו אותם מחדש.</p></div>
-                <div t-if="notice and not error" class="o_field_message o_field_message_success" role="status" t-out="notice"/>
+                <div t-if="notice and not error" class="o_field_message o_field_message_success" role="status" t-att-data-report-saved="'1' if editable else None" t-out="notice"/>
                 <div t-if="task.field_review_state == 'pending'" class="o_field_message" role="status">הדיווח ממתין לבדיקת התפעול. הדיווח והתמונות נעולים בזמן הבדיקה.</div>
                 <div t-if="task.field_review_state == 'approved'" class="o_field_message o_field_message_success" role="status">הביצוע אושר על ידי התפעול.</div>
                 <div t-if="task.field_review_state == 'changes_requested'" class="o_field_message o_field_message_warning" role="status"><strong t-out="'הנחיות להמשך טיפול' if task.field_visit_result in ('followup','not_done') else 'מה צריך לתקן?'"/><p t-out="task.field_review_note"/></div>
-                <form t-att-action="'/my/field-work/%s/report' % task.id" method="post" enctype="multipart/form-data" id="field-report" data-field-report="1" class="o_field_report_form">
+                <form t-att-action="'/my/field-work/%s/report' % task.id" method="post" enctype="multipart/form-data" id="field-report" data-field-report="1" t-att-data-report-rejected="'1' if error and editable else None" class="o_field_report_form">
                     <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <p t-if="editable" data-report-dirty="1" class="o_field_unsaved_state" role="status" aria-live="polite" aria-atomic="true" hidden="hidden">יש שינויים שטרם נשמרו. שמרו טיוטה או שלחו את הדיווח לבדיקה.</p>
                     <nav t-if="editable" data-wizard-nav="1" aria-label="שלבי הדיווח" hidden="hidden"><ol class="o_field_wizard_nav"><li><button type="button" data-wizard-go="1">1. דיווח הביקור</button></li><li><button type="button" data-wizard-go="2">2. תמונות</button></li><li><button type="button" data-wizard-go="3">3. בדיקה ושליחה</button></li></ol></nav>
                     <p t-if="editable" data-report-step-note="1" role="status" aria-live="polite" aria-atomic="true"/>
                     <div t-if="editable" data-report-errors="1" class="o_field_message o_field_validation_summary" role="alert" tabindex="-1" hidden="hidden"/>
@@ -108,13 +115,13 @@
                                                 <a t-att-href="'/my/field-work/%s/photo/%s/%s' % (task.id, area[0], photo['id'])" target="_blank" rel="noopener" data-zoom-photo="1" t-att-aria-label="'הגדלת תמונה %s, %s' % (photo_index + 1, area[1])">
                                                     <img t-att-src="'/my/field-work/%s/photo/%s/%s' % (task.id, area[0], photo['id'])" t-att-alt="'%s — תמונה %s' % (area[1], photo_index + 1)" class="o_field_gallery_image" width="320" height="240" loading="lazy"/>
                                                 </a>
+                                                <span class="o_field_help o_field_photo_state" data-photo-state="1">נשמרה</span>
                                                 <label t-if="editable" class="o_field_photo_remove"><input type="checkbox" name="remove_photo" t-att-value="photo['key']"/> הסרה בשמירה הבאה</label>
-                                                <span class="o_field_help">נשמרה במערכת</span>
                                             </div>
                                         </t>
+                                        <div data-new-photos="1" class="o_field_new_photos"/>
                                     </div>
                                     <p t-if="not galleries[area[0]]" data-photo-placeholder="1" class="o_field_photo_placeholder">עדיין לא נשמרו תמונות</p>
-                                    <div data-new-photos="1" class="o_field_gallery_items"/>
                                     <label t-if="editable" t-att-for="'field_%s_image' % area[0]" class="form-label">הוספת תמונות <t t-out="area[1]"/></label>
                                     <input t-if="editable" t-att-id="'field_%s_image' % area[0]" t-att-name="'field_%s_image' % area[0]" type="file" multiple="multiple" accept="image/jpeg,image/png,image/webp" class="form-control" t-att-aria-describedby="'photo-error-%s' % area[0]"/>
                                     <button t-if="editable" type="button" data-select-photo="1" class="btn btn-outline-primary" t-att-aria-label="'הוספת תמונות %s' % area[1]" hidden="hidden">הוספת תמונות מהמצלמה או מהגלריה</button>
@@ -124,7 +131,7 @@
                         </div>
                         <p t-if="editable" class="o_field_help">JPG, PNG או WebP, עד 12MB לתמונה. תמונות חדשות והסרות יישמרו רק לאחר לחיצה על שמירה או שליחת דיווח.</p>
                     </section>
-                    <section t-if="editable" class="o_field_panel" data-wizard-panel="3" data-wizard-review="1" hidden="hidden"><h2 data-wizard-heading="1" tabindex="-1">בדיקה לפני השליחה</h2><p data-review-result="1"/><p data-review-description="1" class="o_field_work_description"/><p data-review-photos="1"/><ul class="o_field_review_checklist"><li>ודאו שהדיווח מתאר את מה שבוצע בפועל.</li><li>הדיווח יישלח לתפעול לבדיקה. הגשה אינה אישור ביצוע.</li><li>לאחר שליחה לא ניתן לשנות את הדיווח עד שהתפעול יחזיר אותו לתיקון.</li></ul><p>אפשר לחזור לשלבים הקודמים או לשמור ולהמשיך מאוחר יותר.</p></section>
+                    <section t-if="editable" class="o_field_panel" data-wizard-panel="3" data-wizard-review="1" hidden="hidden"><h2 data-wizard-heading="1" tabindex="-1">בדיקה לפני השליחה</h2><p data-review-result="1"/><p data-review-description="1" class="o_field_work_description"/><div data-review-notes="1" hidden="hidden"><h3>הערות נוספות</h3><p data-review-notes-text="1" class="o_field_work_description"/></div><p data-review-photos="1"/><ul class="o_field_review_checklist"><li>ודאו שהדיווח מתאר את מה שבוצע בפועל.</li><li>הדיווח יישלח לתפעול לבדיקה. הגשה אינה אישור ביצוע.</li><li>לאחר שליחה לא ניתן לשנות את הדיווח עד שהתפעול יחזיר אותו לתיקון.</li></ul><p>אפשר לחזור לשלבים הקודמים או לשמור ולהמשיך מאוחר יותר.</p></section>
                     <div t-if="editable" class="o_field_portal_actions">
                         <button type="button" data-wizard-back="1" class="btn btn-outline-secondary" hidden="hidden">חזרה</button>
                         <button type="button" data-wizard-next="1" class="btn btn-primary" hidden="hidden">המשך לתמונות</button>
