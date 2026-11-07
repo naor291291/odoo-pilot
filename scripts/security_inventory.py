@@ -26,8 +26,18 @@ def main():
     if shutil.which('dpkg-query'):
         completed = subprocess.run(['dpkg-query', '-W', '-f=${Package}\t${Version}\n',
                                     'odoo', 'python3-pil', 'python3-werkzeug', 'wkhtmltox',
-                                    'libwebp7', 'libssl3t64', 'postgresql-client-16'], capture_output=True, text=True, check=False)
+                                    'libwebp7', 'libssl3t64', 'libjpeg-turbo8', 'python3-cryptography',
+                                    'python3-lxml', 'python3-lxml-html-clean', 'python3-pypdf2',
+                                    'python3-jinja2', 'python3-requests', 'python3-urllib3', 'postgresql-client-16'], capture_output=True, text=True, check=False)
         result['distribution_packages'] = completed.stdout.strip().splitlines()
+    from PIL import features
+    from cryptography.hazmat.backends.openssl.backend import backend
+    import ssl
+    result['native_libraries'] = {
+        'pillow_libjpeg_turbo': features.version_feature('libjpeg_turbo'),
+        'python_ssl': ssl.OPENSSL_VERSION,
+        'cryptography_openssl': backend.openssl_version_text(),
+    }
     if shutil.which('wkhtmltopdf'):
         result['pdf_engine'] = subprocess.check_output(['wkhtmltopdf', '--version'], text=True).strip()
     result['postgres_backup_tools'] = {}
