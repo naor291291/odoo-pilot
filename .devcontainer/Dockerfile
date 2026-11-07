@@ -2,8 +2,11 @@
 ARG ODOO_BASE_IMAGE=odoo:18.0
 FROM ${ODOO_BASE_IMAGE} AS runtime
 USER root
-RUN apt-get update && apt-get install -y --no-install-recommends python3-pil \
+RUN apt-get update && apt-get install -y --no-install-recommends python3-pil python3-pip \
     && rm -rf /var/lib/apt/lists/*
+COPY scripts/security/runtime-overrides.txt /opt/field-crm/runtime-overrides.txt
+RUN pip3 install --no-deps --require-hashes --only-binary=:all: --target /opt/field-crm/python -r /opt/field-crm/runtime-overrides.txt
+ENV PYTHONPATH=/opt/field-crm/python
 COPY scripts/security/patch_pypdf2.py /opt/field-crm/patch_pypdf2.py
 RUN python3 /opt/field-crm/patch_pypdf2.py
 USER odoo
