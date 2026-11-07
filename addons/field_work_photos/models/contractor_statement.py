@@ -7,7 +7,7 @@ from odoo.exceptions import AccessError, ValidationError
 from odoo.tools.misc import format_datetime
 
 from .field_collection import OWNER
-from .field_entitlement import BUSINESS_TZ, business_date
+from .field_entitlement import BUSINESS_TZ, SHEET_CATEGORIES, business_date
 
 OUTPUT_FIELDS = {'payload', 'report_html', 'generated_at'}
 FILTER_FIELDS = {'company_id', 'contractor_id', 'period_mode', 'month_date', 'date_from', 'date_to'}
@@ -123,7 +123,8 @@ class ContractorStatement(models.TransientModel):
         opening_void = aggregate(payments, pay_domain + [('cancelled_at', '<', start_utc), ('payment_date', '<', start)])
         opening = currency.round(opening_credit - opening_paid + opening_void)
         entries = entitlements.search_fetch(ent_domain + [('event_date', '>=', start), ('event_date', '<=', end)],
-            ['lead_id', 'kind', 'amount', 'event_date', 'reason', 'net_estimate', 'applied_rate'])
+            ['lead_id', 'kind', 'amount', 'event_date', 'reason', 'net_estimate', 'applied_rate',
+             'sheet_category', 'sheet_amount', 'sheet_cash'])
         paid_entries = payments.search_fetch(pay_domain + [('payment_date', '>=', start), ('payment_date', '<=', end)],
             ['lead_id', 'amount', 'payment_date', 'reference', 'state', 'cancelled_at'])
         void_entries = payments.search_fetch(pay_domain + [('cancelled_at', '<', cutoff), ('payment_date', '<=', end),
@@ -140,10 +141,20 @@ class ContractorStatement(models.TransientModel):
                         source_model=source._name, source_id=source.id, reference=reference, **extra)
 
         rows = []
+        sheet_categories = dict(SHEET_CATEGORIES)
+        sheet_totals = {'regular': 0, 'undocumented': 0, 'easy_house': 0, 'cash': 0}
+        has_sheet_entries = False
         for entry in entries:
+            if entry.sheet_category:
+                has_sheet_entries = True
+                sheet_totals[entry.sheet_category] += entry.sheet_amount
+                sheet_totals['cash'] += entry.sheet_cash
             rows.append(row(entry.event_date, entry.kind, entry.amount, entry.lead_id, entry,
                 'זכאות מאושרת' if entry.kind == 'credit' else 'ביטול זכאות', entry.reason,
-                net_estimate=entry.net_estimate, rate=entry.applied_rate))
+                net_estimate=entry.net_estimate, rate=entry.applied_rate,
+                sheet_category=sheet_categories.get(entry.sheet_category),
+                sheet_amount=entry.sheet_amount, sheet_cash=entry.sheet_cash))
+        sheet_totals['cash_due'] = sheet_totals['undocumented'] - sheet_totals['cash']
         for payment in paid_entries:
             rows.append(row(payment.payment_date, 'payment', -payment.amount, payment.lead_id,
                 payment, 'תשלום לקבלן / מקדמה', payment.reference))
@@ -173,6 +184,7 @@ class ContractorStatement(models.TransientModel):
         missing_closed_count = lead_model.search_count(pending_domain + [('field_dispatch_code', '=', 'paid'), ('field_contractor_amount_approved', '=', False)])
         pending = lead_model.search(pending_domain, limit=100, order='id')
         exceptions = [dict(work=lead.name, work_url=work_link(lead), estimate=lead.field_contractor_cost,
+            sheet_incomplete=bool(lead.field_sheet_category and not lead.field_sheet_complete),
             gross=lead.field_contractor_due if lead.field_contractor_amount_approved else None,
             status=('ממתין לסגירת העבודה' if lead.field_contractor_amount_approved else
                     'סכום כולל לא אושר — אינו נכלל ביתרה'), frozen=lead.field_rates_frozen) for lead in pending]
@@ -186,6 +198,7 @@ class ContractorStatement(models.TransientModel):
             history_start=history_start, opening=opening, opening_credit=opening_credit,
             opening_paid=opening_paid, opening_void=opening_void, credit=credit, paid=paid, adjustments=adjustments,
             closing=balance, rows=rows, exceptions=exceptions, pending_count=pending_count,
+            sheet_totals={key: currency.round(value) for key, value in sheet_totals.items()} if has_sheet_entries else None,
             missing_closed_count=missing_closed_count,
             unknown_cancellations=unknown_cancellations,
             legacy_period=not history_start or start < business_date(history_start))

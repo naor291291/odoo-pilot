@@ -12,6 +12,7 @@ from odoo.exceptions import AccessError, ValidationError
 from odoo.tests import TransactionCase, tagged, new_test_user
 
 from ..models.contractor_statement import utc_boundary
+from ..models.field_entitlement import sheet_amounts
 
 
 @tagged('post_install', '-at_install')
@@ -69,6 +70,56 @@ class TestContractorStatement(TransactionCase):
         self.assertEqual((report['opening'], report['credit'], report['paid'], report['closing']), (0, 700, 200, 500))
         self.assertEqual(sum(item['amount'] for item in report['rows']), 500)
         self.assertEqual(report['rows'][-1]['balance'], 500)
+        self.assertIsNone(report['sheet_totals'])
+
+    def test_sheet_formula_boundaries_and_special_cases(self):
+        currency = self.env.ref('base.ILS')
+        cases = [
+            (750, 150, 100, 'regular', False, (500, 70, 500)),
+            (750.01, 150, 100, 'regular', False, (500.01, 65, 475.0065)),
+            (1500, 150, 100, 'regular', False, (1250, 65, 962.5)),
+            (1500.01, 150, 100, 'regular', False, (1250.01, 50, 775.005)),
+            (750, 150, 100, 'regular', True, (500, 0, 500)),
+            (100, 0, 200, 'regular', False, (-100, 70, -70)),
+            (0, 100, 0, 'regular', False, (0, 70, 0)),
+            (0, 100, 0, 'easy_house', False, (0, 70, 100)),
+            (100, 100, 0, 'undocumented', False, (0, 70, 100)),
+        ]
+        for paid, contractor, business, category, no_commission, expected in cases:
+            with self.subTest(paid=paid, category=category, no_commission=no_commission):
+                self.assertEqual(sheet_amounts(paid, contractor, business, category, no_commission, currency), expected)
+
+    def test_sheet_totals_use_approved_snapshots_and_cash_only_offsets_undocumented(self):
+        leads = {}
+        for category in ('regular', 'undocumented', 'easy_house'):
+            lead = self.lead(field_sheet_category=category, field_sheet_customer_paid=1000,
+                             field_sheet_contractor_expenses=100, field_sheet_business_expenses=100,
+                             field_sheet_cash=150 if category == 'regular' else 0, field_sheet_complete=True)
+            self.close(lead, '2026-09-10')
+            leads[category] = lead
+        report = self.statement()._build_statement()
+        self.assertEqual(report['sheet_totals'], {
+            'regular': 620, 'undocumented': 620, 'easy_house': 620, 'cash': 150, 'cash_due': 470})
+        self.assertEqual(report['closing'], 2100)
+        with freeze_time('2026-10-02 10:00:00'):
+            leads['regular'].field_sheet_cash = 175
+        self.assertFalse(leads['regular'].field_contractor_amount_approved)
+        self.assertEqual(self.statement()._build_statement()['sheet_totals'], report['sheet_totals'])
+        october = self.statement('2026-10-01', '2026-10-31')._build_statement()
+        self.assertEqual(october['sheet_totals']['regular'], -620)
+        self.assertEqual(october['sheet_totals']['cash'], -150)
+        self.assertEqual(october['sheet_totals']['cash_due'], 150)
+
+    def test_sheet_missing_data_blocks_approval_and_fields_are_owner_only(self):
+        lead = self.lead(field_sheet_category='regular')
+        self.close(lead, '2026-09-10', approve=False)
+        with self.assertRaises(ValidationError):
+            lead.action_approve_contractor_amount()
+        with self.assertRaises(AccessError):
+            lead.with_user(self.ops).read(['field_sheet_customer_paid'])
+        report = self.statement()._build_statement()
+        self.assertIsNone(report['sheet_totals'])
+        self.assertTrue(report['exceptions'][0]['sheet_incomplete'])
 
     def test_prior_work_current_payment_opening_partial(self):
         lead = self.lead()

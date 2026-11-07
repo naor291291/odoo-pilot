@@ -1,6 +1,6 @@
 {
     "name": "Field Work - Before and After Photos",
-    "version": "18.0.15.0.0",
+    "version": "18.0.16.0.0",
     "summary": "Submit field photos for operations approval or correction",
     "license": "LGPL-3",
     "depends": ["project", "crm", "portal"],
