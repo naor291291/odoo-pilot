@@ -104,6 +104,8 @@
     .o_field_work_description { overflow-wrap: anywhere; }
     // Saved and newly chosen images share rows without another panel per photo.
     .o_field_gallery_items { gap: 8px; margin-block: 8px; }
+    .o_field_photo_grid { gap: 16px; margin-block: 12px; }
+    [data-photo-input-label][hidden] { display: none !important; }
     .o_field_new_photos { display: contents; }
     .o_field_gallery_item { display: flex; flex-direction: column; gap: 4px; padding: 0; border: 0; border-radius: 0; }
     .o_field_gallery_item .o_field_photo_state { display: block; margin: 0; font-size: 14px; line-height: 1.4; }

@@ -106,3 +106,7 @@ Base `c3960c7`; tested code `4395e00a7b35e6e6d4c4b7b6ffeb90b4041f6b66`. [CI run 
 | Existing CRM/portal | Pricing-query batching only; no formula/workflow change | Main field workflow and all 41 CRM captures rerun successfully | Existing owner/operations/contractor matrix |
 
 [Final evidence archive](https://github.com/naor291291/odoo-pilot/actions/runs/41226165102/artifacts/13052275621): 81 PNGs including 15 new statement captures, two actual PDFs, JSON and annotated CRM HTML. Total 169 meaningful integration cases, no failures/errors/skips; all three Chrome suites reported zero uncaught page errors. Cold calculation fixture: 1,001 movements across 1,001 source jobs, under 100 SQL queries and under ten seconds asserted. Data is synthetic. Physical iPhone/Android, Safari/WebKit, actual screen-reader use, production concurrency and live Codespaces/Morning remain unverified.
+
+## Browser journey follow-up — PR #16
+
+The [browser journey review](browser-ux-review.md) records the new evidence by screen, role and viewport. It distinguishes rendered Chromium actions, fixture setup, source review and live-site access limitations. The focus is contractor draft and photo recovery, the submission review, portal empty scopes and appointment readability.

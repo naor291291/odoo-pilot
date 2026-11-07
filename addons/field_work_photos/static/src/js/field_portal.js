@@ -157,6 +157,7 @@ function setupFieldReports() {
             input.classList.add('visually-hidden');
             input.tabIndex = -1;
             input.setAttribute('aria-hidden', 'true');
+            root.querySelector('[data-photo-input-label]').hidden = true;
             select.hidden = false;
             select.setAttribute('aria-describedby', error.id);
             select.addEventListener('click', () => {

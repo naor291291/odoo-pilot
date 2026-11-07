@@ -49,16 +49,16 @@ def check(code, description, passed, evidence=None):
         defects.append(entry)
 
 
-def capture(page, name):
+def capture(page, name, role='contractor'):
     settle(page)
     assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1'), name
     page.screenshot(path=str(OUTPUT / (name + '.png')), full_page=True)
-    captures.append({'screen': name, 'width': page.viewport_size['width'], 'file': name + '.png'})
+    captures.append({'screen': name, 'width': page.viewport_size['width'], 'file': name + '.png', 'role': role})
 
 
 with sync_playwright() as p:
     browser = p.chromium.launch(executable_path=os.environ['CHROME_BIN'], headless=True, args=['--no-sandbox'])
-    owner = browser.new_context(locale='he-IL')
+    owner = browser.new_context(locale='he-IL', viewport={'width': 1440, 'height': 900})
 
     def rpc(model, method, args, **kwargs):
         result = owner.request.post(BASE + '/web/dataset/call_kw/' + model + '/' + method, data={
@@ -101,15 +101,63 @@ with sync_playwright() as p:
             check('EMPTY-' + scope, 'Empty state names the selected scope', phrase in heading, heading)
             capture(page, 'empty-' + scope + '-390')
 
-        customer = rpc('res.partner', 'create', [{'name': 'לקוח מסע מלאכותי', 'phone': '0500000000'}])
-        lead = rpc('crm.lead', 'create', [{'name': 'עבודה לבדיקת שמירה ותמונות', 'is_field_service': True,
-            'partner_id': customer, 'phone': '0500000000', 'field_site_address': 'רחוב בדיקה 10, גבעתיים',
-            'field_work_description': 'החלפת ברז ובדיקת חיבורים.', 'field_quote_number': 'JOURNEY-' + token,
-            'field_sale_amount': 1000, 'field_contractor_id': contractor,
-            'field_visit_at': datetime.datetime.now(datetime.timezone.utc).replace(second=17).strftime('%Y-%m-%d %H:%M:%S')}])
-        for _ in range(4):
-            rpc('crm.lead', 'action_next_field_stage', [[lead]])
-        task = rpc('crm.lead', 'read', [[lead]], fields=['field_workspace_task_id'])[0]['field_workspace_task_id'][0]
+        # Use the rendered CRM for business mutations. RPC provisions the empty
+        # contractor account and checks the persisted outcome below.
+        manager = owner.new_page()
+        manager.on('pageerror', lambda error: errors.append(str(error)))
+        customer_name = 'לקוח מסע מלאכותי'
+        work_name = 'עבודה לבדיקת שמירה ותמונות'
+        try:
+            manager.goto(f'{BASE}/odoo/action-{xmlid("action_field_clients_open")}')
+            settle(manager)
+            manager.get_by_role('button', name='חדש', exact=True).click()
+            manager.locator('.o_field_contact_form [name="name"] input').fill(customer_name)
+            manager.locator('.o_form_button_save').click()
+            expect(manager.locator('.o_form_button_save')).to_be_hidden()
+            capture(manager, 'owner-client-saved-1440', 'owner')
+            manager.goto(f'{BASE}/odoo/action-{xmlid("action_field_dashboard")}')
+            settle(manager)
+            manager.locator('button[name="action_new_work"]').click()
+            planning = manager.locator('.o_field_customer_card')
+            planning.locator('[name="name"] input').fill(work_name)
+            planning.locator('[name="partner_id"] input').fill(customer_name)
+            manager.locator('.o-autocomplete--dropdown-item').get_by_text(customer_name, exact=True).click()
+            planning.locator('[name="field_site_address"] input').fill('רחוב בדיקה 10, גבעתיים')
+            planning.locator('[name="field_work_description"] textarea').fill('החלפת ברז ובדיקת חיבורים.')
+            advance = manager.get_by_role('button', name='המשך להצעת מחיר', exact=True)
+            advance.click()
+            expect(manager.locator('.modal:visible')).to_contain_text('טלפון לתיאום')
+            capture(manager, 'owner-required-phone-1440', 'owner')
+            manager.keyboard.press('Escape')
+            expect(manager.locator('.modal:visible')).to_have_count(0)
+            expect(planning.locator('[name="name"] input')).to_have_value(work_name)
+            planning.locator('[name="phone"] input').fill('0500000000')
+            advance.click()
+            quote = manager.locator('.o_field_quote_card')
+            quote.locator('[name="field_sale_amount"] input').fill('1000')
+            quote.locator('[name="field_quote_number"] input').fill('JOURNEY-' + token)
+            capture(manager, 'owner-quote-entered-1440', 'owner')
+            manager.get_by_role('button', name='ההצעה נשלחה — המשך', exact=True).click()
+            manager.get_by_role('button', name='הלקוח אישר — לתיאום', exact=True).click()
+            assignment = manager.locator('.o_field_assignment_card')
+            assignment.locator('[name="field_contractor_id"] input').fill('קבלן בדיקת מסע')
+            manager.locator('.o-autocomplete--dropdown-item').get_by_text('קבלן בדיקת מסע', exact=True).click()
+            visit = assignment.locator('[name="field_visit_at"] input')
+            local_visit = datetime.datetime.now().replace(second=17).strftime('%d/%m/%Y %H:%M:%S')
+            visit.fill(local_visit)
+            visit.press('Tab')
+            capture(manager, 'owner-assignment-entered-1440', 'owner')
+            manager.get_by_role('button', name='אישור השיבוץ', exact=True).click()
+            expect(manager.locator('.o_field_report_panel')).to_be_visible()
+            rows = rpc('crm.lead', 'search_read', [[('name', '=', work_name)]],
+                       fields=['field_workspace_task_id', 'field_contractor_id', 'field_dispatch_code', 'field_sale_amount', 'field_quote_number'])
+            assert len(rows) == 1 and rows[0]['field_dispatch_code'] == 'field', rows
+            assert rows[0]['field_contractor_id'][0] == contractor, rows
+            assert rows[0]['field_sale_amount'] == 1000 and rows[0]['field_quote_number'] == 'JOURNEY-' + token, rows
+            task = rows[0]['field_workspace_task_id'][0]
+        except Exception:
+            manager.screenshot(path=str(OUTPUT / 'owner-failure.png'), full_page=True)
+            raise
         work_url = BASE + '/my/field-work/' + str(task)
         for width in (1440, 768, 390):
             page.set_viewport_size({'width': width, 'height': 900 if width > 390 else 844})
@@ -150,6 +198,13 @@ with sync_playwright() as p:
         page.locator('[data-report-save]').click()
         expect(page.get_by_text('הדיווח והתמונות נשמרו. אפשר לחזור לעבודה ולהגיש בהמשך.', exact=True)).to_be_visible()
         expect(page.locator('[data-photo-key]')).to_have_count(4)
+        page.locator('[data-wizard-next]').click()
+        page.locator('#field_before_image').set_input_files({
+            'name': 'unsupported.txt', 'mimeType': 'text/plain', 'buffer': b'not a photo'})
+        expect(page.locator('#photo-error-before')).to_be_visible()
+        check('FILE-REJECTED-STATE', 'Client-side file rejection does not mark a saved draft as edited',
+              not page.locator('[data-report-dirty]').is_visible())
+        page.locator('[data-wizard-back]').click()
         summary.click()
         summary.fill('שינוי נוסף שעדיין לא נשמר')
         check('SAVE-STATE', 'Editing a saved draft replaces old success with unsaved state',
@@ -185,14 +240,20 @@ with sync_playwright() as p:
         # Server-side image decoding can reject a MIME-labelled corrupt file.
         # The response retains unsaved text; leaving it should still warn, even
         # before another input event on the newly rendered error page.
-        page.locator('[data-wizard-go="1"]').click()
+        def reject_corrupt_photo():
+            page.locator('[data-wizard-go="2"]').click()
+            page.locator('#field_before_image').set_input_files({
+                'name': 'corrupt.png', 'mimeType': 'image/png', 'buffer': b'not a decodable PNG'})
+            page.locator('[data-report-save]').click()
+            expect(page.locator('.o_field_portal .alert-danger')).to_be_visible()
+            expect(page.locator('[data-photo-key]')).to_have_count(4)
+
+        reject_corrupt_photo()
+        check('ERROR-CLEAN-STATE', 'A rejected file with no retained text changes leaves the draft clean',
+              not page.locator('[data-report-dirty]').is_visible())
         summary.click()
         summary.fill('לא נשמר בגלל תמונה פגומה — יש לשמור מחדש')
-        page.locator('[data-wizard-next]').click()
-        page.locator('#field_before_image').set_input_files({
-            'name': 'corrupt.png', 'mimeType': 'image/png', 'buffer': b'not a decodable PNG'})
-        page.locator('[data-report-save]').click()
-        expect(page.locator('.o_field_portal .alert-danger')).to_be_visible()
+        reject_corrupt_photo()
         expect(summary).to_have_value('לא נשמר בגלל תמונה פגומה — יש לשמור מחדש')
         expect(page.locator('[data-photo-key]')).to_have_count(4)
         capture(page, 'rejected-upload-retains-text-390')
@@ -204,9 +265,9 @@ with sync_playwright() as p:
 
         page.once('dialog', keep_rejected_edit)
         try:
-            page.locator('.o_field_back').click()
+            page.locator('.o_field_back').click(timeout=5000)
         except PlaywrightError as error:
-            if 'ERR_ABORTED' not in str(error):
+            if rejected_dialogs != ['beforeunload'] or not (isinstance(error, PlaywrightTimeoutError) or 'ERR_ABORTED' in str(error)):
                 raise
         page.remove_listener('dialog', keep_rejected_edit)
         check('ERROR-DRAFT-GUARD', 'Rejected-upload text retains native navigation warning',
@@ -277,7 +338,7 @@ with sync_playwright() as p:
             'mode': 'observe' if options.observe else 'regression', 'checks': checks, 'defects': defects,
             'screens': captures, 'page_errors': errors, 'console_errors': console_errors, 'network_errors': network_errors,
             'completed': completed, 'failure': failure, 'dialog_focus_path': focus_path,
-            'roles': ['owner (fixtures)', 'contractor (rendered login and journeys)'],
+            'roles': ['owner (rendered CRM and fixture provisioning)', 'contractor (rendered login and journeys)'],
             'environment': 'isolated CI Chromium; synthetic data; localhost only; no live integration'}
         (OUTPUT / 'coverage.json').write_text(json.dumps(result, ensure_ascii=False, indent=2))
         print(json.dumps(result, ensure_ascii=False), flush=True)

@@ -68,7 +68,7 @@
                 <div t-if="task.field_review_state == 'pending'" class="o_field_message" role="status">הדיווח ממתין לבדיקת התפעול. הדיווח והתמונות נעולים בזמן הבדיקה.</div>
                 <div t-if="task.field_review_state == 'approved'" class="o_field_message o_field_message_success" role="status">הביצוע אושר על ידי התפעול.</div>
                 <div t-if="task.field_review_state == 'changes_requested'" class="o_field_message o_field_message_warning" role="status"><strong t-out="'הנחיות להמשך טיפול' if task.field_visit_result in ('followup','not_done') else 'מה צריך לתקן?'"/><p t-out="task.field_review_note"/></div>
-                <form t-att-action="'/my/field-work/%s/report' % task.id" method="post" enctype="multipart/form-data" id="field-report" data-field-report="1" t-att-data-report-rejected="'1' if error and editable else None" class="o_field_report_form">
+                <form t-att-action="'/my/field-work/%s/report' % task.id" method="post" enctype="multipart/form-data" id="field-report" data-field-report="1" t-att-data-report-rejected="'1' if has_unsaved_report and editable else None" class="o_field_report_form">
                     <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
                     <p t-if="editable" data-report-dirty="1" class="o_field_unsaved_state" role="status" aria-live="polite" aria-atomic="true" hidden="hidden">יש שינויים שטרם נשמרו. שמרו טיוטה או שלחו את הדיווח לבדיקה.</p>
                     <nav t-if="editable" data-wizard-nav="1" aria-label="שלבי הדיווח" hidden="hidden"><ol class="o_field_wizard_nav"><li><button type="button" data-wizard-go="1">1. דיווח הביקור</button></li><li><button type="button" data-wizard-go="2">2. תמונות</button></li><li><button type="button" data-wizard-go="3">3. בדיקה ושליחה</button></li></ol></nav>
@@ -104,11 +104,15 @@
                     <section class="o_field_panel" data-wizard-panel="2">
                         <h2 data-wizard-heading="1" tabindex="-1">תיעוד הביצוע</h2>
                         <p data-report-summary="1" role="status" aria-live="polite"><t t-out="len(galleries['before'])"/> תמונות לפני · <t t-out="len(galleries['after'])"/> תמונות אחרי</p>
-                        <p class="o_field_help">עד 5 תמונות בכל אזור. בהגשת עבודה שהושלמה נדרשת לפחות תמונה אחת לפני ותמונה אחת אחרי.</p>
+                        <p t-if="editable" class="o_field_help">עד 5 תמונות בכל אזור. קובצי <bdi>JPG, PNG, WebP</bdi> עד <bdi>12 MB</bdi> לתמונה. להגשת עבודה שהושלמה, צרפו לפחות תמונה אחת לפני ואחת אחרי.</p>
                         <div class="o_field_photo_grid">
                             <t t-foreach="[('before', 'לפני ביצוע'), ('after', 'אחרי ביצוע')]" t-as="area">
                                 <div class="o_field_gallery" t-att-data-kind="area[0]">
                                     <h3 t-out="area[1]"/>
+                                    <label t-if="editable" t-att-for="'field_%s_image' % area[0]" class="form-label" data-photo-input-label="1">הוספת תמונות <t t-out="area[1]"/></label>
+                                    <input t-if="editable" t-att-id="'field_%s_image' % area[0]" t-att-name="'field_%s_image' % area[0]" type="file" multiple="multiple" accept="image/jpeg,image/png,image/webp" class="form-control" t-att-aria-describedby="'photo-error-%s' % area[0]"/>
+                                    <button t-if="editable" type="button" data-select-photo="1" class="btn btn-outline-primary" t-att-aria-label="'הוספת תמונות %s' % area[1]" hidden="hidden">הוספת תמונות מהמצלמה או מהגלריה</button>
+                                    <p t-att-id="'photo-error-%s' % area[0]" data-file-error="1" class="o_field_inline_error" role="alert" hidden="hidden"/>
                                     <div class="o_field_gallery_items" data-saved-photos="1">
                                         <t t-foreach="galleries[area[0]]" t-as="photo">
                                             <div class="o_field_gallery_item" t-att-data-photo-key="photo['key']">
@@ -122,14 +126,9 @@
                                         <div data-new-photos="1" class="o_field_new_photos"/>
                                     </div>
                                     <p t-if="not galleries[area[0]]" data-photo-placeholder="1" class="o_field_photo_placeholder">עדיין לא נשמרו תמונות</p>
-                                    <label t-if="editable" t-att-for="'field_%s_image' % area[0]" class="form-label">הוספת תמונות <t t-out="area[1]"/></label>
-                                    <input t-if="editable" t-att-id="'field_%s_image' % area[0]" t-att-name="'field_%s_image' % area[0]" type="file" multiple="multiple" accept="image/jpeg,image/png,image/webp" class="form-control" t-att-aria-describedby="'photo-error-%s' % area[0]"/>
-                                    <button t-if="editable" type="button" data-select-photo="1" class="btn btn-outline-primary" t-att-aria-label="'הוספת תמונות %s' % area[1]" hidden="hidden">הוספת תמונות מהמצלמה או מהגלריה</button>
-                                    <p t-att-id="'photo-error-%s' % area[0]" data-file-error="1" class="o_field_inline_error" role="alert" hidden="hidden"/>
                                 </div>
                             </t>
                         </div>
-                        <p t-if="editable" class="o_field_help">JPG, PNG או WebP, עד 12MB לתמונה. תמונות חדשות והסרות יישמרו רק לאחר לחיצה על שמירה או שליחת דיווח.</p>
                     </section>
                     <section t-if="editable" class="o_field_panel" data-wizard-panel="3" data-wizard-review="1" hidden="hidden"><h2 data-wizard-heading="1" tabindex="-1">בדיקה לפני השליחה</h2><p data-review-result="1"/><p data-review-description="1" class="o_field_work_description"/><div data-review-notes="1" hidden="hidden"><h3>הערות נוספות</h3><p data-review-notes-text="1" class="o_field_work_description"/></div><p data-review-photos="1"/><ul class="o_field_review_checklist"><li>ודאו שהדיווח מתאר את מה שבוצע בפועל.</li><li>הדיווח יישלח לתפעול לבדיקה. הגשה אינה אישור ביצוע.</li><li>לאחר שליחה לא ניתן לשנות את הדיווח עד שהתפעול יחזיר אותו לתיקון.</li></ul><p>אפשר לחזור לשלבים הקודמים או לשמור ולהמשיך מאוחר יותר.</p></section>
                     <div t-if="editable" class="o_field_portal_actions">

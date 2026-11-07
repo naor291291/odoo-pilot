@@ -97,3 +97,10 @@ Print verification: Qt may apply phone screen media rules at A4 width. The repor
 ## Privacy and authorization in UI components
 
 Sensitive financial/correction dialogs belong to their creator and allowed company; create a new dialog instead of opening someone else's transient draft. Disabled/hidden actions never replace server authorization. Portal lists/details and private statement HTML/PDF use no-store responses; a downloaded file cannot be revoked. New photo processing removes metadata and preserves orientation; copy must not promise an archival original. Do not expose protected values in errors, summaries, exports, DOM attributes or UI evidence. Keep test captures synthetic.
+
+## Contractor reporting feedback and appointment readability
+
+- Show the saved confirmation only for the state that reached the server. Accepted edits replace it with an unsaved status. Keep the leave-page warning for editable values returned after a rejected save. Rejected and cancelled selections leave the existing edit state intact.
+- Put the picker and its error before each group's thumbnails. Use one grid for saved, new and marked-for-removal images. Use 96px thumbnails through 767px and 128px above, with 44px controls and the native full-image dialog. Clear capacity guidance when a removal resolves the condition. Keep format errors actionable.
+- Write an empty-state heading and guidance for each work scope. Show the job disclosure when it offers a longer description or additional arrival information. Display nonempty optional notes in the final review so the contractor can check what will be sent.
+- Use Odoo's localized appointment display with minutes in hub, agenda and task views. Isolate dates and times as LTR within Hebrew text. See [browser journey review](../docs/browser-ux-review.md).
