@@ -72,3 +72,24 @@ All rendered findings above were observed in artifact `13586141245`, run `424019
 ## Final disposition
 
 **7 defect families found; all 7 fixed and verified (6 P2, 1 P3).** No newly reproduced P0/P1 application defect remains. This does not close the dependency release gate or the acceptance gaps above. QA-003 and QA-004 required a second patch for copied Form/List cog templates and the tablet More menu; the intermediate failure is retained in Actions run 42403194963. Final run 42404096194 passed all browser regressions and 44 axe states. Before/after JSON and owner-dashboard screenshots are retained under evidence/.
+
+## Follow-up starting state and dependency correction
+
+At follow-up start, **zero application defects were open**: QA-001–QA-007 had already passed final run 42404096194. The request's phrase “seven awaiting retest” was stale. All seven remain in the regression scope after the runtime changes. No new application defect has been reproduced during this follow-up.
+
+### SEC-F01 — upstream PDF EOF loop (dependency availability defect)
+
+- Baseline: PyPDF2 2.12.1 `ContentStream.__parse_content_stream` loops after an unterminated comment at EOF. The previous report correctly identified the installed parser, but overstated direct quote/invoice exploitation: constructing a reader does not by itself execute content-stream parsing. Native PDF compression/extraction can invoke the affected routine.
+- Safe reproduction: synthetic `%...` comment in a `BytesIO` subclass capped at 100 reads. Baseline hit the cap; no unbounded CPU loop or live worker was allowed.
+- Root cause: loop stopped only for CR/LF, not EOF.
+- Fix: upstream's documented one-line EOF guard, applied only to exact supported PyPDF2 2.12.1 and recognized source during image build. Unexpected versions/source stop the build for review.
+- Local retest: two parser tests pass. Full image CI and browser/PDF retest results are recorded in the follow-up report. No screenshot applies to the bounded library-level reproduction.
+- This is one confirmed dependency defect, not an additional claim of a reproduced customer-facing outage. It closes one canonical security advisory when final image verification passes.
+
+### Targeted HTML cleaner update
+
+Three remaining canonical cleaner advisories are addressed by a hash-pinned 0.4.6 override, a package Odoo deliberately leaves unpinned for future security patches. Four local native-cleaner tests passed. An initial test incorrectly required removing harmless empty SVG/Math containers; it was corrected to assert removal of executable content while preserving Hebrew formatting. No product behavior was weakened to satisfy a test. Final image validation passed in 42406366976; these three advisories are closed for the measured runtime.
+
+### Final follow-up retest
+
+Run **42406366976** on executable head `cdea42a081d5750660d463d0b4fe3d011ee60b44` passed. QA-001: native signed malformed-event tests passed; QA-002–QA-006: 44 axe states have zero violations at all four widths; QA-007: actual final owner-dashboard screenshot shows the Hebrew breadcrumb. Native/model/HTTP authorization and four browser suites remain green. Seven existing application defect families remain closed, zero newly reproduced open application defects. The two PDF and four HTML-cleaner tests pass in the actual rebuilt image, closing four canonical dependency advisories. Three CBOR advisories are inactive-module classifications, two crypto entries are false positives, and one further vendor fix was verified; **40 unresolved dependency advisories remain separate from the application defect count**.

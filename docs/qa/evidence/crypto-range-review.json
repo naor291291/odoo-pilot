@@ -1,0 +1,60 @@
+[
+  {
+    "id": "GHSA-jwv3-5hgf-82ww",
+    "modified": "2026-09-24T14:45:10.238420831Z",
+    "source": "https://api.osv.dev/v1/vulns/GHSA-jwv3-5hgf-82ww",
+    "affected": [
+      {
+        "package": {
+          "name": "cryptography",
+          "ecosystem": "PyPI",
+          "purl": "pkg:pypi/cryptography"
+        },
+        "ranges": [
+          {
+            "type": "ECOSYSTEM",
+            "events": [
+              {
+                "introduced": "42.0.0"
+              },
+              {
+                "fixed": "49.0.0"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "installed": "41.0.7",
+    "PolicyBuilder_present": false
+  },
+  {
+    "id": "GHSA-m2h6-j472-rp4c",
+    "modified": "2026-09-24T15:00:04.719975807Z",
+    "source": "https://api.osv.dev/v1/vulns/GHSA-m2h6-j472-rp4c",
+    "affected": [
+      {
+        "package": {
+          "name": "cryptography",
+          "ecosystem": "PyPI",
+          "purl": "pkg:pypi/cryptography"
+        },
+        "ranges": [
+          {
+            "type": "ECOSYSTEM",
+            "events": [
+              {
+                "introduced": "45.0.0"
+              },
+              {
+                "fixed": "49.0.0"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "installed": "41.0.7",
+    "PolicyBuilder_present": false
+  }
+]

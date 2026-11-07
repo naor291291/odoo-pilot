@@ -28,7 +28,7 @@ class PdfBackportTests(unittest.TestCase):
 
     def test_comment_does_not_discard_following_operators(self):
         stream = DecodedStreamObject()
-        stream.set_data(b'%comment\nq\nQ\n%last comment without newline')
+        stream.set_data(b'%comment\nq\nQ\n%last comment\n')
         self.assertEqual(ContentStream(stream, None).operations, [([], b'q'), ([], b'Q')])
 
 

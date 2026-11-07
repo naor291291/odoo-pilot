@@ -1,0 +1,22 @@
+{
+  "baseline_open": 50,
+  "reviewed": 50,
+  "false_positive_ranges": 2,
+  "open": 40,
+  "open_by_severity": {
+    "MODERATE": 14,
+    "HIGH": 21,
+    "CRITICAL": 3,
+    "LOW": 2
+  },
+  "scope": "Measured CI runtime, no deployment",
+  "baseline_raw_records": 146,
+  "current_raw_records": 138,
+  "current_security_run": 42406366952,
+  "executable_head": "cdea42a081d5750660d463d0b4fe3d011ee60b44",
+  "additional_native_vendor_fix_verified": 1,
+  "not_reachable_in_measured_module_configuration": 3,
+  "newly_fixed_verified": 4,
+  "integration_run": 42406366976,
+  "integration_result": "success"
+}

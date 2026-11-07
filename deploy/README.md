@@ -27,3 +27,17 @@ Rehearse using a separate Compose project on an isolated host or network. Use un
 ## Physical phone acceptance
 
 On iPhone Safari, sign in with the synthetic contractor and open `/my/field-work`, then use Share → Add to Home Screen. On Android Chrome, use the browser menu → Add to Home screen. Launch from the icon and verify the correct portal URL, sign-in and access to only assigned work. Capture one before and one after photo on each device, save the draft, reopen it, submit it, and check the images from the operations account. Record devices, browser versions, outcomes and any issues before handling real customer data.
+
+## Update and rollback checkpoint
+
+Before any approved update, record the current git commit, Odoo/PostgreSQL/Caddy image digests, database name, module version, off-site snapshot ID and UTC backup timestamp. Confirm that database and filestore belong to the same quiesced snapshot. Keep secrets in the protected host configuration, never in the release record or command output. Rehearse the update against a restored isolated copy with all outbound channels disabled before scheduling customer downtime.
+
+If an update fails, keep the public proxy closed and delivery/inbound off. **Do not run an older addon against a migrated database.** Restore the pre-update database **and** matching filestore into separate clean volumes, select the recorded code commit and runtime image digest, then run the documented login/document/photo/ledger checks. Keep failed-upgrade volumes intact for investigation. Reopen traffic only after verification and an authorized decision; reconcile any externally accepted email/WhatsApp attempt before enabling retries. No automatic downgrade, volume deletion or restore over the live database is part of this QA task.
+
+## Operational checks still required on the actual host
+
+- Confirm all image digests, unique secrets, restrictive file permissions, off-by-default integrations, `list_db=False`, exact `dbfilter` and proxy-only ingress. Never expose PostgreSQL/8069/8072 publicly. Credentials in environment files remain readable by a host administrator; do not grant Docker access to untrusted users.
+- Configure Docker log rotation on the host (for example `local` driver, or bounded `json-file` size/file count), disk-space alarms for database/filestore/backup staging, and retention for logs/backups. Exclude authentication headers, tokens, payload bodies and customer documents from diagnostics.
+- Monitor HTTPS availability, certificate expiry, container restarts, disk space, backup exit status/snapshot age and failed/stuck delivery attempts. Assign a named operator and notification destination. Test a synthetic failure before relying on an alert.
+- After restart/recreation, verify persisted login, one customer document and one contractor photo. Database and `/var/lib/odoo` are separate named volumes; preserving only the database loses attachments. Caddy certificate state also has a persistent volume.
+- Record the real restore drill's duration and agreed RPO/RTO. The checked-in backup script's local mocked control-flow tests and CI synthetic restore do not verify the off-site provider, host capacity, TLS routing, monitoring or production rollback.

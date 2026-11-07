@@ -46,7 +46,7 @@ Status vocabulary: **Implemented & Verified**, **Implemented but Failed**, **Par
 | R36 | Mobile home-screen shortcut/camera / §1 | responsive portal | Blocked by External Dependency | User explicitly deferred physical-device acceptance until deployment |
 | R37 | Permanent host, HTTPS / §1 | deploy Compose/Caddy | Blocked by External Dependency | No deployment authorized; free host not provisioned |
 | R38 | External backup and real restore | deploy backup script | Blocked by External Dependency | No external destination; CI synthetic database restore passed with 46 attachment checksums; not an external infrastructure restore |
-| R39 | Secrets and dependency readiness / §6 | source/history scans + inventory | Partially Implemented | Source/history scans passed; 146 rows mapped to 94 advisories in dependency-review.md. Unresolved dependency/native-path risk blocks release |
+| R39 | Secrets and dependency readiness / §6 | source/history scans + inventory | Partially Implemented | Source/history scans passed; Original 146 rows mapped to 94 advisories. Follow-up reviews all 50 previously open; 4 fixes, 2 false positives, 1 native vendor fix verified and 3 inactive-module conditions leave 40 open; deployment module state must be attested. See dependency-followup.csv; release blocked |
 
 ## Product deviations that must remain explicit
 
@@ -55,3 +55,14 @@ Status vocabulary: **Implemented & Verified**, **Implemented but Failed**, **Par
 - Positive margins below 35% currently use amber, losses red; the original spec requests red below 35%. Treat as an acceptance deviation, not silently alter the established design during QA.
 - Customer invoice/quote PDFs are uploaded from Morning, not legally issued by Odoo. API import is a separate, unmerged integration path.
 - The implementation uses native/custom Odoo components and official Meta Cloud API rather than the example marketplace/Green-API products. Functional acceptance must not be inferred from a vendor name.
+
+## Follow-up coverage accounting
+
+The 39 mapped requirements comprise **23 Implemented & Verified, 9 Partially Implemented, 6 Blocked by External Dependency, 1 Not Yet Tested**. No new requirement was invented to improve the score. Verified means only the model/HTTP/browser scope stated in its evidence cell. It is not full acceptance of every possible UI state.
+
+- Full-spec verified fraction: **23/39 = 59.0%**.
+- Excluding the six external-dependency rows: **23/33 = 69.7%**.
+- Mapping coverage: 39/39, which must not be presented as 100% functional verification.
+- No row is classified wholly Not Implemented. Partial/missing work remains in nine rows, and the broad native-settings state space remains Not Yet Tested. A framework-provided screen is not automatically verified.
+
+The previous seven application defects were already verified before this follow-up. Their regression coverage passed again in 42406366976 because parser/runtime changes justified a full compatibility run; final evidence is recorded in pre-deployment-report.md.

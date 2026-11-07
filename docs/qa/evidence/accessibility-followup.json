@@ -1,0 +1,586 @@
+{
+  "results": [
+    {
+      "screen": "action_field_dashboard",
+      "width": 375,
+      "elapsedMs": 909,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_dashboard-375.png",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_dashboard",
+      "width": 390,
+      "elapsedMs": 490,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_dashboard-390.png",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_dashboard",
+      "width": 768,
+      "elapsedMs": 436,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_dashboard-768.png",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_dashboard",
+      "width": 1440,
+      "elapsedMs": 378,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_dashboard-1440.png",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_service_leads",
+      "width": 375,
+      "elapsedMs": 754,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_service_leads-375.png",
+      "violations": [],
+      "incomplete": [
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_service_leads",
+      "width": 390,
+      "elapsedMs": 445,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_service_leads-390.png",
+      "violations": [],
+      "incomplete": [
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_service_leads",
+      "width": 768,
+      "elapsedMs": 378,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_service_leads-768.png",
+      "violations": [],
+      "incomplete": [
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_service_leads",
+      "width": 1440,
+      "elapsedMs": 366,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_service_leads-1440.png",
+      "violations": [],
+      "incomplete": [
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_clients_open",
+      "width": 375,
+      "elapsedMs": 739,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_clients_open-375.png",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_clients_open",
+      "width": 390,
+      "elapsedMs": 441,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_clients_open-390.png",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_clients_open",
+      "width": 768,
+      "elapsedMs": 327,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_clients_open-768.png",
+      "violations": [],
+      "incomplete": [
+        "aria-prohibited-attr",
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_clients_open",
+      "width": 1440,
+      "elapsedMs": 347,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_clients_open-1440.png",
+      "violations": [],
+      "incomplete": [
+        "aria-prohibited-attr",
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_tasks",
+      "width": 375,
+      "elapsedMs": 744,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_tasks-375.png",
+      "violations": [],
+      "incomplete": [
+        "aria-prohibited-attr",
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_tasks",
+      "width": 390,
+      "elapsedMs": 406,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_tasks-390.png",
+      "violations": [],
+      "incomplete": [
+        "aria-prohibited-attr",
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_tasks",
+      "width": 768,
+      "elapsedMs": 364,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_tasks-768.png",
+      "violations": [],
+      "incomplete": [
+        "aria-prohibited-attr",
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_tasks",
+      "width": 1440,
+      "elapsedMs": 458,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_tasks-1440.png",
+      "violations": [],
+      "incomplete": [
+        "aria-prohibited-attr",
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_today",
+      "width": 375,
+      "elapsedMs": 844,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_today-375.png",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_today",
+      "width": 390,
+      "elapsedMs": 429,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_today-390.png",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_today",
+      "width": 768,
+      "elapsedMs": 373,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_today-768.png",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_today",
+      "width": 1440,
+      "elapsedMs": 373,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_today-1440.png",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_contractor_rates",
+      "width": 375,
+      "elapsedMs": 698,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_contractor_rates-375.png",
+      "violations": [],
+      "incomplete": [
+        "aria-prohibited-attr",
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_contractor_rates",
+      "width": 390,
+      "elapsedMs": 364,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_contractor_rates-390.png",
+      "violations": [],
+      "incomplete": [
+        "aria-prohibited-attr",
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_contractor_rates",
+      "width": 768,
+      "elapsedMs": 334,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_contractor_rates-768.png",
+      "violations": [],
+      "incomplete": [
+        "aria-prohibited-attr",
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_contractor_rates",
+      "width": 1440,
+      "elapsedMs": 304,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_contractor_rates-1440.png",
+      "violations": [],
+      "incomplete": [
+        "aria-prohibited-attr",
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_guide",
+      "width": 375,
+      "elapsedMs": 693,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_guide-375.png",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_guide",
+      "width": 390,
+      "elapsedMs": 344,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_guide-390.png",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_guide",
+      "width": 768,
+      "elapsedMs": 286,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_guide-768.png",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_guide",
+      "width": 1440,
+      "elapsedMs": 288,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_guide-1440.png",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_owner_dashboard",
+      "width": 375,
+      "elapsedMs": 733,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_owner_dashboard-375.png",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_owner_dashboard",
+      "width": 390,
+      "elapsedMs": 436,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_owner_dashboard-390.png",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_owner_dashboard",
+      "width": 768,
+      "elapsedMs": 417,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_owner_dashboard-768.png",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_owner_dashboard",
+      "width": 1440,
+      "elapsedMs": 399,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_owner_dashboard-1440.png",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "contractor-list",
+      "width": 375,
+      "elapsedMs": 248,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "contractor-list-375.png",
+      "violations": [],
+      "incomplete": [],
+      "network": []
+    },
+    {
+      "screen": "contractor-list",
+      "width": 390,
+      "elapsedMs": 105,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "contractor-list-390.png",
+      "violations": [],
+      "incomplete": [],
+      "network": []
+    },
+    {
+      "screen": "contractor-list",
+      "width": 768,
+      "elapsedMs": 81,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "contractor-list-768.png",
+      "violations": [],
+      "incomplete": [],
+      "network": []
+    },
+    {
+      "screen": "contractor-list",
+      "width": 1440,
+      "elapsedMs": 82,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "contractor-list-1440.png",
+      "violations": [],
+      "incomplete": [],
+      "network": []
+    },
+    {
+      "screen": "contractor-report",
+      "width": 375,
+      "elapsedMs": 175,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "contractor-report-375.png",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "contractor-report",
+      "width": 390,
+      "elapsedMs": 113,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "contractor-report-390.png",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "contractor-report",
+      "width": 768,
+      "elapsedMs": 92,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "contractor-report-768.png",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "contractor-report",
+      "width": 1440,
+      "elapsedMs": 101,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "contractor-report-1440.png",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "login",
+      "width": 375,
+      "elapsedMs": 536,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "login-375.png",
+      "violations": [],
+      "incomplete": [],
+      "network": []
+    },
+    {
+      "screen": "login",
+      "width": 390,
+      "elapsedMs": 98,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "login-390.png",
+      "violations": [],
+      "incomplete": [],
+      "network": []
+    },
+    {
+      "screen": "login",
+      "width": 768,
+      "elapsedMs": 80,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "login-768.png",
+      "violations": [],
+      "incomplete": [],
+      "network": []
+    },
+    {
+      "screen": "login",
+      "width": 1440,
+      "elapsedMs": 86,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "login-1440.png",
+      "violations": [],
+      "incomplete": [],
+      "network": []
+    }
+  ],
+  "errors": [],
+  "note": "Viewport emulation; no physical phone, screen reader or live integration verification."
+}

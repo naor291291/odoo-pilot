@@ -1,0 +1,51 @@
+{
+  "python": "3.12.3",
+  "odoo": "18.0-20261102",
+  "python_packages": {
+    "Pillow": "10.2.0",
+    "Werkzeug": "3.0.1",
+    "Jinja2": "3.1.2",
+    "lxml": "5.2.1",
+    "lxml-html-clean": "0.4.6",
+    "cryptography": "41.0.7",
+    "pyOpenSSL": "23.2.0",
+    "requests": "2.31.0",
+    "urllib3": "2.0.7",
+    "cbor2": "5.6.2",
+    "idna": "3.6",
+    "zeep": "4.2.1",
+    "PyPDF2": "2.12.1"
+  },
+  "scope": "selected runtime parsers, crypto and HTTP libraries",
+  "distribution_packages": [
+    "libjpeg-turbo8\t2.1.5-2ubuntu2",
+    "libssl3t64\t3.0.13-0ubuntu3.16",
+    "libwebp7\t1.3.2-0.4build3",
+    "odoo\t18.0.20261102",
+    "postgresql-client-16\t16.15-0ubuntu0.24.04.1",
+    "python3-cryptography\t41.0.7-4ubuntu0.4",
+    "python3-jinja2\t3.1.2-1ubuntu1.3",
+    "python3-lxml\t5.2.1-1ubuntu0.2",
+    "python3-lxml-html-clean\t0.1.1-1",
+    "python3-pil\t10.2.0-1ubuntu1.4",
+    "python3-pypdf2\t2.12.1-4",
+    "python3-requests\t2.31.0+dfsg-1ubuntu1.2",
+    "python3-urllib3\t2.0.7-1ubuntu0.8",
+    "python3-werkzeug\t3.0.1-3ubuntu0.2",
+    "wkhtmltox\t1:0.12.6.1-3.jammy"
+  ],
+  "native_libraries": {
+    "pillow_libjpeg_turbo": "2.1.5",
+    "python_ssl": "OpenSSL 3.0.13 30 Jan 2024",
+    "cryptography_openssl": "OpenSSL 3.0.13 30 Jan 2024"
+  },
+  "security_features": {
+    "pdf_eof_guard": true,
+    "cryptography_policy_builder": false
+  },
+  "pdf_engine": "wkhtmltopdf 0.12.6.1 (with patched qt)",
+  "postgres_backup_tools": {
+    "default": "pg_dump (PostgreSQL) 18.6 (Ubuntu 18.6-1.pgdg24.04+2)",
+    "compose_16": "pg_dump (PostgreSQL) 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)"
+  }
+}

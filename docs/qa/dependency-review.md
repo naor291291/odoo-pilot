@@ -1,3 +1,5 @@
+> **Latest follow-up:** 40 open canonical advisories, 138 raw scanner records. Four new fixes verified in CI 42406366976; see the follow-up section and dependency-followup.csv. Earlier counts below are preserved baseline history.
+
 # Dependency triage — actual CI image, 2026-11-07
 
 Decision: **No-Go for real customer data**. Classification is complete for the 146 scanner rows; remediation/compatibility validation and native-path review are not complete. No exploit payload was executed. A high upstream score is not proof of an exploitable CRM route, and a restricted custom route is not proof that native Odoo is safe.
@@ -57,3 +59,20 @@ Before release, rebuild an approved image with supported fixes, capture the exac
 The raw pip audit still has 146 records because distribution backports generally retain upstream Python versions. This PR newly applies the ten Noble Pillow fixes; the other verified fixes were already supplied by the base image and are not claimed as new application repairs. No scanner finding is suppressed. This is the rebuilt development/CI image, **not an updated existing Codespace or a deployed production image**.
 
 The 50 still-open advisories have upstream severities **3 critical, 25 high, 20 moderate and 2 low**. The three critical ones are FPX decode, EPS/Ghostscript and TIFF encode; the custom portal excludes their formats, but native Odoo exposure has not been ruled out. This distinction prevents both overstating 146 exploitable holes and incorrectly declaring the whole server safe.
+
+## Follow-up: current disposition supersedes the 50-open baseline above
+
+Measured follow-up executable revision: `cdea42a081d5750660d463d0b4fe3d011ee60b44`; Security run `42406366952`, artifact `13586953190`. `dependency-followup.csv` reviews **each of the 50 previously open advisories** with package presence, affected path, available candidate and compatibility decision. No deployment image exists; runtime claims refer to the measured CI image and its shared release stage.
+
+- **Two scanner false positives:** GHSA-jwv3-5hgf-82ww begins at cryptography 42.0.0, GHSA-m2h6-j472-rp4c at 45.0.0. Installed 41.0.7 is below both ranges, and the measured verification PolicyBuilder API is absent. No suppression added; re-evaluate when upgrading crypto.
+- **One targeted backport:** the upstream PyPDF2 EOF-loop workaround is applied in the runtime stage and runtime inventory confirms the guard. The bounded baseline reproduction failed, two local regressions pass. Native full-image/PDF verification passed in run 42406366976.
+- **Three targeted upstream fixes:** lxml-html-clean 0.4.6 replaces 0.1.1 through an isolated, hash-pinned no-dependencies install. Odoo's official 18.0 requirements intentionally leave this package unpinned for security patches. Four Odoo sanitizer tests pass locally and in final run 42406366976. The fourth historical cleaner advisory had already been classified as vendor-fixed, so it is not double-counted as a new fix.
+- **40 remain unresolved:** 3 critical, 21 high, 14 moderate, 2 low. All have a recorded compatibility/path decision. Thirty-one are Pillow advisories with upstream 13.0.0 fixes; Odoo on Python 3.12 pins 10.2.0. A major image-library migration and every native parser/encoder are not certified by passing custom portal tests. Crypto pairs, optional CBOR/SOAP and outbound/proxy paths likewise need version-specific testing or exact-host/module evidence.
+
+The new raw scanner count is **138**, down from 146 after the cleaner update. Backports and false positives remain visible. The original 146-row mapping/94-row canonical baseline are retained for audit history; do not compare raw scanner rows directly to canonical open counts. Raw 138 is not the number of exploitable vulnerabilities.
+
+Source candidates were checked against PyPI metadata on 2026-11-07 (`evidence/dependency-candidates.json`). Upstream fix availability is not a compatibility approval. `evidence/followup-runtime-inventory.json` records actual selected packages, native linkage and PDF guard. A source search found no custom/native Odoo call to the two pyOpenSSL callback APIs, but those advisories remain conservatively open pending exact deployment attestation. No arbitrary package suppression or global upgrade was used.
+
+Additional native-library resolution: CVE-2024-0727 / GHSA-9v9h-cgj8-h64p is fixed in OpenSSL 3.0.13 according to the [official OpenSSL affected-version table](https://openssl-library.org/news/vulnerabilities-3.0/index.html). The cryptography backend in the measured image links exactly that fixed branch (Ubuntu .16 package). This is one newly verified existing vendor fix, not a code repair. Thus 50 = 4 newly fixed + 2 false positives + 1 additional vendor fix verified + 3 inactive-module conditions + 40 open.
+
+Runtime module evidence also reports `auth_passkey`, `account`, `base_vat` and `certificate` uninstalled. All inspected Odoo CBOR imports are inside auth_passkey, with none in the custom addon. The three CBOR advisories are therefore classified as **not reachable in the measured pilot configuration**, not patched and not globally safe. Re-open them before enabling passkeys and verify module state again on any deployment. SOAP risk remains open because native wrappers also exist outside these optional modules.
