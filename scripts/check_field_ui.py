@@ -75,7 +75,7 @@ with sync_playwright() as playwright, capture_on_failure():
     session = rpc('/web/session/authenticate', {'db': 'odoo_pilot', 'login': login['login'], 'password': login['password']})
     assert session.get('uid')
     action = model('ir.model.data', 'search_read', [[['module', '=', 'field_work_photos'], ['name', '=', 'action_field_service_leads']]], fields=['res_id'])[0]['res_id']
-    customer = model('res.partner', 'create', [{'name': 'לקוח בדיקת מסך'}])
+    customer = model('res.partner', 'create', [{'name': 'לקוח בדיקת מסך', 'email': 'pilot@example.com'}])
     lead = model('crm.lead', 'create', [{
         'name': 'החלפת ברז — בדיקת ממשק', 'is_field_service': True,
         'partner_id': customer, 'phone': False,
@@ -257,7 +257,18 @@ with sync_playwright() as playwright, capture_on_failure():
         assert download.ok and download.body() == content, kind
         assert 'attachment' in download.headers['content-disposition']
 
+    def simulate_document(button, channel):
+        page.get_by_role('button', name=button, exact=True).click()
+        modal = page.locator('.modal:visible')
+        expect(modal.get_by_text('ספק מדומה', exact=False)).to_be_visible()
+        modal.locator('[name="channel"] select').select_option(label=channel)
+        expect(modal.locator('[name="message"]')).to_contain_text('מצורפת')
+        modal.get_by_role('button', name='הפעלת סימולציה', exact=True).click()
+        expect(page.locator('.modal:visible')).to_have_count(0)
+        expect(page.get_by_text('הסימולציה תועדה', exact=True)).to_be_visible()
+
     attach_pdf('field_quote_pdf', 'quote')
+    simulate_document('הדמיית שליחת הצעה', 'דואר אלקטרוני')
     expect(page.get_by_role('button', name='צפייה בהצעה', exact=True)).to_be_visible()
     page.get_by_role('button', name='ההצעה נשלחה — המשך', exact=True).click()
     page.get_by_role('button', name='הלקוח אישר — לתיאום', exact=True).click()
@@ -427,6 +438,15 @@ with sync_playwright() as playwright, capture_on_failure():
     invoice_number.press('Tab')
     attach_pdf('field_invoice_pdf', 'invoice')
     expect(page.get_by_role('button', name='צפייה בחשבונית', exact=True)).to_be_visible()
+    simulate_document('הדמיית שליחת חשבונית', 'וואטסאפ')
+    page.reload()
+    settle(page)
+    select_tab('גבייה')
+    history = page.locator('[name="field_delivery_attempt_ids"] .o_data_row')
+    expect(history).to_have_count(2)
+    expect(history.filter(has_text='וואטסאפ')).to_contain_text('סימולציה בלבד')
+    expect(history.filter(has_text='דואר אלקטרוני')).to_contain_text('סימולציה בלבד')
+    page.screenshot(path=str(OUTPUT / 'pilot-delivery-simulation.png'), full_page=True)
     collection = page.locator('.o_field_collection_panel')
     collection.scroll_into_view_if_needed()
     expect(collection.locator('[name="field_collection_status"]')).to_contain_text('טרם שולם')
@@ -538,6 +558,17 @@ with sync_playwright() as playwright, capture_on_failure():
     settle(ops_page)
     ops_page.screenshot(path=str(OUTPUT / 'operations-collection-desktop.png'), full_page=True)
     ops_context.close()
+    metrics_action = model('ir.model.data', 'search_read', [[[
+        'module', '=', 'field_work_photos'], ['name', '=', 'action_field_owner_dashboard']]], fields=['res_id'])[0]['res_id']
+    page.goto(f'http://127.0.0.1:8069/odoo/action-{metrics_action}')
+    settle(page)
+    expect(page.get_by_role('heading', name='מדדי בעלים', exact=True)).to_be_visible()
+    for metric in ('sale_total', 'receipt_total', 'estimated_profit', 'conversion'):
+        expect(page.locator(f'[name="{metric}"]')).to_be_visible()
+    for width in (1440, 390):
+        page.set_viewport_size({'width': width, 'height': 900})
+        assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1')
+        page.screenshot(path=str(OUTPUT / f'pilot-owner-dashboard-{width}.png'), full_page=True)
     assert not errors, errors
     context.close()
     browser.close()

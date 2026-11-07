@@ -3,3 +3,6 @@ access_field_work_correction,Field work correction,model_field_work_correction,f
 access_field_work_photo,Field work photo,model_field_work_photo,project.group_project_user,1,1,1,1
 access_field_work_dashboard,Field work dashboard,model_field_work_dashboard,field_work_photos.group_field_dispatcher,1,1,1,1
 
+access_field_work_owner_dashboard,Field work owner dashboard,model_field_work_owner_dashboard,field_work_photos.group_field_finance,1,0,1,0
+access_field_work_delivery_attempt,Field document delivery history,model_field_work_delivery_attempt,field_work_photos.group_field_dispatcher,1,0,0,0
+access_field_work_delivery_simulation,Field document delivery simulation,model_field_work_delivery_simulation,field_work_photos.group_field_dispatcher,1,1,1,1
