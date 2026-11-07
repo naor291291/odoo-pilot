@@ -1,6 +1,6 @@
 {
     "name": "Field Work - Before and After Photos",
-    "version": "18.0.14.0.0",
+    "version": "18.0.15.0.0",
     "summary": "Submit field photos for operations approval or correction",
     "license": "LGPL-3",
     "depends": ["project", "crm", "portal"],
@@ -13,6 +13,9 @@
         "security/contractor_statement_security.xml", "data/contractor_statement_data.xml",
         "report/contractor_statement_templates.xml", "report/contractor_statement_reports.xml",
         "views/contractor_statement_views.xml",
+        "views/field_document_views.xml",
+        "views/field_owner_dashboard_views.xml",
+        "security/field_document_delivery_security.xml", "views/field_document_delivery_views.xml",
     ],
     "assets": {
         "web.report_assets_common": ["field_work_photos/static/src/scss/contractor_statement.scss"],

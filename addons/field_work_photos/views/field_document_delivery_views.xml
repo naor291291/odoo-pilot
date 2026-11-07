@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_field_work_document_delivery" model="ir.ui.view">
+        <field name="name">crm.lead.field.document.delivery</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="view_field_work_documents"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_download_field_quote']" position="after">
+                <button name="action_simulate_field_quote" type="object" string="הדמיית שליחת הצעה"
+                        class="btn btn-outline-secondary" invisible="not field_quote_number"/>
+            </xpath>
+            <xpath expr="//button[@name='action_download_field_invoice']" position="after">
+                <button name="action_simulate_field_invoice" type="object" string="הדמיית שליחת חשבונית"
+                        class="btn btn-outline-secondary" invisible="not field_invoice_number"/>
+            </xpath>
+            <xpath expr="//div[hasclass('o_field_invoice_card')]" position="after">
+                <div class="o_field_service_card" groups="field_work_photos.group_field_dispatcher" invisible="not field_delivery_attempt_ids">
+                    <h2>יומן שליחת מסמכים</h2>
+                    <p class="o_field_help">תוצאות מספק מדומה. שום הודעה לא נשלחה ללקוח.</p>
+                    <field name="field_delivery_attempt_ids" readonly="1" nolabel="1">
+                        <list create="false" edit="false" delete="false">
+                            <field name="create_date" string="מועד"/>
+                            <field name="create_uid" string="משתמש" optional="hide"/>
+                            <field name="document_kind"/>
+                            <field name="document_number" class="o_field_numeric"/>
+                            <field name="channel"/>
+                            <field name="status" widget="badge"/>
+                        </list>
+                        <form create="false" edit="false" delete="false">
+                            <group>
+                                <field name="document_kind"/>
+                                <field name="document_number"/>
+                                <field name="channel"/>
+                                <field name="status"/>
+                                <field name="create_date" string="מועד"/>
+                                <field name="create_uid" string="משתמש"/>
+                                <field name="subject" invisible="not subject"/>
+                                <field name="message"/>
+                            </group>
+                        </form>
+                    </field>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_field_work_delivery_simulation" model="ir.ui.view">
+        <field name="name">field.work.delivery.simulation.form</field>
+        <field name="model">field.work.delivery.simulation</field>
+        <field name="arch" type="xml">
+            <form string="סימולציית שליחת מסמך" class="o_field_ui">
+                <div class="alert alert-info" role="status">ספק מדומה · הפעולה מתעדת ניסיון בלבד. ההודעה וה־PDF לא יישלחו ללקוח.</div>
+                <group>
+                    <field name="lead_id" invisible="1"/>
+                    <field name="document_kind"/>
+                    <field name="channel"/>
+                    <field name="subject" invisible="channel != 'email'"/>
+                    <field name="message"/>
+                </group>
+                <footer>
+                    <button name="action_apply" type="object" string="הפעלת סימולציה" class="btn-primary"/>
+                    <button string="ביטול" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

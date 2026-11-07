@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_field_owner_dashboard" model="ir.ui.view">
+        <field name="name">field.work.owner.dashboard.form</field>
+        <field name="model">field.work.owner.dashboard</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false" delete="false" class="o_field_ui o_field_hub_form">
+                <sheet>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="profit_count" invisible="1"/>
+                    <div class="o_field_hub_header">
+                        <div><h1>מדדי בעלים</h1><p><field name="company_id" options="{'no_open': True}"/> · מצטבר לכל התקופות · שקלים</p></div>
+                    </div>
+                    <div class="o_field_hub_grid">
+                        <section class="o_field_service_card">
+                            <h2>עסקאות שאושרו</h2>
+                            <div class="o_field_pricing_number"><field name="sale_total"/></div>
+                            <p class="o_field_help">סכומי העבודה לפני מע״מ, משלב ממתין לתיאום ואילך.</p>
+                        </section>
+                        <section class="o_field_service_card">
+                            <h2>גבייה בפועל</h2>
+                            <div class="o_field_pricing_number"><field name="receipt_total"/></div>
+                            <p class="o_field_help">תקבולים פעילים מהלקוחות, כולל מע״מ ומקדמות.</p>
+                        </section>
+                        <section class="o_field_service_card">
+                            <h2>רווחיות צפויה</h2>
+                            <div class="o_field_pricing_number" invisible="not profit_count"><field name="estimated_profit"/> · <field name="estimated_margin"/>%</div>
+                            <p class="o_field_help" invisible="profit_count">טרם נמצאו עבודות מאושרות עם תמחור מלא.</p>
+                            <p class="o_field_help" invisible="not profit_count">אומדן רווח לפני מע״מ. שיעור הרווח משוקלל לפי סכומי העבודות שנכללו.</p>
+                            <p class="o_field_help" invisible="not unpriced_count"><field name="unpriced_count"/> עבודות ללא תמחור מלא טרם נכללו ברווחיות.</p>
+                        </section>
+                        <section class="o_field_service_card">
+                            <h2>המרת הצעות</h2>
+                            <div class="o_field_pricing_number" invisible="not quoted_count"><field name="conversion"/>%</div>
+                            <p class="o_field_help" invisible="not quoted_count"><field name="accepted_count"/> אושרו מתוך <field name="quoted_count"/> שנשלחו, לפי השלב הנוכחי. יעד 50%.</p>
+                            <p class="o_field_help" invisible="quoted_count">טרם סומנה הצעה כנשלחה.</p>
+                        </section>
+                    </div>
+                    <p class="o_field_help">המדדים כוללים עבודות פעילות ובארכיון בחברה הנבחרת. הרווח מבוסס על תמחור חומרים וקבלן בכרטיס העבודה.</p>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_field_owner_dashboard" model="ir.actions.server">
+        <field name="name">מדדי בעלים</field>
+        <field name="model_id" ref="model_field_work_owner_dashboard"/>
+        <field name="groups_id" eval="[(4, ref('group_field_finance'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = env['field.work.owner.dashboard'].action_open()</field>
+    </record>
+    <menuitem id="menu_field_owner_dashboard" name="מדדי בעלים" parent="menu_field_work_center"
+              action="action_field_owner_dashboard" sequence="4" groups="group_field_finance"/>
+</odoo>

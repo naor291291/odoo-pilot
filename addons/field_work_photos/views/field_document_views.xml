@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_field_work_documents" model="ir.ui.view">
+        <field name="name">crm.lead.field.documents</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="view_field_interface"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('o_field_quote_card')]//field[@name='field_quote_number']/.." position="after">
+                <div class="o_field_control" groups="field_work_photos.group_field_dispatcher">
+                    <label for="field_quote_pdf"/>
+                    <field name="field_quote_pdf" options="{'accepted_file_extensions': '.pdf'}"/>
+                    <div class="d-flex flex-wrap gap-2" invisible="not id or not field_quote_pdf">
+                        <button name="action_preview_field_quote" type="object" string="צפייה בהצעה" class="btn btn-link"/>
+                        <button name="action_download_field_quote" type="object" string="הורדת ההצעה" class="btn btn-link"/>
+                    </div>
+                </div>
+            </xpath>
+            <xpath expr="//div[hasclass('o_field_collection_slot')]" position="before">
+                <div class="o_field_service_card o_field_invoice_card" groups="field_work_photos.group_field_dispatcher">
+                    <h2>חשבונית ללקוח</h2>
+                    <p class="o_field_help">הזינו את מספר החשבונית וצרפו את הקובץ שהופק במורנינג. רישום התקבול נעשה בנפרד.</p>
+                    <group>
+                        <field name="field_invoice_number" class="o_field_numeric" placeholder="מספר החשבונית ממורנינג"/>
+                        <field name="field_invoice_pdf" options="{'accepted_file_extensions': '.pdf'}"/>
+                    </group>
+                    <div class="d-flex flex-wrap gap-2" invisible="not id or not field_invoice_pdf">
+                        <button name="action_preview_field_invoice" type="object" string="צפייה בחשבונית" class="btn btn-link"/>
+                        <button name="action_download_field_invoice" type="object" string="הורדת החשבונית" class="btn btn-link"/>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

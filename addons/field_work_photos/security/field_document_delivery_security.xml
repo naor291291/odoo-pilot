@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="rule_field_delivery_attempt_company" model="ir.rule">
+        <field name="name">Field document delivery history by company</field>
+        <field name="model_id" ref="model_field_work_delivery_attempt"/>
+        <field name="domain_force">[('company_id', 'in', company_ids), ('lead_id.company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="rule_field_delivery_simulation_private" model="ir.rule">
+        <field name="name">Field document simulation by creator and company</field>
+        <field name="model_id" ref="model_field_work_delivery_simulation"/>
+        <field name="domain_force">[('create_uid', '=', user.id), ('lead_id.company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>
