@@ -8,3 +8,4 @@ from . import field_interface
 from . import field_navigation
 from . import field_entitlement
 from . import contractor_statement
+from . import field_documents

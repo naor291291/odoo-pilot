@@ -236,6 +236,29 @@ with sync_playwright() as playwright, capture_on_failure():
     page.set_viewport_size({'width': 1440, 'height': 1100})
     page.goto(url)
     settle(page)
+    from io import BytesIO
+    from pypdf import PdfWriter
+
+    def attach_pdf(field, kind):
+        buffer = BytesIO()
+        writer = PdfWriter()
+        writer.add_blank_page(width=300, height=400 if kind == 'quote' else 500)
+        writer.write(buffer)
+        content = buffer.getvalue()
+        page.locator(f'[name="{field}"] input[type="file"]').set_input_files({
+            'name': kind + '.pdf', 'mimeType': 'application/pdf', 'buffer': content,
+        })
+        page.locator('.o_form_button_save').click()
+        expect(page.locator('.o_form_button_save')).to_be_hidden()
+        preview = page.request.get(f'http://127.0.0.1:8069/field-work/documents/{lead}/{kind}')
+        assert preview.ok and preview.body() == content, kind
+        assert 'inline' in preview.headers['content-disposition']
+        download = page.request.get(f'http://127.0.0.1:8069/field-work/documents/{lead}/{kind}?download=1')
+        assert download.ok and download.body() == content, kind
+        assert 'attachment' in download.headers['content-disposition']
+
+    attach_pdf('field_quote_pdf', 'quote')
+    expect(page.get_by_role('button', name='צפייה בהצעה', exact=True)).to_be_visible()
     page.get_by_role('button', name='ההצעה נשלחה — המשך', exact=True).click()
     page.get_by_role('button', name='הלקוח אישר — לתיאום', exact=True).click()
     page.get_by_role('button', name='אישור השיבוץ', exact=True).click()
@@ -399,6 +422,11 @@ with sync_playwright() as playwright, capture_on_failure():
     page.goto(url)
     settle(page)
     select_tab('גבייה')
+    invoice_number = page.locator('[name="field_invoice_number"] input')
+    invoice_number.fill('UI-INVOICE-1')
+    invoice_number.press('Tab')
+    attach_pdf('field_invoice_pdf', 'invoice')
+    expect(page.get_by_role('button', name='צפייה בחשבונית', exact=True)).to_be_visible()
     collection = page.locator('.o_field_collection_panel')
     collection.scroll_into_view_if_needed()
     expect(collection.locator('[name="field_collection_status"]')).to_contain_text('טרם שולם')

@@ -7,3 +7,4 @@ from . import test_field_visit
 from . import test_field_collection
 from . import test_contractor_statement
 from . import test_security_hardening
+from . import test_field_documents
