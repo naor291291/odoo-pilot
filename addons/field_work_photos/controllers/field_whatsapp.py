@@ -44,7 +44,8 @@ class FieldWorkWhatsApp(http.Controller):
             return request.make_response(challenge, headers=[('Content-Type', 'text/plain')])
         if (incoming.content_length or 0) > MAX_WEBHOOK_BYTES:
             raise RequestEntityTooLarge()
-        body = incoming.stream.read(MAX_WEBHOOK_BYTES + 1)
+        incoming.max_content_length = MAX_WEBHOOK_BYTES
+        body = incoming.get_data()
         if len(body) > MAX_WEBHOOK_BYTES:
             raise RequestEntityTooLarge()
         if not verified_signature(secret, incoming.headers.get('X-Hub-Signature-256'), body):
