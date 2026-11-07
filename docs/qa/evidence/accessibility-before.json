@@ -1,0 +1,2822 @@
+{
+  "results": [
+    {
+      "screen": "action_field_dashboard",
+      "width": 375,
+      "elapsedMs": 820,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_dashboard-375.png",
+      "violations": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              "button[data-hotkey=\"u\"]"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "link-name",
+          "impact": "serious",
+          "description": "Ensure links have discernible text",
+          "targets": [
+            [
+              "a"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_dashboard",
+      "width": 390,
+      "elapsedMs": 457,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_dashboard-390.png",
+      "violations": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              "button[data-hotkey=\"u\"]"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "link-name",
+          "impact": "serious",
+          "description": "Ensure links have discernible text",
+          "targets": [
+            [
+              "a"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_dashboard",
+      "width": 768,
+      "elapsedMs": 418,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_dashboard-768.png",
+      "violations": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_sections"
+            ],
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-parent",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require parent roles are contained by them",
+          "targets": [
+            [
+              ".o_menu_brand"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_dashboard",
+      "width": 1440,
+      "elapsedMs": 367,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_dashboard-1440.png",
+      "violations": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_sections"
+            ],
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-parent",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require parent roles are contained by them",
+          "targets": [
+            [
+              ".o_menu_brand"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_service_leads",
+      "width": 375,
+      "elapsedMs": 740,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_service_leads-375.png",
+      "violations": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              ".btn-secondary.o-dropdown.dropdown-toggle"
+            ],
+            [
+              ".o_control_panel_navigation > .btn-secondary.btn"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "link-name",
+          "impact": "serious",
+          "description": "Ensure links have discernible text",
+          "targets": [
+            [
+              "a"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_service_leads",
+      "width": 390,
+      "elapsedMs": 428,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_service_leads-390.png",
+      "violations": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              ".btn-secondary.o-dropdown.dropdown-toggle"
+            ],
+            [
+              ".o_control_panel_navigation > .btn-secondary.btn"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "link-name",
+          "impact": "serious",
+          "description": "Ensure links have discernible text",
+          "targets": [
+            [
+              "a"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_service_leads",
+      "width": 768,
+      "elapsedMs": 366,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_service_leads-768.png",
+      "violations": [
+        {
+          "id": "aria-allowed-attr",
+          "impact": "critical",
+          "description": "Ensure an element's role supports its ARIA attributes",
+          "targets": [
+            [
+              ".o_searchview"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_sections"
+            ],
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-parent",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require parent roles are contained by them",
+          "targets": [
+            [
+              ".o_menu_brand"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              ".lh-sm"
+            ],
+            [
+              ".o_kanban"
+            ],
+            [
+              ".o_list"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        },
+        {
+          "id": "role-img-alt",
+          "impact": "serious",
+          "description": "Ensure [role=\"img\"] elements have alternative text",
+          "targets": [
+            [
+              ".o_searchview_icon"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_service_leads",
+      "width": 1440,
+      "elapsedMs": 359,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_service_leads-1440.png",
+      "violations": [
+        {
+          "id": "aria-allowed-attr",
+          "impact": "critical",
+          "description": "Ensure an element's role supports its ARIA attributes",
+          "targets": [
+            [
+              ".o_searchview"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_sections"
+            ],
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-parent",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require parent roles are contained by them",
+          "targets": [
+            [
+              ".o_menu_brand"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              ".lh-sm"
+            ],
+            [
+              ".o_kanban"
+            ],
+            [
+              ".o_list"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        },
+        {
+          "id": "role-img-alt",
+          "impact": "serious",
+          "description": "Ensure [role=\"img\"] elements have alternative text",
+          "targets": [
+            [
+              ".o_searchview_icon"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_clients_open",
+      "width": 375,
+      "elapsedMs": 777,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_clients_open-375.png",
+      "violations": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              ".btn-secondary.o-dropdown.dropdown-toggle"
+            ],
+            [
+              ".o_control_panel_navigation > .btn-secondary.btn"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "link-name",
+          "impact": "serious",
+          "description": "Ensure links have discernible text",
+          "targets": [
+            [
+              ".o_menu_toggle"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_clients_open",
+      "width": 390,
+      "elapsedMs": 437,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_clients_open-390.png",
+      "violations": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              ".btn-secondary.o-dropdown.dropdown-toggle"
+            ],
+            [
+              ".o_control_panel_navigation > .btn-secondary.btn"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "link-name",
+          "impact": "serious",
+          "description": "Ensure links have discernible text",
+          "targets": [
+            [
+              ".o_menu_toggle"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_clients_open",
+      "width": 768,
+      "elapsedMs": 313,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_clients_open-768.png",
+      "violations": [
+        {
+          "id": "aria-allowed-attr",
+          "impact": "critical",
+          "description": "Ensure an element's role supports its ARIA attributes",
+          "targets": [
+            [
+              ".o_searchview"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_sections"
+            ],
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-parent",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require parent roles are contained by them",
+          "targets": [
+            [
+              ".o_menu_brand"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              ".lh-sm"
+            ],
+            [
+              ".o_list"
+            ],
+            [
+              ".o_kanban"
+            ],
+            [
+              ".o_optional_columns_dropdown > .p-0.o-dropdown.dropdown-toggle"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "label",
+          "impact": "critical",
+          "description": "Ensure every form element has a label",
+          "targets": [
+            [
+              "#checkbox-comp-1"
+            ],
+            [
+              "#checkbox-comp-2"
+            ],
+            [
+              "#checkbox-comp-3"
+            ],
+            [
+              "#checkbox-comp-4"
+            ],
+            [
+              "#checkbox-comp-5"
+            ],
+            [
+              "#checkbox-comp-6"
+            ],
+            [
+              "#checkbox-comp-7"
+            ],
+            [
+              "#checkbox-comp-8"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        },
+        {
+          "id": "role-img-alt",
+          "impact": "serious",
+          "description": "Ensure [role=\"img\"] elements have alternative text",
+          "targets": [
+            [
+              ".o_searchview_icon"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_clients_open",
+      "width": 1440,
+      "elapsedMs": 409,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_clients_open-1440.png",
+      "violations": [
+        {
+          "id": "aria-allowed-attr",
+          "impact": "critical",
+          "description": "Ensure an element's role supports its ARIA attributes",
+          "targets": [
+            [
+              ".o_searchview"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_sections"
+            ],
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-parent",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require parent roles are contained by them",
+          "targets": [
+            [
+              ".o_menu_brand"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              ".lh-sm"
+            ],
+            [
+              ".o_list"
+            ],
+            [
+              ".o_kanban"
+            ],
+            [
+              ".o_optional_columns_dropdown > .p-0.o-dropdown.dropdown-toggle"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "label",
+          "impact": "critical",
+          "description": "Ensure every form element has a label",
+          "targets": [
+            [
+              "#checkbox-comp-1"
+            ],
+            [
+              "#checkbox-comp-2"
+            ],
+            [
+              "#checkbox-comp-3"
+            ],
+            [
+              "#checkbox-comp-4"
+            ],
+            [
+              "#checkbox-comp-5"
+            ],
+            [
+              "#checkbox-comp-6"
+            ],
+            [
+              "#checkbox-comp-7"
+            ],
+            [
+              "#checkbox-comp-8"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        },
+        {
+          "id": "role-img-alt",
+          "impact": "serious",
+          "description": "Ensure [role=\"img\"] elements have alternative text",
+          "targets": [
+            [
+              ".o_searchview_icon"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_tasks",
+      "width": 375,
+      "elapsedMs": 783,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_tasks-375.png",
+      "violations": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              "button[data-hotkey=\"u\"]"
+            ],
+            [
+              ".o_cp_switch_buttons > .btn-secondary.o-dropdown.dropdown-toggle"
+            ],
+            [
+              ".o_control_panel_navigation > .btn-secondary.btn"
+            ],
+            [
+              ".p-0"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "link-name",
+          "impact": "serious",
+          "description": "Ensure links have discernible text",
+          "targets": [
+            [
+              "a"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_tasks",
+      "width": 390,
+      "elapsedMs": 371,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_tasks-390.png",
+      "violations": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              "button[data-hotkey=\"u\"]"
+            ],
+            [
+              ".o_cp_switch_buttons > .btn-secondary.o-dropdown.dropdown-toggle"
+            ],
+            [
+              ".o_control_panel_navigation > .btn-secondary.btn"
+            ],
+            [
+              ".p-0"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "link-name",
+          "impact": "serious",
+          "description": "Ensure links have discernible text",
+          "targets": [
+            [
+              "a"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_tasks",
+      "width": 768,
+      "elapsedMs": 327,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_tasks-768.png",
+      "violations": [
+        {
+          "id": "aria-allowed-attr",
+          "impact": "critical",
+          "description": "Ensure an element's role supports its ARIA attributes",
+          "targets": [
+            [
+              ".o_searchview"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_sections"
+            ],
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-parent",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require parent roles are contained by them",
+          "targets": [
+            [
+              ".o_menu_brand"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              ".lh-sm"
+            ],
+            [
+              ".o_list"
+            ],
+            [
+              ".o_calendar"
+            ],
+            [
+              ".o_optional_columns_dropdown > .p-0.o-dropdown.dropdown-toggle"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "label",
+          "impact": "critical",
+          "description": "Ensure every form element has a label",
+          "targets": [
+            [
+              "#checkbox-comp-1"
+            ],
+            [
+              "#checkbox-comp-2"
+            ],
+            [
+              "#checkbox-comp-3"
+            ],
+            [
+              "#checkbox-comp-4"
+            ],
+            [
+              "#checkbox-comp-5"
+            ],
+            [
+              "#checkbox-comp-6"
+            ],
+            [
+              "#checkbox-comp-7"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        },
+        {
+          "id": "role-img-alt",
+          "impact": "serious",
+          "description": "Ensure [role=\"img\"] elements have alternative text",
+          "targets": [
+            [
+              ".o_searchview_icon"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_tasks",
+      "width": 1440,
+      "elapsedMs": 319,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_tasks-1440.png",
+      "violations": [
+        {
+          "id": "aria-allowed-attr",
+          "impact": "critical",
+          "description": "Ensure an element's role supports its ARIA attributes",
+          "targets": [
+            [
+              ".o_searchview"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_sections"
+            ],
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-parent",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require parent roles are contained by them",
+          "targets": [
+            [
+              ".o_menu_brand"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              ".lh-sm"
+            ],
+            [
+              ".o_list"
+            ],
+            [
+              ".o_calendar"
+            ],
+            [
+              ".o_optional_columns_dropdown > .p-0.o-dropdown.dropdown-toggle"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "label",
+          "impact": "critical",
+          "description": "Ensure every form element has a label",
+          "targets": [
+            [
+              "#checkbox-comp-1"
+            ],
+            [
+              "#checkbox-comp-2"
+            ],
+            [
+              "#checkbox-comp-3"
+            ],
+            [
+              "#checkbox-comp-4"
+            ],
+            [
+              "#checkbox-comp-5"
+            ],
+            [
+              "#checkbox-comp-6"
+            ],
+            [
+              "#checkbox-comp-7"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        },
+        {
+          "id": "role-img-alt",
+          "impact": "serious",
+          "description": "Ensure [role=\"img\"] elements have alternative text",
+          "targets": [
+            [
+              ".o_searchview_icon"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_today",
+      "width": 375,
+      "elapsedMs": 726,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_today-375.png",
+      "violations": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              ".btn-secondary.o-dropdown.dropdown-toggle"
+            ],
+            [
+              ".o_control_panel_navigation > .btn-secondary.btn"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "link-name",
+          "impact": "serious",
+          "description": "Ensure links have discernible text",
+          "targets": [
+            [
+              "a"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_today",
+      "width": 390,
+      "elapsedMs": 447,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_today-390.png",
+      "violations": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              ".btn-secondary.o-dropdown.dropdown-toggle"
+            ],
+            [
+              ".o_control_panel_navigation > .btn-secondary.btn"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "link-name",
+          "impact": "serious",
+          "description": "Ensure links have discernible text",
+          "targets": [
+            [
+              "a"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_today",
+      "width": 768,
+      "elapsedMs": 389,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_today-768.png",
+      "violations": [
+        {
+          "id": "aria-allowed-attr",
+          "impact": "critical",
+          "description": "Ensure an element's role supports its ARIA attributes",
+          "targets": [
+            [
+              ".o_searchview"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_sections"
+            ],
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-parent",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require parent roles are contained by them",
+          "targets": [
+            [
+              ".o_menu_brand"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              ".o_kanban"
+            ],
+            [
+              ".o_calendar"
+            ],
+            [
+              ".o_list"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        },
+        {
+          "id": "role-img-alt",
+          "impact": "serious",
+          "description": "Ensure [role=\"img\"] elements have alternative text",
+          "targets": [
+            [
+              ".o_searchview_icon"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_today",
+      "width": 1440,
+      "elapsedMs": 383,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_today-1440.png",
+      "violations": [
+        {
+          "id": "aria-allowed-attr",
+          "impact": "critical",
+          "description": "Ensure an element's role supports its ARIA attributes",
+          "targets": [
+            [
+              ".o_searchview"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_sections"
+            ],
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-parent",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require parent roles are contained by them",
+          "targets": [
+            [
+              ".o_menu_brand"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              ".o_kanban"
+            ],
+            [
+              ".o_calendar"
+            ],
+            [
+              ".o_list"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        },
+        {
+          "id": "role-img-alt",
+          "impact": "serious",
+          "description": "Ensure [role=\"img\"] elements have alternative text",
+          "targets": [
+            [
+              ".o_searchview_icon"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_contractor_rates",
+      "width": 375,
+      "elapsedMs": 756,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_contractor_rates-375.png",
+      "violations": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              "button[data-hotkey=\"u\"]"
+            ],
+            [
+              ".o_control_panel_navigation > .btn-secondary.btn"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "link-name",
+          "impact": "serious",
+          "description": "Ensure links have discernible text",
+          "targets": [
+            [
+              "a"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        },
+        {
+          "id": "scrollable-region-focusable",
+          "impact": "serious",
+          "description": "Ensure elements that have scrollable content are accessible by keyboard in Safari",
+          "targets": [
+            [
+              ".o_list_renderer"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_contractor_rates",
+      "width": 390,
+      "elapsedMs": 426,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_contractor_rates-390.png",
+      "violations": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              "button[data-hotkey=\"u\"]"
+            ],
+            [
+              ".o_control_panel_navigation > .btn-secondary.btn"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "link-name",
+          "impact": "serious",
+          "description": "Ensure links have discernible text",
+          "targets": [
+            [
+              "a"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        },
+        {
+          "id": "scrollable-region-focusable",
+          "impact": "serious",
+          "description": "Ensure elements that have scrollable content are accessible by keyboard in Safari",
+          "targets": [
+            [
+              ".o_list_renderer"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_contractor_rates",
+      "width": 768,
+      "elapsedMs": 336,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_contractor_rates-768.png",
+      "violations": [
+        {
+          "id": "aria-allowed-attr",
+          "impact": "critical",
+          "description": "Ensure an element's role supports its ARIA attributes",
+          "targets": [
+            [
+              ".o_searchview"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_sections"
+            ],
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-parent",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require parent roles are contained by them",
+          "targets": [
+            [
+              ".o_menu_brand"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              ".lh-sm"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "label",
+          "impact": "critical",
+          "description": "Ensure every form element has a label",
+          "targets": [
+            [
+              "#checkbox-comp-1"
+            ],
+            [
+              "#checkbox-comp-2"
+            ],
+            [
+              "#checkbox-comp-3"
+            ],
+            [
+              "#checkbox-comp-4"
+            ],
+            [
+              "#checkbox-comp-5"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        },
+        {
+          "id": "role-img-alt",
+          "impact": "serious",
+          "description": "Ensure [role=\"img\"] elements have alternative text",
+          "targets": [
+            [
+              ".o_searchview_icon"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_contractor_rates",
+      "width": 1440,
+      "elapsedMs": 302,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_contractor_rates-1440.png",
+      "violations": [
+        {
+          "id": "aria-allowed-attr",
+          "impact": "critical",
+          "description": "Ensure an element's role supports its ARIA attributes",
+          "targets": [
+            [
+              ".o_searchview"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_sections"
+            ],
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-parent",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require parent roles are contained by them",
+          "targets": [
+            [
+              ".o_menu_brand"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              ".lh-sm"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "label",
+          "impact": "critical",
+          "description": "Ensure every form element has a label",
+          "targets": [
+            [
+              "#checkbox-comp-1"
+            ],
+            [
+              "#checkbox-comp-2"
+            ],
+            [
+              "#checkbox-comp-3"
+            ],
+            [
+              "#checkbox-comp-4"
+            ],
+            [
+              "#checkbox-comp-5"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        },
+        {
+          "id": "role-img-alt",
+          "impact": "serious",
+          "description": "Ensure [role=\"img\"] elements have alternative text",
+          "targets": [
+            [
+              ".o_searchview_icon"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "bypass",
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_guide",
+      "width": 375,
+      "elapsedMs": 734,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_guide-375.png",
+      "violations": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              ".btn-secondary"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "link-name",
+          "impact": "serious",
+          "description": "Ensure links have discernible text",
+          "targets": [
+            [
+              "a"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_guide",
+      "width": 390,
+      "elapsedMs": 354,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_guide-390.png",
+      "violations": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              ".btn-secondary"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "link-name",
+          "impact": "serious",
+          "description": "Ensure links have discernible text",
+          "targets": [
+            [
+              "a"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_guide",
+      "width": 768,
+      "elapsedMs": 301,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_guide-768.png",
+      "violations": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_sections"
+            ],
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-parent",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require parent roles are contained by them",
+          "targets": [
+            [
+              ".o_menu_brand"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_guide",
+      "width": 1440,
+      "elapsedMs": 304,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_guide-1440.png",
+      "violations": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_sections"
+            ],
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-parent",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require parent roles are contained by them",
+          "targets": [
+            [
+              ".o_menu_brand"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_owner_dashboard",
+      "width": 375,
+      "elapsedMs": 833,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_owner_dashboard-375.png",
+      "violations": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              "button[data-hotkey=\"u\"]"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "link-name",
+          "impact": "serious",
+          "description": "Ensure links have discernible text",
+          "targets": [
+            [
+              "a"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_owner_dashboard",
+      "width": 390,
+      "elapsedMs": 424,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_owner_dashboard-390.png",
+      "violations": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "button-name",
+          "impact": "critical",
+          "description": "Ensure buttons have discernible text",
+          "targets": [
+            [
+              "button[data-hotkey=\"u\"]"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "link-name",
+          "impact": "serious",
+          "description": "Ensure links have discernible text",
+          "targets": [
+            [
+              "a"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_owner_dashboard",
+      "width": 768,
+      "elapsedMs": 378,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_owner_dashboard-768.png",
+      "violations": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_sections"
+            ],
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-parent",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require parent roles are contained by them",
+          "targets": [
+            [
+              ".o_menu_brand"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        },
+        {
+          "id": "scrollable-region-focusable",
+          "impact": "serious",
+          "description": "Ensure elements that have scrollable content are accessible by keyboard in Safari",
+          "targets": [
+            [
+              ".o_content"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "action_field_owner_dashboard",
+      "width": 1440,
+      "elapsedMs": 369,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "action_field_owner_dashboard-1440.png",
+      "violations": [
+        {
+          "id": "aria-required-children",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require child roles contain them",
+          "targets": [
+            [
+              ".o_menu_sections"
+            ],
+            [
+              ".o_menu_systray"
+            ]
+          ]
+        },
+        {
+          "id": "aria-required-parent",
+          "impact": "critical",
+          "description": "Ensure elements with an ARIA role that require parent roles are contained by them",
+          "targets": [
+            [
+              ".o_menu_brand"
+            ]
+          ]
+        },
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        },
+        {
+          "id": "meta-viewport",
+          "impact": "moderate",
+          "description": "Ensure <meta name=\"viewport\"> does not disable text scaling and zooming",
+          "targets": [
+            [
+              "meta[name=\"viewport\"]"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "contractor-list",
+      "width": 375,
+      "elapsedMs": 207,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "contractor-list-375.png",
+      "violations": [
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [],
+      "network": []
+    },
+    {
+      "screen": "contractor-list",
+      "width": 390,
+      "elapsedMs": 94,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "contractor-list-390.png",
+      "violations": [
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [],
+      "network": []
+    },
+    {
+      "screen": "contractor-list",
+      "width": 768,
+      "elapsedMs": 78,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "contractor-list-768.png",
+      "violations": [
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [],
+      "network": []
+    },
+    {
+      "screen": "contractor-list",
+      "width": 1440,
+      "elapsedMs": 80,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "contractor-list-1440.png",
+      "violations": [
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [],
+      "network": []
+    },
+    {
+      "screen": "contractor-report",
+      "width": 375,
+      "elapsedMs": 184,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "contractor-report-375.png",
+      "violations": [
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "contractor-report",
+      "width": 390,
+      "elapsedMs": 102,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "contractor-report-390.png",
+      "violations": [
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "contractor-report",
+      "width": 768,
+      "elapsedMs": 84,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "contractor-report-768.png",
+      "violations": [
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "contractor-report",
+      "width": 1440,
+      "elapsedMs": 88,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "contractor-report-1440.png",
+      "violations": [
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "network": []
+    },
+    {
+      "screen": "login",
+      "width": 375,
+      "elapsedMs": 504,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "login-375.png",
+      "violations": [
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [],
+      "network": []
+    },
+    {
+      "screen": "login",
+      "width": 390,
+      "elapsedMs": 97,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "login-390.png",
+      "violations": [
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [],
+      "network": []
+    },
+    {
+      "screen": "login",
+      "width": 768,
+      "elapsedMs": 76,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "login-768.png",
+      "violations": [
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [],
+      "network": []
+    },
+    {
+      "screen": "login",
+      "width": 1440,
+      "elapsedMs": 74,
+      "overflow": false,
+      "direction": "rtl",
+      "screenshot": "login-1440.png",
+      "violations": [
+        {
+          "id": "html-has-lang",
+          "impact": "serious",
+          "description": "Ensure every HTML document has a lang attribute",
+          "targets": [
+            [
+              "html"
+            ]
+          ]
+        }
+      ],
+      "incomplete": [],
+      "network": []
+    }
+  ],
+  "errors": [],
+  "note": "Viewport emulation; no physical phone, screen reader or live integration verification."
+}

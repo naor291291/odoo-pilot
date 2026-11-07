@@ -23,3 +23,9 @@ test_whatsapp_uploads_private_bytes_then_uses_media_id (__main__.DeliveryAdapter
 Ran 6 tests in 0.034s
 
 OK
+
+Final CI 42404096194, executable head 4bd513f5249402c1a77fb1a2107d8aac3b7a475c:
+205 native tests passed; 6 mocked adapters passed; 6 runtime security checks passed.
+Four Chrome suites passed; 14 journey assertions passed; 44 axe states, zero violations/errors/overflow, all RTL.
+Synthetic restore passed: 46 attachment checksums, separate database.
+Source/history checks passed in 42404096013. Dependency inventory still reports 146 raw records; see triage.
