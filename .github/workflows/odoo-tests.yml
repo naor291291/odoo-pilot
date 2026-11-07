@@ -38,7 +38,10 @@ jobs:
           CHROME_BIN="$(command -v google-chrome)" PYTHONPATH="$RUNNER_TEMP/field-ui-python" python3 scripts/check_crm_ui.py || CRM_SCREEN_RESULT=$?
           JOURNEY_RESULT=0
           CHROME_BIN="$(command -v google-chrome)" PYTHONPATH="$RUNNER_TEMP/field-ui-python" python3 scripts/check_browser_journeys.py || JOURNEY_RESULT=$?
-          if [ "$FIELD_FLOW_RESULT" -ne 0 ] || [ "$CRM_SCREEN_RESULT" -ne 0 ] || [ "$JOURNEY_RESULT" -ne 0 ]; then exit 1; fi
+          npm ci --prefix scripts/qa --ignore-scripts
+          ACCESSIBILITY_RESULT=0
+          CHROME_BIN="$(command -v google-chrome)" npm --prefix scripts/qa run audit || ACCESSIBILITY_RESULT=$?
+          if [ "$FIELD_FLOW_RESULT" -ne 0 ] || [ "$CRM_SCREEN_RESULT" -ne 0 ] || [ "$JOURNEY_RESULT" -ne 0 ] || [ "$ACCESSIBILITY_RESULT" -ne 0 ]; then exit 1; fi
       - name: Restore synthetic pilot and financial fixtures into a separate database
         run: docker compose -f .devcontainer/compose.yaml run --rm odoo python3 scripts/check_backup_restore.py
       - name: Build visual UI evidence

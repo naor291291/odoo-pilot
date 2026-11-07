@@ -179,7 +179,7 @@ with sync_playwright() as playwright, capture_on_failure():
     select_tab('עלויות וקבלן')
     pricing = page.locator('.o_field_pricing_card')
     material = pricing.locator('[name="field_material_cost"] input')
-    for width in (1440, 1024, 768, 390):
+    for width in (1440, 1024, 768, 390, 375):
         page.set_viewport_size({'width': width, 'height': 1000})
         material.scroll_into_view_if_needed()
         material.click()
@@ -567,7 +567,7 @@ with sync_playwright() as playwright, capture_on_failure():
     expect(page.locator('.o_field_owner_charts article')).to_have_count(3)
     for metric in ('sale_total', 'receipt_total', 'estimated_profit', 'conversion'):
         expect(page.locator(f'[name="{metric}"]')).to_be_visible()
-    for width in (1440, 390):
+    for width in (1440, 768, 390, 375):
         page.set_viewport_size({'width': width, 'height': 900})
         # Odoo updates its responsive form and control panel after the resize.
         page.wait_for_function('document.documentElement.scrollWidth <= innerWidth + 1', timeout=5000)

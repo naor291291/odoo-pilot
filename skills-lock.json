@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "skills": {
+    "interface-design": {
+      "source": "../../../../tmp/qa-interface-design",
+      "sourceType": "local",
+      "computedHash": "340cc79a1558f09371aa3eb689952a8b777c1d7362c24226e99693606a80828e"
+    },
+    "web-design-guidelines": {
+      "source": "../../../../tmp/qa-vercel-skills",
+      "sourceType": "local",
+      "computedHash": "a6a44d5498f7e8f68289902f3dedfc6f38ae0cee1e96527c80724cf27f727c2a"
+    }
+  }
+}

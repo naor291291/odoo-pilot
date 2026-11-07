@@ -22,6 +22,25 @@ def verified_signature(secret, signature, body):
     return hmac.compare_digest(signature.encode(), expected.encode())
 
 
+def validate_event_structure(event):
+    """Reject malformed signed batches before applying any of their changes."""
+    def objects(parent, key):
+        value = parent.get(key, [])
+        if not isinstance(value, list) or any(not isinstance(item, dict) for item in value):
+            raise BadRequest()
+        return value
+
+    for entry in objects(event, 'entry'):
+        for change in objects(entry, 'changes'):
+            value = change.get('value', {})
+            if not isinstance(value, dict) or not isinstance(value.get('metadata', {}), dict):
+                raise BadRequest()
+            objects(value, 'statuses')
+            for message in objects(value, 'messages'):
+                if not isinstance(message.get('text', {}), dict):
+                    raise BadRequest()
+
+
 class FieldWorkWhatsApp(http.Controller):
 
     @http.route('/field-work/whatsapp/webhook', type='http', auth='public',
@@ -56,6 +75,7 @@ class FieldWorkWhatsApp(http.Controller):
             raise BadRequest() from error
         if not isinstance(event, dict) or event.get('object') != 'whatsapp_business_account':
             raise BadRequest()
+        validate_event_structure(event)
         company = request.env['res.company'].sudo().browse(int(company_id)).exists()
         if not company:
             raise NotFound()

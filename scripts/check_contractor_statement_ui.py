@@ -143,7 +143,7 @@ with sync_playwright() as playwright:
         report_id = report_rows[0]['id']
         expected = report_rows[0]['payload']
         assert (expected['opening'], expected['credit'], expected['paid'], expected['closing']) == (-100, 700, 250, 350)
-        for width in (1440, 1024, 768, 390):
+        for width in (1440, 1024, 768, 390, 375):
             page.set_viewport_size({'width': width, 'height': 1000})
             capture(f'statement-{width}')
             assert closing.evaluate('el => getComputedStyle(el).direction') == 'ltr'

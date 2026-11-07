@@ -1,0 +1,13 @@
+qa-baseline-tests
+2026-11-07 18:29:08,889 18 INFO odoo_pilot_tests odoo.tests.result: 0 failed, 0 error(s) of 203 tests when loading database 'odoo_pilot_tests' 
+Verified 203 Odoo integration tests.
+qa-reproduce
+2026-11-07 18:29:51,715 16 INFO odoo_pilot_tests odoo.tests.result: 0 failed, 0 error(s) of 1 tests when loading database 'odoo_pilot_tests' 
+qa-webhook-before
+2026-11-07 18:30:26,472 16 ERROR odoo_pilot_tests odoo.addons.field_work_photos.tests.test_field_pilot_metrics: FAIL: TestFieldWhatsAppWebhook.test_signed_malformed_event_structure_is_rejected
+AssertionError: 500 != 400
+2026-11-07 18:30:26,484 16 ERROR odoo_pilot_tests odoo.tests.result: 1 failed, 0 error(s) of 1 tests when loading database 'odoo_pilot_tests' 
+
+qa-final-tests
+2026-11-07 18:32:17,309 17 INFO odoo_pilot_tests odoo.tests.result: 0 failed, 0 error(s) of 205 tests when loading database 'odoo_pilot_tests' 
+Verified 205 Odoo integration tests.
