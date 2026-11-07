@@ -68,8 +68,12 @@ class FieldWorkPortal(CustomerPortal):
         messages = {'saved': 'הדיווח והתמונות נשמרו. אפשר לחזור לעבודה ולהגיש בהמשך.',
                     'submitted': 'הדיווח והתמונות נשלחו לבדיקת התפעול.'}
         message = messages.get(notice) if notice != 'submitted' or task.field_review_state == 'pending' else None
+        has_unsaved_report = bool(report_values and any(
+            value != (task[name] or '') for name, value in report_values.items()
+        ))
         response = request.render('field_work_photos.portal_field_work_detail', {
             'task': task, 'page_name': 'field_work', 'error': error, 'notice': message,
+            'has_unsaved_report': has_unsaved_report,
             'galleries': {kind: task._field_gallery(kind) for kind in ('before', 'after')},
             'report': report_values or {name: task[name] or '' for name in ('field_visit_result', 'field_visit_summary', 'field_visit_reason', 'field_visit_notes')},
             'phone_url': 'tel:' + re.sub(r'[^0-9+]', '', task.field_customer_phone or ''),
