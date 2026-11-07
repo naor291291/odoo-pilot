@@ -1,0 +1,14 @@
+[options]
+addons_path = /mnt/extra-addons
+data_dir = /var/lib/odoo
+admin_passwd = REPLACE_WITH_A_UNIQUE_RANDOM_SECRET
+db_name = field_crm
+dbfilter = ^field_crm$
+list_db = False
+proxy_mode = True
+workers = 2
+max_cron_threads = 1
+limit_time_cpu = 120
+limit_time_real = 240
+limit_memory_soft = 805306368
+limit_memory_hard = 1073741824

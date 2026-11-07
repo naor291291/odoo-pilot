@@ -84,6 +84,14 @@
     .o_form_sheet { width: 100%; min-width: 0 !important; box-sizing: border-box; }
     .o_field_service_card { min-width: 0; overflow-wrap: anywhere; }
     .o_field_widget { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+    .o_field_owner_charts { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr)); }
+    .o_field_owner_charts article { padding: 16px; }
+    .o_field_owner_charts ul { margin: 0; padding: 0; list-style: none; }
+    .o_field_owner_charts li { display: grid; grid-template-columns: 4.5em minmax(28px, 1fr) minmax(6em, auto); gap: 8px; align-items: center; margin-block: 8px; }
+    .o_field_trend_track { position: relative; min-width: 0; height: 10px; background: #e8eff3; border-radius: 3px; }
+    .o_field_trend_track > span { display: block; height: 100%; border-radius: inherit; background: #086b74; }
+    .o_field_trend_track > .o_field_trend_negative { background: #a62e3e; }
+    .o_field_trend_target::after { position: absolute; inset-inline-start: 50%; inset-block: -2px; width: 2px; background: #334155; content: ''; }
 }
 .o_field_ui.o_field_task_form .o_field_image img { max-height: 320px; object-fit: contain; }
 .o_field_portal {

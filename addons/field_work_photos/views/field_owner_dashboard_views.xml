@@ -1,5 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <template id="field_owner_trends">
+        <section class="o_field_owner_trends" dir="rtl" lang="he">
+            <h2>מגמות בששת החודשים האחרונים</h2>
+            <div class="o_field_owner_charts">
+                <article t-foreach="charts" t-as="chart" class="o_field_service_card">
+                    <h3 t-out="chart[0]"/>
+                    <p t-out="chart[1]"/>
+                    <t t-set="maximum" t-value="100 if chart[2] == 'conversion' else max([1] + [abs(month[chart[2]] or 0) for month in months])"/>
+                    <ul>
+                        <li t-foreach="months" t-as="month">
+                            <span dir="ltr" t-out="month['label']"/>
+                            <t t-set="value" t-value="month[chart[2]]"/>
+                            <div t-att-class="'o_field_trend_track ' + ('o_field_trend_target' if chart[2] == 'conversion' else '')" aria-hidden="true">
+                                <span t-att-class="'o_field_trend_negative' if value is not None and value &lt; 0 else ''"
+                                      t-att-style="'width: %.2f%%' % (abs(value or 0) / maximum * 100)"/>
+                            </div>
+                            <span t-if="value is not None" dir="ltr" t-out="'{:,.2f} {}'.format(value, chart[3])"/>
+                            <span t-else="">אין נתון</span>
+                        </li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+    </template>
     <record id="view_field_owner_dashboard" model="ir.ui.view">
         <field name="name">field.work.owner.dashboard.form</field>
         <field name="model">field.work.owner.dashboard</field>
@@ -37,6 +61,7 @@
                         </section>
                     </div>
                     <p class="o_field_help">המדדים כוללים עבודות פעילות ובארכיון בחברה הנבחרת. הרווח מבוסס על תמחור חומרים וקבלן בכרטיס העבודה.</p>
+                    <field name="trends" widget="html" nolabel="1" readonly="1"/>
                 </sheet>
             </form>
         </field>
