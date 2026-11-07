@@ -24,6 +24,11 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 exec 9> .backup.lock
 flock -n 9
+restic snapshots --latest 1 >/dev/null
+if [[ -z "$("${compose[@]}" ps --status running -q odoo)" ]]; then
+    printf '%s\n' 'Start the CRM before taking a scheduled backup.' >&2
+    exit 1
+fi
 
 # Quiesce all application writers while taking a consistent database/filestore pair.
 stopped=1

@@ -14,7 +14,7 @@
                             <t t-set="value" t-value="month[chart[2]]"/>
                             <div t-att-class="'o_field_trend_track ' + ('o_field_trend_target' if chart[2] == 'conversion' else '')" aria-hidden="true">
                                 <span t-att-class="'o_field_trend_negative' if value is not None and value &lt; 0 else ''"
-                                      t-att-style="'width: %.2f%%' % (abs(value or 0) / maximum * 100)"/>
+                                      t-att-style="'width: {:.2f}%'.format(abs(value or 0) / maximum * 100)"/>
                             </div>
                             <span t-if="value is not None" dir="ltr" t-out="'{:,.2f} {}'.format(value, chart[3])"/>
                             <span t-else="">אין נתון</span>

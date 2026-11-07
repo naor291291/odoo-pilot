@@ -3,6 +3,7 @@ import hashlib
 import hmac
 import json
 
+from psycopg2.errors import UniqueViolation
 from werkzeug.exceptions import BadRequest, Forbidden, NotFound, RequestEntityTooLarge, ServiceUnavailable
 
 from odoo import http
@@ -60,7 +61,7 @@ class FieldWorkWhatsApp(http.Controller):
         for entry in event.get('entry') or []:
             for change in entry.get('changes') or []:
                 value = change.get('value') or {}
-                if change.get('field') == 'messages' and value.get('metadata', {}).get('phone_number_id') == phone_id:
+                if change.get('field') == 'messages' and (value.get('metadata') or {}).get('phone_number_id') == phone_id:
                     self._apply_change(company, value)
         return request.make_response('OK', headers=[('Content-Type', 'text/plain')])
 
@@ -88,8 +89,6 @@ class FieldWorkWhatsApp(http.Controller):
                 attempt.write({'status': 'failed', 'result_note': 'WhatsApp דיווח שההודעה לא נמסרה.'})
         if setting('WHATSAPP_INBOUND') != '1' or not value.get('messages'):
             return
-        # Serialize imports for this phone/company before searching the idempotency key.
-        env.cr.execute('SELECT id FROM res_company WHERE id = %s FOR UPDATE', [company.id])
         leads = env['crm.lead'].sudo().with_context(allowed_company_ids=[company.id], active_test=False)
         for message in value['messages']:
             event_id = message.get('id')
@@ -99,7 +98,13 @@ class FieldWorkWhatsApp(http.Controller):
                     or not event_id.startswith('wamid.') or len(event_id) > 255
                     or not sender or not isinstance(body, str) or not body.strip()):
                 continue
-            if not leads.search_count([('field_whatsapp_event_id', '=', event_id)], limit=1):
-                leads.create({'name': 'פנייה מוואטסאפ', 'company_id': company.id,
-                              'is_field_service': True, 'phone': '+' + sender,
-                              'field_work_description': body[:4000], 'field_whatsapp_event_id': event_id})
+            if leads.search_count([('field_whatsapp_event_id', '=', event_id)], limit=1):
+                continue
+            try:
+                with env.cr.savepoint():
+                    leads.create({'name': 'פנייה מוואטסאפ', 'company_id': company.id,
+                                  'is_field_service': True, 'phone': '+' + sender,
+                                  'field_work_description': body[:4000], 'field_whatsapp_event_id': event_id})
+            except UniqueViolation as error:
+                if error.diag.constraint_name != 'crm_lead_field_whatsapp_event_unique':
+                    raise

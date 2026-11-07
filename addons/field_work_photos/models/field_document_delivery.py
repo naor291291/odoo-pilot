@@ -61,7 +61,7 @@ class CrmLead(models.Model):
             digest = hashlib.sha256(pdf).hexdigest()
             attempts = self.env['field.work.delivery.attempt'].sudo().with_context({})
             for channel in channels:
-                key = f'{kind}:{channel}:{number}:{digest}'
+                key = hashlib.sha256(f'{kind}:{channel}:{number}:{digest}'.encode()).hexdigest()
                 if attempts.search_count([('lead_id', '=', lead.id), ('delivery_key', '=', key)], limit=1):
                     continue
                 lead._create_delivery_attempt(kind, channel, number, digest, key)

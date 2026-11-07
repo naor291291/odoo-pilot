@@ -2,6 +2,7 @@ import base64
 import hashlib
 import hmac
 from io import BytesIO
+import json
 import os
 from unittest.mock import patch
 
@@ -9,7 +10,7 @@ from PIL import Image
 from reportlab.pdfgen import canvas
 
 from odoo.exceptions import AccessError, ValidationError
-from odoo.tests import TransactionCase, new_test_user, tagged
+from odoo.tests import HttpCase, TransactionCase, new_test_user, tagged
 
 from ..controllers.field_whatsapp import verified_signature
 
@@ -203,3 +204,37 @@ class TestFieldPilotMetrics(TransactionCase):
         self.assertTrue(verified_signature('test-secret', signature, payload))
         self.assertFalse(verified_signature('test-secret', signature, payload + b' '))
         self.assertFalse(verified_signature('wrong-secret', signature, payload))
+
+
+@tagged('post_install', '-at_install')
+class TestFieldWhatsAppWebhook(HttpCase):
+    def test_signed_text_import_is_idempotent_and_scoped(self):
+        endpoint = '/field-work/whatsapp/webhook'
+        body = json.dumps({
+            'object': 'whatsapp_business_account',
+            'entry': [{'changes': [{'field': 'messages', 'value': {
+                'metadata': {'phone_number_id': '1234'},
+                'messages': [{'id': 'wamid.fixture', 'from': '972500000000', 'type': 'text',
+                              'text': {'body': 'פנייה סינתטית'}}],
+            }}]}],
+        }).encode()
+        signature = 'sha256=' + hmac.new(b'fixture-app', body, hashlib.sha256).hexdigest()
+        with patch.dict(os.environ, {
+            'FIELD_WORK_DELIVERY_DB': self.env.cr.dbname,
+            'FIELD_WORK_DELIVERY_COMPANY': str(self.env.company.id),
+            'FIELD_WORK_WHATSAPP_APP_SECRET': 'fixture-app',
+            'FIELD_WORK_WHATSAPP_VERIFY_TOKEN': 'fixture-verify',
+            'FIELD_WORK_WHATSAPP_PHONE_ID': '1234',
+            'FIELD_WORK_WHATSAPP_INBOUND': '1',
+        }):
+            self.assertEqual(self.url_open(endpoint + '?hub.mode=subscribe&hub.verify_token=fixture-verify&hub.challenge=123').text, '123')
+            headers = {'Content-Type': 'application/json', 'X-Hub-Signature-256': 'sha256=invalid'}
+            self.assertEqual(self.url_open(endpoint, data=body, headers=headers).status_code, 403)
+            headers['X-Hub-Signature-256'] = signature
+            for _ in range(2):
+                self.assertEqual(self.url_open(endpoint, data=body, headers=headers).status_code, 200)
+        lead = self.env['crm.lead'].sudo().search([('field_whatsapp_event_id', '=', 'wamid.fixture')])
+        self.assertEqual(len(lead), 1)
+        self.assertEqual(lead.field_dispatch_code, 'new')
+        self.assertEqual(lead.company_id, self.env.company)
+        self.assertEqual(lead.field_work_description, 'פנייה סינתטית')
