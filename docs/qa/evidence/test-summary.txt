@@ -11,3 +11,15 @@ AssertionError: 500 != 400
 qa-final-tests
 2026-11-07 18:32:17,309 17 INFO odoo_pilot_tests odoo.tests.result: 0 failed, 0 error(s) of 205 tests when loading database 'odoo_pilot_tests' 
 Verified 205 Odoo integration tests.
+
+test_invalid_configuration_never_opens_transport (__main__.DeliveryAdapterTests.test_invalid_configuration_never_opens_transport) ... ok
+test_smtp_rejection_is_redacted_and_closes_connection (__main__.DeliveryAdapterTests.test_smtp_rejection_is_redacted_and_closes_connection) ... ok
+test_ssl_sends_exact_pdf_and_hebrew_body (__main__.DeliveryAdapterTests.test_ssl_sends_exact_pdf_and_hebrew_body) ... ok
+test_starttls_precedes_authentication (__main__.DeliveryAdapterTests.test_starttls_precedes_authentication) ... ok
+test_whatsapp_rejected_upload_never_sends_message (__main__.DeliveryAdapterTests.test_whatsapp_rejected_upload_never_sends_message) ... ok
+test_whatsapp_uploads_private_bytes_then_uses_media_id (__main__.DeliveryAdapterTests.test_whatsapp_uploads_private_bytes_then_uses_media_id) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.034s
+
+OK

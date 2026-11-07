@@ -29,7 +29,7 @@ Status vocabulary: **Implemented & Verified**, **Implemented but Failed**, **Par
 | R19 | Multiple photos and file limits / §5 | `field_visit.py`, normalized images | Implemented & Verified | Up to five per kind, format/bytes/pixels/count and metadata tests |
 | R20 | Direct/contractor pricing and tiers / §4 | pricing model/rates | Implemented & Verified | `test_field_pricing.py`: boundaries, zero/negative outcomes, frozen rates |
 | R21 | Monthly contractor reconciliation / §5 | statement wizard and ledger | Implemented & Verified | `test_contractor_statement.py`: periods, opening balance, adjustments, cancellations, rounding |
-| R22 | Match original Google Sheet formulas | spreadsheet settlement extensions | Not Yet Tested | Existing calculation tests pass; original workbook formulas not independently reread in this run |
+| R22 | Match original Google Sheet formulas | spreadsheet settlement extensions | Implemented & Verified | Original XLSX export formulas J/K/L/M/N checked against implementation and passing boundary/special-case native tests; see evidence/formula-review.md. Currency precision and approved-ledger scope differ deliberately. |
 | R23 | Statement HTML/PDF parity / §5 | native QWeb report | Partially Implemented | Snapshot/authorization tests pass; real wkhtmltopdf rendering pending CI |
 | R24 | Owner income/profit/conversion charts / §3 | dashboard model/QWeb | Implemented & Verified | Metrics tests match source records and company; rendered chart audit pending |
 | R25 | Empty dashboard and period explanation | dashboard + six-month charts | Partially Implemented | Source reviewed, no interactive period filter; browser empty state pending |

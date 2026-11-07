@@ -22,6 +22,7 @@ jobs:
       - name: Run real Odoo integration tests
         run: |
           docker compose -f .devcontainer/compose.yaml run --rm odoo python3 scripts/pilot.py test
+          docker compose -f .devcontainer/compose.yaml run --rm odoo python3 scripts/qa/test_delivery_adapters.py
       - name: Check browser setup and sample task
         run: |
           docker compose -f .devcontainer/compose.yaml run --rm odoo python3 scripts/pilot.py smoke

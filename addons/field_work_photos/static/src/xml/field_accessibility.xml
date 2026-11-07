@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-inherit="web.NavBar" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_menu_systray')]" position="attributes">
+            <attribute name="role">group</attribute>
+            <attribute name="aria-label">כלי משתמש</attribute>
+        </xpath>
+        <xpath expr="//DropdownItem[@class=&quot;'o_menu_brand d-flex'&quot;]" position="attributes">
+            <attribute name="attrs">{ href: getMenuItemHref(currentApp), role: 'link', 'data-menu-xmlid': currentApp.xmlid, 'data-section': currentApp.id }</attribute>
+        </xpath>
+    </t>
+    <t t-inherit="web.NavBar.AppsMenu" t-inherit-mode="extension">
+        <xpath expr="//a[hasclass('o_menu_toggle')]" position="attributes"><attribute name="aria-label">פתיחת תפריט היישומים</attribute></xpath>
+    </t>
+    <t t-inherit="web.NavBar.SectionsMenu" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_menu_sections')]" position="attributes"><attribute name="role">menubar</attribute></xpath>
+        <xpath expr="//Dropdown/button" position="attributes"><attribute name="role">menuitem</attribute></xpath>
+    </t>
+    <t t-inherit="web.CogMenu" t-inherit-mode="extension">
+        <xpath expr="//button[@data-hotkey='u']" position="attributes"><attribute name="aria-label">פעולות נוספות</attribute></xpath>
+    </t>
+    <t t-inherit="web.ActionMenus" t-inherit-mode="extension">
+        <xpath expr="//button[@data-hotkey='u']" position="attributes"><attribute name="aria-label">פעולות נוספות</attribute></xpath>
+        <xpath expr="//button[@data-hotkey='shift+u']" position="attributes"><attribute name="aria-label">הדפסה</attribute></xpath>
+    </t>
+    <t t-inherit="web.ControlPanel" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_cp_switch_buttons')]//button" position="attributes"><attribute name="aria-label">בחירת תצוגה</attribute></xpath>
+        <xpath expr="//button[hasclass('o_switch_view')]" position="attributes"><attribute name="t-att-aria-label">view.name</attribute></xpath>
+    </t>
+    <t t-inherit="web.SearchBar.Toggler" t-inherit-mode="extension">
+        <xpath expr="//button" position="attributes"><attribute name="aria-label">הצגה או הסתרה של החיפוש</attribute><attribute name="t-att-aria-expanded">props.showSearchBar ? 'true' : 'false'</attribute></xpath>
+    </t>
+    <t t-inherit="web.SearchBar" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_searchview')]" position="attributes"><attribute name="aria-autocomplete"/></xpath>
+        <xpath expr="//i[hasclass('o_searchview_icon')]" position="attributes"><attribute name="role"/><attribute name="aria-hidden">true</attribute></xpath>
+    </t>
+    <t t-inherit="web.ListRenderer" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_list_renderer')]" position="attributes"><attribute name="tabindex">0</attribute><attribute name="aria-label">טבלת רשומות</attribute></xpath>
+        <xpath expr="//div[hasclass('o_optional_columns_dropdown')]//button" position="attributes"><attribute name="aria-label">בחירת עמודות</attribute></xpath>
+        <xpath expr="//th[hasclass('o_list_record_selector')]/CheckBox" position="inside"><span class="visually-hidden">בחירת כל הרשומות</span></xpath>
+    </t>
+    <t t-inherit="web.ListRenderer.RecordRow" t-inherit-mode="extension">
+        <xpath expr="//td[hasclass('o_list_record_selector')]/CheckBox" position="inside"><span class="visually-hidden">בחירת רשומה <t t-esc="record.data.display_name || record.resId"/></span></xpath>
+    </t>
+    <t t-inherit="web.Layout" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_content')]" position="attributes"><attribute name="tabindex">0</attribute></xpath>
+    </t>
+    <t t-inherit="project.ProjectTaskStateSelection" t-inherit-mode="extension">
+        <xpath expr="//button[@t-on-click.stop='toggleState']" position="attributes"><attribute name="aria-label">סימון המשימה כבוצעה</attribute></xpath>
+    </t>
+</templates>

@@ -12,6 +12,9 @@ Date: 2026-11-07. **Current decision: No-Go for real customer deployment.** No m
 - Malformed signed webhook reproduction: **1 failed as expected (500 vs 400)**. **Post-fix: 205/205 tests passed, 0 failures/errors**, including six malformed payload cases and valid intake.
 - Browser execution locally attempted with Python and Node Playwright, Chromium failed at process singleton socket creation (`Operation not permitted`). No new authenticated screenshots, visual approval, Firefox/WebKit result or axe success is claimed.
 
+- Additional pure adapter tests: **6/6 passed** with every SMTP/HTTP transport mocked; exact attachment bytes, Hebrew body, TLS before authentication, rejection redaction and upload-before-send verified.
+- Current CI dependency audit: **146 advisory records across 13 packages**; advisory job is allowed to pass despite findings. Source/history checks passed. Do not equate green job status with resolved dependencies.
+
 ## Reproducible coverage added
 
 Project-local instructions installed for interface-design, web-design-guidelines and playwright-cli. Microsoft CLI 0.1.23 installed; its browser download failed (invalid downloaded archive). Official Odoo 18 `TransactionCase`/`HttpCase` source read; no assumed SavepointCase/JS framework introduced. Current Vercel rules and existing design system read.

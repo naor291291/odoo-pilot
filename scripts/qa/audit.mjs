@@ -51,7 +51,11 @@ async function audit(context, name, route, selector) {
           targets:v.nodes.map(n=>n.target)})),
         incomplete:axe.incomplete.map(v=>v.id),network:[...network]});
     }
-  } catch(e) { errors.push({screen:name,type:e.name}); }
+  } catch(e) {
+    const screenshot = `${name}-failure.png`;
+    await page.screenshot({path:path.join(output,screenshot),fullPage:true}).catch(()=>{});
+    errors.push({screen:name,type:e.name,screenshot});
+  }
   finally {await page.close();}
 }
 try {
