@@ -1,7 +1,11 @@
+from dateutil.relativedelta import relativedelta
+
 from odoo import api, fields, models
 from odoo.exceptions import AccessError
 
 from .field_collection import OWNER
+from .contractor_statement import utc_boundary
+from .field_entitlement import business_date
 
 
 ACCEPTED_STAGES = ('schedule', 'field', 'completed', 'paid')
@@ -23,10 +27,56 @@ class FieldWorkOwnerDashboard(models.TransientModel):
     quoted_count = fields.Integer(compute='_compute_metrics', string='הצעות שנשלחו')
     accepted_count = fields.Integer(compute='_compute_metrics', string='הצעות שאושרו')
     conversion = fields.Float(compute='_compute_metrics', string='שיעור המרה', digits=(16, 2))
+    trends = fields.Html(compute='_compute_trends', sanitize=False, string='מגמות חצי שנתיות')
 
     def _require_owner(self):
         if not self.env.user.has_group(OWNER):
             raise AccessError('מדדי החברה זמינים לבעלים בלבד.')
+
+    @api.depends_context('uid', 'company')
+    def _compute_trends(self):
+        self._require_owner()
+        current_month = business_date(fields.Datetime.now()).replace(day=1)
+        start = current_month - relativedelta(months=5)
+        months = {
+            start + relativedelta(months=offset): dict(receipts=0, profit=0, quoted=0, accepted=0, priced=0)
+            for offset in range(6)
+        }
+        company = self.env.company
+        leads = self.env['crm.lead'].with_context(active_test=False).search([
+            ('is_field_service', '=', True), ('company_id', '=', company.id),
+            ('field_dispatch_code', 'in', QUOTED_STAGES), ('create_date', '>=', utc_boundary(start)),
+            ('create_date', '<', utc_boundary(current_month + relativedelta(months=1))),
+        ])
+        for lead in leads:
+            month = months[business_date(lead.create_date).replace(day=1)]
+            month['quoted'] += 1
+            if lead.field_dispatch_code in ACCEPTED_STAGES:
+                month['accepted'] += 1
+                if lead.field_sale_amount > 0 and (lead.field_execution_type == 'direct' or lead.field_contractor_id):
+                    month['profit'] += lead.field_gross_profit
+                    month['priced'] += 1
+        receipt_groups = self.env['field.work.payment'].with_context(active_test=False)._read_group([
+            ('company_id', '=', company.id), ('kind', '=', 'customer'), ('state', '=', 'posted'),
+            ('lead_id.is_field_service', '=', True), ('lead_id.company_id', '=', company.id),
+            ('payment_date', '>=', start), ('payment_date', '<', current_month + relativedelta(months=1)),
+        ], groupby=['payment_date:month'], aggregates=['amount:sum'])
+        for day, total in receipt_groups:
+            months[fields.Date.to_date(day)]['receipts'] = total
+        data = []
+        currency = self.env.ref('base.ILS')
+        for day, month in months.items():
+            data.append(dict(label=day.strftime('%m/%Y'), receipts=currency.round(month['receipts']),
+                             profit=currency.round(month['profit']) if month['priced'] else None,
+                             conversion=month['accepted'] / month['quoted'] * 100 if month['quoted'] else None))
+        charts = [
+            ('הכנסות לפי גבייה', 'תקבולים כולל מע״מ לפי חודש התשלום.', 'receipts', '₪'),
+            ('רווח גולמי צפוי', 'לפני מע״מ, לפי חודש פתיחת העבודות המאושרות עם תמחור מלא.', 'profit', '₪'),
+            ('המרת הצעות', 'לפי חודש פתיחת העבודה והשלב הנוכחי. יעד 50%.', 'conversion', '%'),
+        ]
+        for dashboard in self:
+            dashboard.trends = self.env['ir.qweb']._render(
+                'field_work_photos.field_owner_trends', {'months': data, 'charts': charts})
 
     @api.depends_context('uid', 'company')
     def _compute_metrics(self):

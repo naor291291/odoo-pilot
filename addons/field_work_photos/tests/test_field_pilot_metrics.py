@@ -1,10 +1,18 @@
 import base64
+import hashlib
+import hmac
 from io import BytesIO
+import json
+import os
+from unittest.mock import patch
 
+from PIL import Image
 from reportlab.pdfgen import canvas
 
 from odoo.exceptions import AccessError, ValidationError
-from odoo.tests import TransactionCase, new_test_user, tagged
+from odoo.tests import HttpCase, TransactionCase, new_test_user, tagged
+
+from ..controllers.field_whatsapp import verified_signature
 
 
 @tagged('post_install', '-at_install')
@@ -60,6 +68,10 @@ class TestFieldPilotMetrics(TransactionCase):
         board = Dashboard.browse(Dashboard.action_open()['res_id'])
         self.assertEqual((board.sale_total, board.receipt_total, board.estimated_profit), (1000, 300, 700))
         self.assertEqual((board.estimated_margin, board.quoted_count, board.accepted_count, board.conversion), (70, 2, 1, 50))
+        self.assertIn('o_field_owner_trends', board.trends)
+        self.assertIn('300.00 ₪', board.trends)
+        self.assertIn('700.00 ₪', board.trends)
+        self.assertIn('50.00 %', board.trends)
 
     def test_dashboard_rejects_operations_and_portal(self):
         Dashboard = self.env['field.work.owner.dashboard']
@@ -114,3 +126,115 @@ class TestFieldPilotMetrics(TransactionCase):
             attempt.with_user(self.ops).copy()
         with self.assertRaises(AccessError), self.cr.savepoint():
             wizard.with_user(self.portal).action_apply()
+
+    def delivery_config(self, **values):
+        return patch.dict(os.environ, {
+            'FIELD_WORK_DELIVERY_DB': self.env.cr.dbname, 'FIELD_WORK_DELIVERY_COMPANY': str(self.env.company.id),
+            'FIELD_WORK_AUTO_STAGES': '1', 'FIELD_WORK_EMAIL_MODE': 'test', 'FIELD_WORK_WHATSAPP_MODE': 'test',
+            'FIELD_WORK_EMAIL_TEST_RECIPIENT': 'metrics@example.com', 'FIELD_WORK_WHATSAPP_TEST_RECIPIENT': '972500000000',
+            **values,
+        })
+
+    def test_quote_queues_one_per_channel_and_does_not_send_during_write(self):
+        lead = self.lead(field_whatsapp_opt_in=True)
+        with self.delivery_config(), patch('odoo.addons.field_work_photos.models.field_document_delivery.send_email') as email, \
+                patch('odoo.addons.field_work_photos.models.field_document_delivery.send_whatsapp', return_value='wamid.test') as whatsapp:
+            lead.action_next_field_stage()
+            self.assertEqual(lead.field_dispatch_code, 'quote')
+            lead.field_quote_pdf = self.pdf
+            self.assertEqual(lead.field_dispatch_code, 'sent')
+            lead.field_quote_pdf = self.pdf
+            attempts = lead.field_delivery_attempt_ids.sudo()
+            self.assertEqual(len(attempts), 2)
+            self.assertEqual(set(attempts.mapped('status')), {'queued'})
+            email.assert_not_called()
+            whatsapp.assert_not_called()
+            for attempt in attempts:
+                self.assertEqual(attempt._deliver()[0], 'accepted')
+            self.assertEqual(email.call_args.args[-1], base64.b64decode(self.pdf))
+            self.assertEqual(whatsapp.call_args.args[-1], base64.b64decode(self.pdf))
+            lead.action_previous_field_stage()
+            self.assertEqual(lead.field_dispatch_code, 'quote')
+
+    def test_test_mode_and_consent_gate_delivery_and_allow_audited_retry(self):
+        lead = self.lead(field_quote_pdf=self.pdf)
+        with self.delivery_config(FIELD_WORK_EMAIL_TEST_RECIPIENT='allowed@example.com'), \
+                patch('odoo.addons.field_work_photos.models.field_document_delivery.send_email') as email:
+            lead.action_next_field_stage()
+            attempts = lead.field_delivery_attempt_ids.sudo()
+            self.assertEqual(len(attempts), 2)
+            blocked = attempts.filtered(lambda attempt: attempt.channel == 'whatsapp')
+            self.assertEqual(blocked.status, 'failed')
+            self.assertEqual(attempts.filtered(lambda attempt: attempt.channel == 'email')._deliver()[0], 'failed')
+            email.assert_not_called()
+            lead.field_whatsapp_opt_in = True
+            blocked.with_user(self.ops).action_retry_delivery()
+            blocked.with_user(self.ops).action_retry_delivery()
+            self.assertEqual(len(lead.field_delivery_attempt_ids), 3)
+            self.assertEqual(blocked.status, 'failed')
+
+    def test_invoice_waits_for_full_collection_and_cancellation_reopens(self):
+        lead = self.lead(field_invoice_pdf=self.pdf, field_invoice_number='I-FIXTURE', field_worker_id=self.ops.id,
+                         field_visit_at='2026-09-10 09:00:00')
+        with self.delivery_config(FIELD_WORK_WHATSAPP_MODE='off'):
+            for _ in range(4):
+                lead.action_next_field_stage()
+            stream = BytesIO()
+            Image.new('RGB', (8, 8), 'blue').save(stream, 'PNG')
+            photo = base64.b64encode(stream.getvalue())
+            lead.write({'field_report_before_image': photo, 'field_report_after_image': photo,
+                        'field_visit_summary': 'בדיקה'})
+            lead.action_submit_field_report()
+            lead.action_approve_field_report()
+            self.assertEqual(lead.field_dispatch_code, 'completed')
+            payments = self.env['field.work.payment'].with_user(self.ops)
+            payments.create({'lead_id': lead.id, 'amount': 400, 'reference': 'PART'})
+            self.assertEqual(lead.field_dispatch_code, 'completed')
+            self.assertFalse(lead.field_delivery_attempt_ids)
+            final = payments.create({'lead_id': lead.id, 'amount': 780, 'reference': 'FINAL'})
+            self.assertEqual(lead.field_dispatch_code, 'paid')
+            self.assertEqual(lead.field_delivery_attempt_ids.document_kind, 'invoice')
+            final._cancel_registration('Synthetic cancellation')
+            self.assertEqual(lead.field_dispatch_code, 'completed')
+            self.assertEqual(lead.field_delivery_attempt_ids.sudo()._deliver()[0], 'superseded')
+
+    def test_webhook_signature_checks_exact_bytes(self):
+        payload = b'{"object":"whatsapp_business_account"}'
+        signature = 'sha256=' + hmac.new(b'test-secret', payload, hashlib.sha256).hexdigest()
+        self.assertTrue(verified_signature('test-secret', signature, payload))
+        self.assertFalse(verified_signature('test-secret', signature, payload + b' '))
+        self.assertFalse(verified_signature('wrong-secret', signature, payload))
+
+
+@tagged('post_install', '-at_install')
+class TestFieldWhatsAppWebhook(HttpCase):
+    def test_signed_text_import_is_idempotent_and_scoped(self):
+        endpoint = '/field-work/whatsapp/webhook'
+        body = json.dumps({
+            'object': 'whatsapp_business_account',
+            'entry': [{'changes': [{'field': 'messages', 'value': {
+                'metadata': {'phone_number_id': '1234'},
+                'messages': [{'id': 'wamid.fixture', 'from': '972500000000', 'type': 'text',
+                              'text': {'body': 'פנייה סינתטית'}}],
+            }}]}],
+        }).encode()
+        signature = 'sha256=' + hmac.new(b'fixture-app', body, hashlib.sha256).hexdigest()
+        with patch.dict(os.environ, {
+            'FIELD_WORK_DELIVERY_DB': self.env.cr.dbname,
+            'FIELD_WORK_DELIVERY_COMPANY': str(self.env.company.id),
+            'FIELD_WORK_WHATSAPP_APP_SECRET': 'fixture-app',
+            'FIELD_WORK_WHATSAPP_VERIFY_TOKEN': 'fixture-verify',
+            'FIELD_WORK_WHATSAPP_PHONE_ID': '1234',
+            'FIELD_WORK_WHATSAPP_INBOUND': '1',
+        }):
+            self.assertEqual(self.url_open(endpoint + '?hub.mode=subscribe&hub.verify_token=fixture-verify&hub.challenge=123').text, '123')
+            headers = {'Content-Type': 'application/json', 'X-Hub-Signature-256': 'sha256=invalid'}
+            self.assertEqual(self.url_open(endpoint, data=body, headers=headers).status_code, 403)
+            headers['X-Hub-Signature-256'] = signature
+            for _ in range(2):
+                self.assertEqual(self.url_open(endpoint, data=body, headers=headers).status_code, 200)
+        lead = self.env['crm.lead'].sudo().search([('field_whatsapp_event_id', '=', 'wamid.fixture')])
+        self.assertEqual(len(lead), 1)
+        self.assertEqual(lead.field_dispatch_code, 'new')
+        self.assertEqual(lead.company_id, self.env.company)
+        self.assertEqual(lead.field_work_description, 'פנייה סינתטית')

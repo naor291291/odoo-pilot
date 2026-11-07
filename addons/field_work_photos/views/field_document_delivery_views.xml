@@ -14,9 +14,13 @@
                         class="btn btn-outline-secondary" invisible="not field_invoice_number"/>
             </xpath>
             <xpath expr="//div[hasclass('o_field_invoice_card')]" position="after">
+                <div class="o_field_control" groups="field_work_photos.group_field_dispatcher">
+                    <field name="field_whatsapp_opt_in"/>
+                    <label for="field_whatsapp_opt_in"/>
+                </div>
                 <div class="o_field_service_card" groups="field_work_photos.group_field_dispatcher" invisible="not field_delivery_attempt_ids">
                     <h2>יומן שליחת מסמכים</h2>
-                    <p class="o_field_help">תוצאות מספק מדומה. שום הודעה לא נשלחה ללקוח.</p>
+                    <p class="o_field_help">סימולציה מתעדת ניסיון בלבד. קבלה אצל הספק מציינת שההודעה התקבלה אצלו לשליחה.</p>
                     <field name="field_delivery_attempt_ids" readonly="1" nolabel="1">
                         <list create="false" edit="false" delete="false">
                             <field name="create_date" string="מועד"/>
@@ -32,11 +36,16 @@
                                 <field name="document_number"/>
                                 <field name="channel"/>
                                 <field name="status"/>
+                                <field name="result_note" invisible="not result_note"/>
                                 <field name="create_date" string="מועד"/>
                                 <field name="create_uid" string="משתמש"/>
                                 <field name="subject" invisible="not subject"/>
                                 <field name="message"/>
                             </group>
+                            <footer>
+                                <button name="action_retry_delivery" type="object" string="שליחה חוזרת"
+                                        class="btn-primary" invisible="status not in ('failed', 'superseded')"/>
+                            </footer>
                         </form>
                     </field>
                 </div>

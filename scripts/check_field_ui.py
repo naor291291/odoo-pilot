@@ -563,6 +563,8 @@ with sync_playwright() as playwright, capture_on_failure():
     page.goto(f'http://127.0.0.1:8069/odoo/action-{metrics_action}')
     settle(page)
     expect(page.get_by_role('heading', name='מדדי בעלים', exact=True)).to_be_visible()
+    expect(page.get_by_role('heading', name='מגמות בששת החודשים האחרונים')).to_be_visible()
+    expect(page.locator('.o_field_owner_charts article')).to_have_count(3)
     for metric in ('sale_total', 'receipt_total', 'estimated_profit', 'conversion'):
         expect(page.locator(f'[name="{metric}"]')).to_be_visible()
     for width in (1440, 390):

@@ -1,0 +1,4 @@
+.env
+delivery.env
+odoo.conf
+.backup.lock
