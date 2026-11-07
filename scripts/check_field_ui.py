@@ -567,6 +567,8 @@ with sync_playwright() as playwright, capture_on_failure():
         expect(page.locator(f'[name="{metric}"]')).to_be_visible()
     for width in (1440, 390):
         page.set_viewport_size({'width': width, 'height': 900})
+        # Odoo updates its responsive form and control panel after the resize.
+        page.wait_for_function('document.documentElement.scrollWidth <= innerWidth + 1', timeout=5000)
         assert page.evaluate('document.documentElement.scrollWidth <= innerWidth + 1')
         page.screenshot(path=str(OUTPUT / f'pilot-owner-dashboard-{width}.png'), full_page=True)
     assert not errors, errors

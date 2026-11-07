@@ -4,7 +4,7 @@
         <field name="name">field.work.owner.dashboard.form</field>
         <field name="model">field.work.owner.dashboard</field>
         <field name="arch" type="xml">
-            <form create="false" edit="false" delete="false" class="o_field_ui o_field_hub_form">
+            <form create="false" edit="false" delete="false" class="o_field_ui o_field_hub_form o_field_owner_dashboard">
                 <sheet>
                     <field name="currency_id" invisible="1"/>
                     <field name="profit_count" invisible="1"/>
