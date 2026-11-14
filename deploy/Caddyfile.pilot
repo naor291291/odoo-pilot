@@ -1,0 +1,14 @@
+{$CRM_DOMAIN} {
+    # Private LAN/VPN name; import the local CA only on approved test devices.
+    tls internal
+    @outside not remote_ip {$PILOT_ALLOWED_CIDRS}
+    respond @outside 403
+    @database path /web/database /web/database/*
+    respond @database 404
+    header {
+        X-Content-Type-Options nosniff
+    }
+    @websocket path /websocket /websocket/*
+    reverse_proxy @websocket odoo:8072
+    reverse_proxy odoo:8069
+}

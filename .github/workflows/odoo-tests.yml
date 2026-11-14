@@ -15,6 +15,14 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
+      - name: Validate closed pilot Compose configuration
+        run: |
+          cp deploy/delivery.env.example deploy/delivery.env
+          CRM_DOMAIN=crm.test PILOT_ALLOWED_CIDRS=192.0.2.1/32 POSTGRES_IMAGE=postgres:16 ODOO_IMAGE=odoo:18.0 CADDY_IMAGE=caddy:2 POSTGRES_ADMIN_PASSWORD=synthetic_ci_only ODOO_DB_PASSWORD=synthetic_ci_only docker compose -f deploy/compose.yaml -f deploy/compose.pilot.yaml config --quiet
+          CRM_DOMAIN=crm.test PILOT_ALLOWED_CIDRS=192.0.2.1/32 POSTGRES_IMAGE=postgres:16 ODOO_IMAGE=odoo:18.0 CADDY_IMAGE=caddy:2 POSTGRES_ADMIN_PASSWORD=synthetic_ci_only ODOO_DB_PASSWORD=synthetic_ci_only docker compose -f deploy/compose.yaml -f deploy/compose.pilot.yaml config --format json > "$RUNNER_TEMP/pilot-compose.json"
+          python3 scripts/qa/check_pilot_config.py "$RUNNER_TEMP/pilot-compose.json"
+          docker run --rm -e CRM_DOMAIN=crm.test -e PILOT_ALLOWED_CIDRS=192.0.2.1/32 -v "$PWD/deploy/Caddyfile.pilot:/etc/caddy/Caddyfile:ro" caddy:2 caddy validate --config /etc/caddy/Caddyfile
+          rm deploy/delivery.env
       - name: Build development container and start PostgreSQL
         run: |
           PILOT_UID="$(id -u)" docker compose -f .devcontainer/compose.yaml build odoo

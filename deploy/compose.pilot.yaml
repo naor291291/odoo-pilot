@@ -1,0 +1,42 @@
+# CLOSED synthetic pilot only. Requires Docker Compose >= 2.24.4 (!override).
+# Odoo has no network with external routing; only Caddy has an edge connection.
+services:
+  odoo:
+    networks: !override [database]
+    environment:
+      FIELD_WORK_EMAIL_MODE: 'off'
+      FIELD_WORK_WHATSAPP_MODE: 'off'
+      FIELD_WORK_WHATSAPP_INBOUND: '0'
+      FIELD_WORK_AUTO_STAGES: '0'
+      HTTP_PROXY: ''
+      HTTPS_PROXY: ''
+      ALL_PROXY: ''
+      http_proxy: ''
+      https_proxy: ''
+      all_proxy: ''
+      NO_PROXY: '*'
+      no_proxy: '*'
+    logging:
+      driver: local
+      options:
+        max-size: '10m'
+        max-file: '3'
+  db:
+    logging:
+      driver: local
+      options:
+        max-size: '10m'
+        max-file: '3'
+  proxy:
+    networks: !override [edge, database]
+    environment:
+      PILOT_ALLOWED_CIDRS: ${PILOT_ALLOWED_CIDRS:?Set explicit LAN/VPN tester CIDRs; never 0.0.0.0/0}
+    volumes: !override
+      - ./Caddyfile.pilot:/etc/caddy/Caddyfile:ro
+      - caddy:/data
+      - caddy-config:/config
+    logging:
+      driver: local
+      options:
+        max-size: '10m'
+        max-file: '3'
