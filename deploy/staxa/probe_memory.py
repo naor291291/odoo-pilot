@@ -63,6 +63,16 @@ def main():
                             status = 'PASS'
                             break
                     time.sleep(2)
+                if phase == 'initialization' and status == 'PASS':
+                    installed = docker('exec', containers[0], 'psql', '-U', 'pilot_role', '-d', 'staxa_probe', '-Atc',
+                        "SELECT state FROM ir_module_module WHERE name='field_work_photos'", check=False)
+                    result['custom_module_installed'] = installed.returncode == 0 and installed.stdout.strip() == 'installed'
+                    if not result['custom_module_installed']:
+                        status = 'FAIL'
+                if phase == 'login' and status == 'PASS':
+                    sample = docker('exec', name, 'cat', '/sys/fs/cgroup/memory.peak', check=False).stdout.strip()
+                    if sample.isdecimal():
+                        peak = max(peak, int(sample))
                 result[phase] = status
                 result['peak_bytes'][phase] = peak or None
                 docker('stop', '-t', '5', name, check=False)
