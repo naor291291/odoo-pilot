@@ -1,0 +1,16 @@
+{
+  "scope": "synthetic CI, 512MiB limit, no swap, 0.5 CPU",
+  "memory_limit_bytes": 536870912,
+  "initialization": "PASS",
+  "login": "PASS",
+  "capacity_for_3_to_5_users": "NOT_VERIFIED",
+  "peak_bytes": {
+    "initialization": 143728640,
+    "login": 135639040
+  },
+  "initialization_exit_code": 0,
+  "custom_module_installed": true,
+  "workflow_run": 43615820586,
+  "tested_commit": "a74d9206cbc77fe1e3eb8f0b184ced0f70246344",
+  "peak_note": "Sampled cgroup memory.peak; initialization final instant may be missed. Not a workload-capacity upper bound."
+}

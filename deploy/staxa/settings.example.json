@@ -1,0 +1,12 @@
+{
+  "name": "odoo-synthetic-pilot",
+  "source_type": "github",
+  "repo_url": "https://github.com/naor291291/odoo-pilot",
+  "branch": "deploy/staxa-pilot",
+  "dockerfile_path": "deploy/staxa/Dockerfile",
+  "build_context": ".",
+  "app_port": 8069,
+  "resource_size": "small",
+  "health_check_type": "http",
+  "health_check_path": "/web/login"
+}

@@ -1,0 +1,31 @@
+name: Staxa deployment preparation
+on:
+  push:
+    branches: [deploy/staxa-pilot]
+    paths: ['deploy/staxa/**', '.github/workflows/staxa-preparation.yml']
+permissions:
+  contents: read
+jobs:
+  focused-deployment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Check deployment contract and shared-runtime parity
+        run: |
+          python3 deploy/staxa/generate_dockerfile.py --check
+          python3 deploy/staxa/test_deployment.py
+      - name: Build standalone image with root context
+        run: docker build -f deploy/staxa/Dockerfile -t staxa-odoo:probe .
+      - name: Probe synthetic initialization and login at 512MiB
+        run: |
+          docker pull postgres:16
+          python3 deploy/staxa/probe_memory.py
+      - name: Preserve measured capacity result
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: staxa-memory-probe
+          path: staxa-probe-result.json
+          if-no-files-found: warn
+          retention-days: 14
