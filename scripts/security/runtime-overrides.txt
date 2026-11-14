@@ -1,3 +1,9 @@
 # Odoo 18 leaves lxml-html-clean unpinned specifically for security updates.
 # Keep the existing distribution lxml and all other dependencies unchanged.
 lxml-html-clean==0.4.6 --hash=sha256:cc037270ba500a65e7235409dcddcae8ef37300f26dea826b61d917bf0236880
+
+# Security update candidate; accepted only after native Odoo + full custom CI.
+# CPython 3.12 Linux x86_64/aarch64 wheels, no source build or transitive upgrade.
+Pillow==13.0.0 \
+    --hash=sha256:42d63be3af4f9b951b199b0a9d23365d37ab14687e6d77b74940432c8515c4ca \
+    --hash=sha256:8bf295fe459343bc6093c8e5e0df60bfa189e0fcb775a22e2c2488fdeccc6c0d

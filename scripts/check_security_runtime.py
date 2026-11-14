@@ -67,6 +67,19 @@ def main(skip_pdf=False):
         'field_sale_amount': 1000, 'field_customer_due': 1180, 'field_contractor_due': 700,
         'field_quote_number': 'SEC-RUNTIME', 'field_contractor_id': contractor,
         'field_visit_at': datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}])
+    # Harmless, visibly synthetic documents: never a real financial issuance.
+    from reportlab.pdfgen import canvas
+    documents = {}
+    for kind in ('quote', 'invoice'):
+        stream = BytesIO()
+        pdf = canvas.Canvas(stream)
+        pdf.drawString(20, 20, 'SYNTHETIC QA ONLY - ' + kind)
+        pdf.save()
+        documents[kind] = stream.getvalue()
+    call(owner, 'crm.lead', 'write', [[lead], {
+        'field_quote_pdf': base64.b64encode(documents['quote']).decode('ascii')}])
+    quote = owner.get(BASE + f'/field-work/documents/{lead}/quote', timeout=30)
+    assert quote.content == documents['quote']
     sessions = [login(), login()]
     barrier = threading.Barrier(2)
 
@@ -107,8 +120,19 @@ def main(skip_pdf=False):
     call(owner, 'crm.lead', 'write', [[lead], {'field_report_before_image': photo,
          'field_report_after_image': photo, 'field_visit_summary': 'Synthetic completed fixture'}])
     call(owner, 'crm.lead', 'action_submit_field_report', [[lead]])
+    try:
+        call(owner, 'crm.lead', 'action_close_field_work', [[lead]])
+    except RpcError:
+        pass
+    else:
+        raise AssertionError('Paid work closed without execution approval')
     call(owner, 'crm.lead', 'action_approve_field_report', [[lead]])
     call(owner, 'crm.lead', 'action_approve_contractor_amount', [[lead]])
+    call(owner, 'crm.lead', 'write', [[lead], {
+        'field_invoice_number': 'SYNTHETIC-INVOICE-ONLY',
+        'field_invoice_pdf': base64.b64encode(documents['invoice']).decode('ascii')}])
+    invoice = owner.get(BASE + f'/field-work/documents/{lead}/invoice?download=1', timeout=30)
+    assert invoice.content == documents['invoice'] and invoice.content != quote.content
     call(owner, 'crm.lead', 'action_close_field_work', [[lead]])
 
     reference = '<script>synthetic_security_reference()</script>'
@@ -142,7 +166,7 @@ def main(skip_pdf=False):
         pass
     else:
         raise AssertionError('Logged-out session remained usable')
-    results = {'parallel_overpayment': 'passed', 'parallel_idempotency': 'passed',
+    results = {'synthetic_quote_invoice_lifecycle': 'passed', 'parallel_overpayment': 'passed', 'parallel_idempotency': 'passed',
                'statement_html_escape_and_cache': 'passed', 'report_read_only': 'passed',
                'real_pdf': 'not executed (explicit local flag)' if skip_pdf else 'passed',
                'logout_session_replay': 'passed', 'fixture': 'synthetic local CI pilot', 'optional_modules': optional_modules}

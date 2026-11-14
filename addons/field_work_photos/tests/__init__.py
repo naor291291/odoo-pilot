@@ -9,3 +9,5 @@ from . import test_contractor_statement
 from . import test_security_hardening
 from . import test_field_documents
 from . import test_field_pilot_metrics
+
+from . import test_native_image_runtime

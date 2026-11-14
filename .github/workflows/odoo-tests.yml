@@ -25,6 +25,7 @@ jobs:
           docker compose -f .devcontainer/compose.yaml run --rm odoo python3 scripts/qa/test_delivery_adapters.py
           docker compose -f .devcontainer/compose.yaml run --rm odoo python3 scripts/qa/test_pdf_backport.py
           docker compose -f .devcontainer/compose.yaml run --rm odoo python3 scripts/qa/test_html_cleaner.py
+          docker compose -f .devcontainer/compose.yaml run --rm odoo python3 scripts/qa/check_native_images.py
       - name: Check browser setup and sample task
         run: |
           docker compose -f .devcontainer/compose.yaml run --rm odoo python3 scripts/pilot.py smoke
