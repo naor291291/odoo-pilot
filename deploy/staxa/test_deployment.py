@@ -67,7 +67,7 @@ class DeploymentTests(unittest.TestCase):
 
     def test_rejects_unsafe_input(self):
         for key, value in [('DB_PASSWORD', 'secret\nlist_db=True'), ('DB_PORT', '0'),
-                           ('DB_NAME', 'db,other'), ('DB_SSLMODE', 'allow'),
+                           ('DB_PASSWORD', ' padded-secret '), ('DB_NAME', 'db,other'), ('DB_SSLMODE', 'allow'),
                            ('DB_USER', 'postgres'), ('PORT', '8080'),
                            ('ODOO_ADMIN_PASSWORD', 'short'), ('STAXA_ODOO_MODE', 'upgrade')]:
             with self.subTest(key=key):

@@ -13,7 +13,7 @@ class ConfigurationError(ValueError):
 
 
 def clean(value):
-    if not value or any(c in value for c in '\r\n\x00'):
+    if not value or value != value.strip() or any(c in value for c in '\r\n\x00'):
         raise ConfigurationError('Missing or unsafe configuration value')
     return value
 

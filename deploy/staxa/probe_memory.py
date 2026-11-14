@@ -5,7 +5,6 @@ import secrets
 import subprocess
 import tempfile
 import time
-import urllib.request
 
 
 def docker(*args, check=True):
@@ -43,8 +42,7 @@ def main():
                       '--env-file', str(app_env), '-v', volume + ':/var/lib/odoo']
             for phase, name in [('initialization', containers[1]), ('login', containers[2])]:
                 mode = 'init' if phase == 'initialization' else 'serve'
-                extra = [] if mode == 'init' else ['-p', '127.0.0.1::8069']
-                docker('run', '-d', '--name', name, *common, *extra, '-e', 'STAXA_ODOO_MODE=' + mode, 'staxa-odoo:probe')
+                docker('run', '-d', '--name', name, *common, '-e', 'STAXA_ODOO_MODE=' + mode, 'staxa-odoo:probe')
                 deadline = time.monotonic() + (300 if mode == 'init' else 90)
                 peak = 0
                 status = 'TIMEOUT'
@@ -58,14 +56,12 @@ def main():
                     if sample.isdecimal():
                         peak = max(peak, int(sample))
                     if mode == 'serve':
-                        address = docker('port', name, '8069/tcp').stdout.strip()
-                        try:
-                            with urllib.request.urlopen('http://' + address + '/web/login', timeout=2) as response:
-                                if response.status == 200 and b'<html' in response.read(100000).lower():
-                                    status = 'PASS'
-                                    break
-                        except Exception:
-                            pass
+                        check = docker('exec', name, 'python3', '-c',
+                            "import urllib.request; r=urllib.request.urlopen('http://127.0.0.1:8069/web/login',timeout=2); assert r.status==200 and b'<html' in r.read(100000).lower()",
+                            check=False)
+                        if check.returncode == 0:
+                            status = 'PASS'
+                            break
                     time.sleep(2)
                 result[phase] = status
                 result['peak_bytes'][phase] = peak or None
