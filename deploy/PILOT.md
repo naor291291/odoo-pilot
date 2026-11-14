@@ -24,3 +24,7 @@ Zero hosting subscription is possible on an **existing, reliably powered Linux m
 Rollback: retain failed volumes, restore the paired pre-update database+filestore with the recorded code/image, keep integrations off, then repeat smoke checks. Never downgrade code over a migrated database. Full procedure: README.
 
 Until these host checks pass, a passing CI run is **code readiness only**, not approval of an actual deployment.
+
+## Northflank Sandbox assessment
+
+See [the scoped feasibility review](../docs/qa/northflank-sandbox-fit.md). Free/no-card eligibility is contradicted by the billing guide, service-volume entitlement is unverified, managed-Sandbox deny-egress is not established by the BYOC network-policy documentation, and external backup remains unconfigured. No Northflank deployment is approved by this document.

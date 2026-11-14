@@ -1,3 +1,13 @@
+# Targeted transport / Northflank update — 2026-11-14
+
+See [Northflank Sandbox fit](northflank-sandbox-fit.md). HTTPS, PostgreSQL and persistent service volumes are documented platform capabilities, but no account entitlement, host persistence, TLS/access/egress enforcement or external paired restore has been tested. The public no-card pricing statement conflicts with the payment-method requirement in billing documentation. Egress policy docs scope the controls to BYOC; global backups are enterprise-scoped. **NO-GO for verified free/no-card Northflank hosting.** No resources were provisioned.
+
+The existing Docker Compose backup script is not directly portable to managed-service jobs. Preserve the quiesced PostgreSQL+filestore pair, external encrypted copy and isolated checksum-verified restore requirements. Do not count a database-only backup or a service volume as a complete backup. Existing CI evidence remains applicable only to its isolated synthetic environment.
+
+Patched-runtime CI 43610750108 passed, including 207 Odoo tests, 7 new transport regressions, 44 UI states and a separate DB/filestore restore with 48 checksums. See [security closure](pilot-security-followup.md). This closes the three requested High code blockers but does not change the unverified Northflank host gates.
+
+## Prior operational review
+
 # Closed synthetic pilot update — 2026-11-14
 
 The current scope is 3–5 named testers with synthetic data. No deployment was performed. See [PILOT.md](../../deploy/PILOT.md) for the zero-new-hosting-cost route using an existing always-on Linux computer and private LAN/existing managed VPN. No free external compute/storage availability is assumed.

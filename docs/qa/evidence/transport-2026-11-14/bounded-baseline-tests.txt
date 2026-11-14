@@ -1,0 +1,33 @@
+FFF
+======================================================================
+FAIL: test_dtls_oversized_cookie_rejected_before_write (__main__.TransportFixes.test_dtls_oversized_cookie_rejected_before_write)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/1f0b5f1eaa5b/odoo-qa/scripts/security/test_transport_fixes.py", line 42, in test_dtls_oversized_cookie_rejected_before_write
+    self.assertEqual(result, 0)
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_https_forwarding_proxy_policy_is_separate (__main__.TransportFixes.test_https_forwarding_proxy_policy_is_separate)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/1f0b5f1eaa5b/odoo-qa/scripts/security/test_transport_fixes.py", line 75, in test_https_forwarding_proxy_policy_is_separate
+    self.proxy_parameters(True)
+  File "/workspace/scratch/1f0b5f1eaa5b/odoo-qa/scripts/security/test_transport_fixes.py", line 67, in proxy_parameters
+    self.assertEqual(args['cert_reqs'], ssl.CERT_REQUIRED)
+AssertionError: <VerifyMode.CERT_NONE: 0> != <VerifyMode.CERT_REQUIRED: 2>
+
+======================================================================
+FAIL: test_https_connect_proxy_policy_is_separate (__main__.TransportFixes.test_https_connect_proxy_policy_is_separate)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/1f0b5f1eaa5b/odoo-qa/scripts/security/test_transport_fixes.py", line 78, in test_https_connect_proxy_policy_is_separate
+    self.proxy_parameters(False)
+  File "/workspace/scratch/1f0b5f1eaa5b/odoo-qa/scripts/security/test_transport_fixes.py", line 67, in proxy_parameters
+    self.assertEqual(args['cert_reqs'], ssl.CERT_REQUIRED)
+AssertionError: <VerifyMode.CERT_NONE: 0> != <VerifyMode.CERT_REQUIRED: 2>
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.007s
+
+FAILED (failures=3)

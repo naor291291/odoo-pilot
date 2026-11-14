@@ -1,0 +1,23 @@
+{
+  "head": "5417c0c196898a152f8e918bd775ecf8e595f820",
+  "run": 43610750093,
+  "artifact": 14119658358,
+  "raw_records": 44,
+  "reviewed_packages": [
+    {
+      "name": "cryptography",
+      "version": "50.0.2",
+      "vulns": []
+    },
+    {
+      "name": "pyopenssl",
+      "version": "26.4.0",
+      "vulns": []
+    },
+    {
+      "name": "urllib3",
+      "version": "2.8.0",
+      "vulns": []
+    }
+  ]
+}
