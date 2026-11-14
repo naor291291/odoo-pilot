@@ -1,0 +1,13 @@
+**
+!addons/
+!addons/**
+!scripts/
+!scripts/security/
+!scripts/security/runtime-overrides.txt
+!scripts/security/patch_pypdf2.py
+!deploy/
+!deploy/staxa/
+!deploy/staxa/entrypoint.py
+**/__pycache__
+**/*.pyc
+**/.env
