@@ -46,7 +46,7 @@ Status vocabulary: **Implemented & Verified**, **Implemented but Failed**, **Par
 | R36 | Mobile home-screen shortcut/camera / §1 | responsive portal | Blocked by External Dependency | User explicitly deferred physical-device acceptance until deployment |
 | R37 | Permanent host, HTTPS / §1 | deploy Compose/Caddy | Blocked by External Dependency | No deployment authorized; free host not provisioned |
 | R38 | External backup and real restore | deploy backup script | Blocked by External Dependency | No external destination; CI synthetic database restore passed with 46 attachment checksums; not an external infrastructure restore |
-| R39 | Secrets and dependency readiness / §6 | source/history scans + inventory | Partially Implemented | Source/history scans passed; Original 146 rows mapped to 94 advisories. Follow-up reviews all 50 previously open; 4 fixes, 2 false positives, 1 native vendor fix verified and 3 inactive-module conditions leave 40 open; deployment module state must be attested. See dependency-followup.csv; release blocked |
+| R39 | Secrets and dependency readiness / §6 | source/history scans + inventory | Partially Implemented | Source/history scans passed; Original 146 rows mapped to 94 advisories. Follow-up reviews all 50 previously open; 35 fixes (including 31 Pillow fixes verified by the 2026-11-14 image inventory), 2 false positives, 1 native vendor fix verified and 3 inactive-module conditions leave 9 open; deployment module state must be attested. See dependency-followup.csv; release blocked |
 
 ## Product deviations that must remain explicit
 
@@ -66,3 +66,5 @@ The 39 mapped requirements comprise **23 Implemented & Verified, 9 Partially Imp
 - No row is classified wholly Not Implemented. Partial/missing work remains in nine rows, and the broad native-settings state space remains Not Yet Tested. A framework-provided screen is not automatically verified.
 
 The previous seven application defects were already verified before this follow-up. Their regression coverage passed again in 42406366976 because parser/runtime changes justified a full compatibility run; final evidence is recorded in pre-deployment-report.md.
+
+2026-11-14: Shared image-runtime change justified full compatibility run 43607849101. 207 Odoo tests, 15 native image tests, 7 runtime security scenarios, 4 Chrome suites and 44 RTL/axe states passed. Synthetic quote/invoice document lifecycle and 48-file restore strengthen existing verified rows; partial requirement counts are unchanged.

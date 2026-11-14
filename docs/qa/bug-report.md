@@ -93,3 +93,11 @@ Three remaining canonical cleaner advisories are addressed by a hash-pinned 0.4.
 ### Final follow-up retest
 
 Run **42406366976** on executable head `cdea42a081d5750660d463d0b4fe3d011ee60b44` passed. QA-001: native signed malformed-event tests passed; QA-002–QA-006: 44 axe states have zero violations at all four widths; QA-007: actual final owner-dashboard screenshot shows the Hebrew breadcrumb. Native/model/HTTP authorization and four browser suites remain green. Seven existing application defect families remain closed, zero newly reproduced open application defects. The two PDF and four HTML-cleaner tests pass in the actual rebuilt image, closing four canonical dependency advisories. Three CBOR advisories are inactive-module classifications, two crypto entries are false positives, and one further vendor fix was verified; **40 unresolved dependency advisories remain separate from the application defect count**.
+
+## Closed-pilot follow-up — 2026-11-14
+
+- Seven previous application defect families remain closed; no new customer-facing defect was reproduced in this round.
+- Shared image-runtime security gap: upgraded Pillow from 10.2.0 to hash-pinned 13.0.0. The measured image uses the new package, and 31 previously open canonical Pillow advisories no longer appear in its audit. Native Odoo image and custom upload compatibility are tested; this does not claim vendor certification of the override.
+- New test-harness defects: the first run 43607495983 wrongly expected Odoo to resize WebP and to expose TIFF in its deliberately restricted plugin registry. Two new assertions failed while the original 205 tests passed. Corrected tests preserve native WebP behavior and exercise TIFF encoding in a separate process without enabling extra server image formats. Final results are in pre-deployment-report.md.
+- Added a synthetic quote/invoice PDF lifecycle assertion to the existing runtime-security journey; no real financial documents are issued.
+- Three High and six lower-severity dependency findings remain unresolved; configuration restrictions are not treated as proof of non-exploitability. No critical Pillow finding remains open after the measured upgrade.

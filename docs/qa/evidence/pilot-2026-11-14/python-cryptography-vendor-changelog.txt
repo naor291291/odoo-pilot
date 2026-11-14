@@ -1,0 +1,241 @@
+python-cryptography (41.0.7-4ubuntu0.4) noble-security; urgency=medium
+
+  * SECURITY REGRESSION: ecc support regression (LP: #2144373)
+    - debian/patches/CVE-2026-26007.patch: updated to remove problematic
+      deprecation warning code which is causing a regression with ansible.
+
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Sat, 14 Mar 2026 08:18:05 -0400
+
+python-cryptography (41.0.7-4ubuntu0.3) noble-security; urgency=medium
+
+  * SECURITY UPDATE: Subgroup Attack Due to Missing Subgroup Validation for
+    SECT Curves
+    - debian/patches/CVE-2026-26007.patch: EC check key on cofactor > 1 in
+      src/cryptography/hazmat/primitives/asymmetric/ec.py,
+      src/cryptography/utils.py, tests/hazmat/primitives/test_ec.py,
+      src/_cffi_src/openssl/ec.py,
+      src/cryptography/hazmat/backends/openssl/ec.py.
+    - CVE-2026-26007
+
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Fri, 20 Feb 2026 09:45:35 -0500
+
+python-cryptography (41.0.7-4ubuntu0.1) noble-security; urgency=medium
+
+  * SECURITY UPDATE: null pointer dereference
+    - debian/patches/CVE-2024-26130.patch: null check before dereference
+    - CVE-2024-26130
+
+ -- Jorge Sancho Larraz <jorge.sancho.larraz@canonical.com>  Mon, 27 May 2024 09:18:06 +0200
+
+python-cryptography (41.0.7-4build3) noble; urgency=medium
+
+  * No-change rebuild for CVE-2024-3094
+
+ -- Steve Langasek <steve.langasek@ubuntu.com>  Sun, 31 Mar 2024 17:04:20 +0000
+
+python-cryptography (41.0.7-4build2) noble; urgency=medium
+
+  * No-change rebuild for consistent binaries.
+
+ -- Steve Langasek <steve.langasek@ubuntu.com>  Fri, 08 Mar 2024 00:25:22 +0000
+
+python-cryptography (41.0.7-4build1) noble; urgency=medium
+
+  * No-change rebuild against libssl3t64
+
+ -- Steve Langasek <steve.langasek@ubuntu.com>  Mon, 04 Mar 2024 21:06:46 +0000
+
+python-cryptography (41.0.7-4) unstable; urgency=medium
+
+  * orphan
+
+ -- Sandro Tosi <morph@debian.org>  Wed, 28 Feb 2024 12:23:58 -0500
+
+python-cryptography (41.0.7-3) unstable; urgency=medium
+
+  * Upgrade to pyo3 0.20. Closes: #1063365
+
+ -- Jérémy Lal <kapouer@melix.org>  Thu, 08 Feb 2024 15:34:30 +0100
+
+python-cryptography (41.0.7-2) unstable; urgency=medium
+
+  * patch: drop pem 1.0 workaround, depends pem 1.1. Closes: 1060294.
+  * autopkgtest: fix version of cryptography-vectors
+
+ -- Jérémy Lal <kapouer@melix.org>  Tue, 09 Jan 2024 01:14:48 +0100
+
+python-cryptography (41.0.7-1) unstable; urgency=medium
+
+  * Team upload
+  * New upstream version 41.0.7
+  * patch: remove n/a, disable a test to keep building with pem 1.0
+  * Update deps
+  * Bump Standards-Version
+
+  [ Sandro Tosi ]
+  * New upstream release; Closes: #1031049
+    - fixes CVE-2023-23931
+  * debian/watch
+    - remove pgpsigurlmangle, .asc file no longer on PyPI
+
+  [ Nicolas Dandrimont ]
+  * New upstream version 41.0.3
+
+ -- Jérémy Lal <kapouer@melix.org>  Sun, 07 Jan 2024 13:24:39 +0100
+
+python-cryptography (38.0.4-4) unstable; urgency=medium
+
+  * Team Upload.
+
+  [ Peter Michael Green ]
+  * Don't depend on librust-indoc-dev, it's not used directly,
+    instead depend on the "default" feature of librust-pyo3-dev.
+  * Apply adjusted upstream patch for py03 0.19 and bump
+    dependencies accordingly (Closes: #1038746, #1042160)
+
+  [ Nicolas Dandrimont ]
+  * Fix tests when using recent tzdata (dropping the US timezone
+    symlinks)
+
+ -- Nicolas Dandrimont <olasd@debian.org>  Tue, 08 Aug 2023 17:16:11 +0200
+
+python-cryptography (38.0.4-3) unstable; urgency=medium
+
+  [ Salvatore Bonaccorso ]
+  * Don't allow update_into to mutate immutable objects (CVE-2023-23931)
+    (Closes: #1031049)
+
+ -- Sandro Tosi <morph@debian.org>  Tue, 28 Feb 2023 00:36:13 -0500
+
+python-cryptography (38.0.4-2) unstable; urgency=medium
+
+  * Team upload.
+  * Patch: Remove the runtime dependency on cffi from .dist-info.
+    (Closes: #1026537)
+
+ -- Stefano Rivera <stefanor@debian.org>  Sun, 08 Jan 2023 16:31:04 -0400
+
+python-cryptography (38.0.4-1) unstable; urgency=medium
+
+  [ Claudius Heine ]
+  * New upstream release (Closes: #1011155).
+  * Dropped openssl3 patches, no longer required.
+  * Integrated build of embedded rust library.
+  * debian/control
+    - bump b-d on cryptography-vectors to 38.0.4
+    - build using pybuild-plugin-pyproject
+    - remove dependencies dropped by upstream
+    - add pytest-benchmark to b-d, needed for tests
+    - add setuptools-rust to b-d, needed for the Rust part of the build
+    - add cargo and other rust pkgs to b-d
+    - bump Standards-Version to 4.6.1 (no changes needed)
+  * debian/pydist-overrides, debian/py3dist-overrides
+    - remove dependencies dropped by upstream
+  * debian/rules
+    - enable the Rust build
+    - override dh_dwz to disable multifile
+  * debian/patches/no-rust.patch
+    - removed, we are actually building the Rust code now
+  * debian/python-cryptography-doc.doc-base
+    - add doc-base
+  * debian/source/options
+    - exclude some packaging files updated during build
+  * debian/patches/Upgrade-to-pyo3-0.*
+    - add support for pyo3 0.16 and 0.17
+  * debian/patches/allow-pem-version-1.0.patch
+    - relax pem rust versioned dependency
+  * debian/patches/ease-asn1-version-from-0.12.1-to-0.12.patch
+    - relax asn1 rust versioned dependency
+  * debian/patches/ease-chrono-dependency-from-0.4.22-to-0.4.patch
+    - relax chrono rust versioned dependency
+
+  [ Sandro Tosi ]
+  * debian/control
+    - run wrap-and-sort
+
+ -- Sandro Tosi <morph@debian.org>  Thu, 15 Dec 2022 12:00:09 -0500
+
+python-cryptography (3.4.8-3) UNRELEASED; urgency=medium
+
+  * Remove constraints unnecessary since buster:
+    + Build-Depends: Drop versioned constraint on dpkg-dev, python3-asn1crypto,
+      python3-cffi, python3-idna, python3-pytest, python3-setuptools and
+      python3-six.
+    + python3-cryptography: Drop versioned constraint on python3-openssl in
+      Breaks.
+
+ -- Debian Janitor <janitor@jelmer.uk>  Thu, 19 May 2022 05:05:36 -0000
+
+python-cryptography (3.4.8-2) unstable; urgency=medium
+
+  * Team upload.
+  * Add support for OpenSSL 3.0.1 (Closes: #1006008)
+
+ -- Stefano Rivera <stefanor@debian.org>  Wed, 18 May 2022 12:22:15 -0400
+
+python-cryptography (3.4.8-1) unstable; urgency=medium
+
+  [ Simon Chopin ]
+  * New upstream release.
+    - Closes: #995431
+  * d/p/no_rust.patch, d/control: Disable the Rust part of the build
+    since it's not yet mandatory
+  * d/control, d/tests/control: new build-dependency on python-pytest-subtests
+    for the testsuite
+  * d/p/openssl3/*: Cherry-pick a patchset for OpenSSL3 compatibility.
+    - LP: #1946189
+
+  [ Tristan Seligmann ]
+  * Update standards version to 4.6.0, no changes needed.
+  * Fix Python dir glob for 3.10.
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Wed, 01 Dec 2021 17:54:50 +0200
+
+python-cryptography (3.3.2-1) unstable; urgency=high
+
+  * New upstream release.
+    - Fixes CVE-2020-36242.
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Wed, 10 Feb 2021 10:15:26 +0200
+
+python-cryptography (3.3.1-1) unstable; urgency=medium
+
+  [ Sandro Tosi ]
+  * Use the new Debian Python Team contact name and address
+
+  [ Tristan Seligmann ]
+  * New upstream release.
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Tue, 26 Jan 2021 10:05:25 +0200
+
+python-cryptography (3.2.1-1) unstable; urgency=medium
+
+  [ Ondřej Nový ]
+  * d/control: Update Vcs-* fields with new Debian Python Team Salsa
+    layout.
+
+  [ Tristan Seligmann ]
+  * New upstream release.
+    - Closes: #973247 (CVE-2020-25659)
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Sun, 01 Nov 2020 15:22:43 +0200
+
+python-cryptography (3.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Sat, 29 Aug 2020 15:51:55 +0200
+
+python-cryptography (3.0-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Tristan Seligmann <mithrandi@debian.org>  Tue, 21 Jul 2020 10:22:33 +0200
+
+python-cryptography (2.9.2-1) unstable; urgency=medium
+
+  * New upstream release (closes: #963114).
+    - Drop cherry-picked patches.
+  * Switch to dh-sequence-*.
+  * Bump debhelper-compat to 13.
+  * Apply sphinxdoc:Built-Usi

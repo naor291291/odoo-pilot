@@ -1,3 +1,13 @@
+# Closed synthetic pilot update — 2026-11-14
+
+The current scope is 3–5 named testers with synthetic data. No deployment was performed. See [PILOT.md](../../deploy/PILOT.md) for the zero-new-hosting-cost route using an existing always-on Linux computer and private LAN/existing managed VPN. No free external compute/storage availability is assumed.
+
+New `compose.pilot.yaml` removes Odoo external routing, disables delivery/inbound/automation and proxy environment settings, and bounds local logs. `Caddyfile.pilot` uses internal-CA HTTPS and an explicit source-IP allowlist. The seven resolved-Compose assertion groups and Caddy configuration validation passed in CI run 43607849101. This is configuration validation, not a running-network penetration test. PostgreSQL and filestore remain named persistent volumes. Images must be pinned to approved digests on the selected host.
+
+Seven backup-control tests passed locally again on 2026-11-14; they mock Docker/Restic and do not prove off-site storage. CI database/filestore restore evidence is recorded in the pre-deployment report. No host, external backup destination, operator restore, CA installation on tester devices or actual firewall check has been performed. These are still mandatory before inviting users. SMTP, WhatsApp and Morning stay disabled/excluded.
+
+## Earlier operational evidence (2026-11-07)
+
 # Operational readiness — follow-up review
 
 2026-11-07. No host selected or deployment executed. Compose and configuration were reviewed from source; actual network, volumes, credentials and TLS cannot be certified without a host.

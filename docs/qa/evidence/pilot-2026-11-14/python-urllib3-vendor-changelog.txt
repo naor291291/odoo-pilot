@@ -1,0 +1,221 @@
+python-urllib3 (2.0.7-1ubuntu0.8) noble-security; urgency=medium
+
+  * SECURITY UPDATE: Denial of Service
+    - debian/patches/CVE-2026-97688.patch: Prevent an infinite loop
+      when decoding Deflate responses
+    - debian/patches/CVE-2026-97689.patch: Bound chunk-size line reads
+      to prevent memory exhaustion DoS
+    - CVE-2026-97688
+    - CVE-2026-97689
+
+ -- Bruce Cable <bruce.cable@canonical.com>  Tue, 13 Oct 2026 13:55:12 +1100
+
+python-urllib3 (2.0.7-1ubuntu0.7) noble-security; urgency=medium
+
+  * SECURITY UPDATE: sensitive headers not stripped in cross-origin redirects
+    - debian/patches/CVE-2026-44431.patch: remove sensitive headers in proxy
+      pools too in src/urllib3/connectionpool.py,
+      test/with_dummyserver/test_proxy_poolmanager.py.
+    - CVE-2026-44431
+
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Fri, 22 May 2026 13:32:42 -0400
+
+python-urllib3 (2.0.7-1ubuntu0.6) noble-security; urgency=medium
+
+  * SECURITY REGRESSION: Zstandard missing attribute after CVE-2025-66471 fix.
+    (LP: #2136906)
+    - debian/patches/CVE-2025-66471-fix2.patch: Fall back if "needs_input" is
+      not a zstd object attribute in src/urllib3/response.py.
+
+ -- Hlib Korzhynskyy <hlib.korzhynskyy@canonical.com>  Tue, 13 Jan 2026 09:34:51 -0330
+
+python-urllib3 (2.0.7-1ubuntu0.5) noble-security; urgency=medium
+
+  * SECURITY REGRESSION: Zstd issues after CVE-2025-66471 fix. (LP: #2136906)
+    - debian/patches/CVE-2025-66471-fix1.patch: Revert zstd fix due to not
+      being compatible with zstandard.
+
+ -- Hlib Korzhynskyy <hlib.korzhynskyy@canonical.com>  Mon, 12 Jan 2026 17:27:22 -0330
+
+python-urllib3 (2.0.7-1ubuntu0.4) noble-security; urgency=medium
+
+  * SECURITY UPDATE: Decompression bomb in HTTP redirect responses.
+    - debian/patches/CVE-2026-21441.patch: Add decode_content to self.read()
+      in src/urllib3/response.py. Add tests in
+      test/with_dummyserver/test_connectionpool.py and dummyserver/app.py.
+    - CVE-2026-21441
+
+ -- Hlib Korzhynskyy <hlib.korzhynskyy@canonical.com>  Thu, 08 Jan 2026 15:36:38 -0330
+
+python-urllib3 (2.0.7-1ubuntu0.3) noble-security; urgency=medium
+
+  * SECURITY UPDATE: Denial of service due to unbounded decompression chain.
+    - debian/patches/CVE-2025-66418.patch: Add max_decode_links limit and
+      checks in src/urllib3/response.py. Add test in test/test_response.py.
+    - CVE-2025-66418
+  * SECURITY UPDATE: Denial of service due to decompression bomb.
+    - debian/patches/CVE-2025-66471.patch: Fix decompression bomb in
+      src/urllib3/response.py. Add tests in test/test_response.py.
+    - debian/patches/CVE-2025-66471-post1.patch: Remove brotli version warning
+      due to intrusive backport for brotli fixes and upstream version warning
+      not being appropriate for distro backporting.
+    - CVE-2025-66471
+
+ -- Hlib Korzhynskyy <hlib.korzhynskyy@canonical.com>  Wed, 10 Dec 2025 15:56:11 -0330
+
+python-urllib3 (2.0.7-1ubuntu0.2) noble-security; urgency=medium
+
+  * SECURITY UPDATE: Information disclosure through improperly disabled
+    redirects.
+    - debian/patches/CVE-2025-50181.patch: Add "retries" check and set retries
+      to Retry.from_int(retries, redirect=False) as well as set
+      raise_on_redirect in ./src/urllib3/poolmanager.py.
+    - CVE-2025-50181
+
+ -- Hlib Korzhynskyy <hlib.korzhynskyy@canonical.com>  Mon, 23 Jun 2025 16:34:35 -0230
+
+python-urllib3 (2.0.7-1ubuntu0.1) noble-security; urgency=medium
+
+  * SECURITY UPDATE: The Proxy-Authorization header is not correctly stripped
+    when redirecting to a different host.
+    - debian/patches/CVE-2024-37891.patch: Add "Proxy-Authorization" to
+      DEFAULT_REMOVE_HEADERS_ON_REDIRECT in src/urllib3/util/retry.py. Add
+      header to tests.
+    - CVE-2024-37891
+  * Skip failing test causing build-time failures: (LP: #2084715)
+    - debian/rules: Add "not test_recent_date" to PYBUILD_TEST_ARGS.
+
+ -- Hlib Korzhynskyy <hlib.korzhynskyy@canonical.com>  Wed, 16 Oct 2024 15:20:56 -0230
+
+python-urllib3 (2.0.7-1) experimental; urgency=medium
+
+  [ Stefano Rivera ]
+  * New upstream release.
+  * Drop six patch and dependency on python3-six, superseded upstream.
+    (Closes: #1025218, LP: #1897633)
+  * Drop bundled backports.makefile from copyright, removed upstream.
+  * Build with pybuild pyproject plugin.
+  * Mark Build-Depends with nocheck.
+  * Re-enable the full test suite.
+  * Patch: Handle ConnectionRefusedError in test.requires_network()
+  * Patch: Mark tests that require network
+  * Patch: Don't make requests to evil.com in tests.
+  * Export CI=1 in tests, to increase timeouts.
+  * Allow stderr in the autopkgtest.
+  * Patch: Skip expensive integration tests, that often cause timeouts.
+
+ -- Daniele Tricoli <eriol@debian.org>  Sun, 12 Nov 2023 23:57:09 +0100
+
+python-urllib3 (1.26.18-1) unstable; urgency=medium
+
+  * Team upload.
+  * New upstream release.
+    - Fix CVE-2023-45803 (Closes: #1054226)
+  * Drop patch 02_require-cert-verification.patch, no longer needed.
+    (Closes: #1054212)
+  * Refresh patches.
+
+ -- Stefano Rivera <stefanor@debian.org>  Sat, 21 Oct 2023 17:05:33 +0200
+
+python-urllib3 (1.26.17-1) unstable; urgency=medium
+
+  * New upstream version 1.26.17
+    - Fix CVE-2023-43804 (Closes: #1053626).
+  * Refresh patches.
+
+ -- Daniele Tricoli <eriol@debian.org>  Tue, 10 Oct 2023 02:32:39 +0200
+
+python-urllib3 (1.26.16-1) unstable; urgency=medium
+
+  * New upstream version 1.26.16
+  * Refresh patches.
+  * debian/control
+    - Update standards version to 4.6.2, no changes needed.
+  * debian/copyright
+    - Update copyright years.
+
+ -- Daniele Tricoli <eriol@debian.org>  Fri, 30 Jun 2023 01:10:18 +0200
+
+python-urllib3 (1.26.12-1) unstable; urgency=medium
+
+  * Team upload.
+  * New upstream version 1.26.12
+  * Bump Standards-Version to 4.6.1 (no change)
+  * Refresh patches
+
+ -- Anthony Fok <foka@debian.org>  Thu, 22 Sep 2022 15:14:17 -0600
+
+python-urllib3 (1.26.9-1) unstable; urgency=medium
+
+  * New upstream version 1.26.9
+  * Refresh patches.
+  * Add python3-brotli to B-D, Suggests and autopkgtest's Depends.
+
+ -- Daniele Tricoli <eriol@debian.org>  Sat, 19 Mar 2022 01:35:39 +0100
+
+python-urllib3 (1.26.8-1) unstable; urgency=medium
+
+  [ Jenkins ]
+  * Remove constraints unnecessary since stretch
+
+  [ Daniele Tricoli ]
+  * New upstream release.
+  * Refresh patches.
+  * Enable salsa pipelines.
+  * Enable autopkgtest tests.
+  * debian/control
+    - Update standards version to 4.6.0, no changes needed.
+  * debian/copyright
+    - Update copyright years.
+
+ -- Daniele Tricoli <eriol@debian.org>  Mon, 14 Mar 2022 01:12:18 +0100
+
+python-urllib3 (1.26.5-1~exp1) unstable; urgency=medium
+
+  * New upstream version 1.26.5
+    - CVE-2021-33503: Catastrophic backtracking in URL authority parser when
+      passed URL containing many @ characters. (Closes: #989848)
+  * Refresh patches.
+
+ -- Daniele Tricoli <eriol@debian.org>  Sun, 27 Jun 2021 17:02:18 +0200
+
+python-urllib3 (1.26.4-1) unstable; urgency=medium
+
+  * Team upload.
+  * New upstream release.
+    - Enforces certificate validation in some cases involving HTTPS to HTTPS
+      proxies CVE-2021-28363.
+
+ -- Stefano Rivera <stefanor@debian.org>  Tue, 11 May 2021 20:30:00 -0400
+
+python-urllib3 (1.26.2-1) unstable; urgency=medium
+
+  * New upstream version 1.26.2
+  * Refresh patches.
+  * debian/control
+    - Bump debhelper compatibility level to 13.
+    - Bump Standards-Version to 4.5.1 (no changes needed).
+  * debian/copyright
+    - Update copyright years.
+  * debian/rules
+    - Ignore test_ssltransport.py.
+  * debian/watch
+    - Bump version to 4.
+
+ -- Daniele Tricoli <eriol@debian.org>  Thu, 31 Dec 2020 02:22:32 +0100
+
+python-urllib3 (1.25.11-1) unstable; urgency=medium
+
+  * Team upload.
+
+  [ Ondřej Nový ]
+  * d/control: Update Maintainer field with new Debian Python Team
+    contact address.
+  * d/control: Update Vcs-* fields with new Debian Python Team Salsa
+    layout.
+
+  [ Dmitry Shachnev ]
+  * New upstream release.
+  * Refresh patches for the new release.
+  * Skip test_respect_retry_after_header_sleep test.
+ 

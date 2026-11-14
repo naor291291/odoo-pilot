@@ -1,82 +1,58 @@
-# QA follow-up — final pre-deployment assessment
+# Closed synthetic pilot — pre-deployment assessment
 
-Date: 2026-11-07. **NO-GO for a real-customer deployment.** No main merge, deployment, live message, financial issuance, data reset or credential disclosure occurred. Draft [PR #20](https://github.com/naor291291/odoo-pilot/pull/20) contains the changes and evidence.
+2026-11-14. Scope: 3–5 named testers, synthetic data only. **NO-GO until the security and host acceptance gates below are closed.** No merge, deployment, purchase, live integration, real financial document, customer data or data deletion occurred.
 
-## Verified state, not assumed history
+## Source of truth
 
-Remote main remains `e274e5c`; the follow-up started at `1f62897`, a report-only commit after executable `4bd513f`. Its completed Actions runs were checked and were green. The seven previous application defect families were already fixed and verified; they were **not seven open bugs**. There were 50 unresolved canonical dependency advisories. No AGENTS.md was found in the workspace/repository; existing specification, design, coverage and deployment documents were used. The older dirty checkout and existing pilot data were preserved.
+Tested executable: `0bb562c19cb15d793448fcc2e6be8764e99569fe`, branch `qa/pre-deployment-review`, draft [PR #20](https://github.com/naor291291/odoo-pilot/pull/20). [Integration run 43607849101](https://github.com/naor291291/odoo-pilot/actions/runs/43607849101); [security run 43607849090](https://github.com/naor291291/odoo-pilot/actions/runs/43607849090). The final report commit changes documentation/evidence only and intentionally skips duplicate CI. Previous results are retained in `evidence/pre-deployment-report-2026-11-07.md`.
 
-Latest tested executable: **`cdea42a081d5750660d463d0b4fe3d011ee60b44`**, CI merge checkout `2831af23a15080dc459c871b6b80e514b5f6ec49`. [Integration run 42406366976](https://github.com/naor291291/odoo-pilot/actions/runs/42406366976) and [Security run 42406366952](https://github.com/naor291291/odoo-pilot/actions/runs/42406366952) both completed successfully. The preceding PDF-only run 42406149600 also passed. A final documentation/test-harness-only commit uses `[skip ci]`: production/runtime files remain exactly those tested; the added backup harness and adjusted ordinary PDF fixture were checked locally.
+No AGENTS.md was found. Work began from existing QA reports and the seven already-closed application bug families. Baseline was not rediscovered. Full CI was necessary because the shared Pillow runtime changed, affecting native Odoo images, uploads and rendered documents.
 
-A full compatibility run was justified because the common image parser/sanitizer changed. Prior successful evidence was retained rather than discarding it or restarting baseline discovery. Tests ran on an isolated synthetic CI pilot, **not an updated existing Codespace or deployment**.
+## Changes actually made
 
-## Actual fixes and verification
+- Hash-pinned Pillow **13.0.0** for Python 3.12 in the shared Docker runtime, including architecture-specific hashes. This deliberately overrides Odoo's older pin and requires compatibility evidence; no vendor certification is claimed. Both native and custom image paths use the selected version.
+- Added two native image HTTP/encoder regression cases and Odoo's existing TestImage suite. Native WebP behavior remains unchanged; TIFF encoding is checked in a separate process, without expanding Odoo's server format registry.
+- Extended the existing runtime journey with distinct, visibly synthetic quote/invoice PDFs, byte-for-byte open/download checks and rejection of closure before execution approval even after payment. Contractor assignment/photos, approval, payments and closure keep their existing checks. Separate browser suites exercise contractor-role actions.
+- Added a closed-pilot Compose override, internal-CA Caddy/private source-IP ingress, disabled integrations/proxy settings, persistent volumes and bounded logs. Added resolved-configuration assertions and Caddy validation. See `deploy/PILOT.md` for a no-new-hosting-subscription path using an existing Linux computer and private LAN/VPN. No server was created.
 
-1. Reproduced PyPDF2's unterminated-comment EOF loop using a 100-read bounded stream. Applied the upstream one-line EOF guard at image-build time, requiring exact PyPDF2 version/source. Two regressions pass. The previous report overstated direct custom PDF-route exploitation: PdfReader construction alone is not content-stream parsing; native PDF operations can invoke the vulnerable routine.
-2. Updated only `lxml-html-clean` to hash-pinned **0.4.6**, with no dependency replacement. Odoo explicitly leaves this package unpinned for security fixes. Four tests verify selected version, base-tag rejection, escaped CSS import rejection and Hebrew/native rich-text sanitization. Three previously unresolved advisories are fixed.
-3. Factored a shared Docker `runtime` stage so the reviewed Pillow refresh, PDF guard and cleaner override also have a defined release build path. Development derives from it. Deployment must pin the resulting approved image digest, not a stock Odoo digest. No image was deployed/published.
-4. Added and ran seven mocked backup control-flow tests, plus matched-code/database/filestore rollback and monitoring/operator instructions. Real host setup remains external.
+## Executed verification
 
-| Test group | Result |
+Both Actions workflows completed successfully. CI merge checkout: `e6dc727b0a2eca6e46b39aa7c5e801f1d3ba667c`.
+
+| Verification group | Result |
 |---|---|
-| Native Odoo model/HTTP regression | **205 passed, 0 failed, 0 errors** |
-| SMTP/Meta transport mocks | **6 passed**; no live sends |
-| PDF EOF-backport regression | **2 passed**, including bounded baseline failure then fixed behavior |
-| Native HTML-cleaner regression | **4 passed** locally and in actual image |
-| Runtime security scenarios | **6 passed**: concurrent overpayment/idempotency, escaping/cache, read-only report, real PDF, logout replay |
-| Existing Chrome suites | **4 passed**, including 14 journey-specific assertions; no captured JS/console/network errors |
-| Axe/RTL/responsive states | **44/44 passed**, 11 screens × 375/390/768/1440; zero violations, execution errors, document overflow or failed same-origin responses; all RTL |
-| Synthetic separate-database restore | Passed, **46 attachment checksums** verified |
-| Backup failure-control harness | **7 passed locally**, fake Docker/Restic only |
-| Source/history scans | Passed; advisory scan is informational and not a release gate by itself |
+| Odoo integration / permissions / business rules | **207 passed**, 0 failures/errors (205 retained + 2 new) |
+| Upstream native Odoo TestImage | **15 passed** |
+| Transport mocks / PDF EOF / HTML sanitizer | **6 / 2 / 4 passed** |
+| Runtime security and synthetic PDF lifecycle | **7 passed** |
+| Chrome suites | **4 passed**, including 14 journey assertions; no captured JS/console/network errors |
+| RTL / responsive / axe | **44/44 passed**, 375/390/768/1440px; zero automated violations, overflow, execution errors or failed requests; all RTL |
+| Separate PostgreSQL + filestore restore | **PASS**, 48 attachment checksums; PostgreSQL client/server major 16 |
+| Local mocked backup failure controls | **7 passed** |
+| Resolved Compose assertion groups | **7 passed**; Caddy validation also passed |
+| Startup / role login / preserved restart state | **PASS** |
 
-Final UI artifact contains **154 PNGs**. Manual screenshot inspection verified owner metrics at 1440px and contractor report at 390px; the broader four-suite browser actions remain automated. All seven previous defect families remain verified. PDFs were rendered with actual wkhtmltopdf, including multipage statements. Role/document isolation, collection/closure rules, contractor photos and ledger formulas retain their model/HTTP/browser evidence. Eight business areas are covered; see requirement-level boundaries rather than treating test counts as manual end-to-end process counts.
+UI artifact has **154 PNGs**. The 390px contractor draft screenshot was visually inspected; the rest of this round's UI evidence is automated. No phone hardware or manual full accessibility certification is implied. [UI artifact](https://github.com/naor291291/odoo-pilot/actions/runs/43607849101/artifacts/14119592365) and [runtime/restore artifact](https://github.com/naor291291/odoo-pilot/actions/runs/43607849101/artifacts/14119542581) expire 2026-11-28. Compact JSON evidence is committed under `evidence/pilot-2026-11-14/`.
 
-UI observations in loopback CI: median **373ms**, range **80–909ms**, across 44 states. These are navigation observations, not production load/SLA measurements. The existing 1,001-movement calculation test passes. No large-scale concurrent-user benchmark was performed.
+The first new integration run 43607495983 passed the original 205 Odoo tests but failed two newly added test assumptions: native Odoo intentionally leaves WebP unresized and restricts Pillow's plugin registry. Tests were corrected to match the documented behavior and run TIFF in a separate process. No product behavior was weakened to satisfy the tests. No manual browser session on the user's existing pilot or physical phone was performed in this round.
 
-## All 50 previously open dependency advisories reviewed
+## Security disposition
 
-See `dependency-followup.csv` for **50 individual rows**, installed version/presence, candidate version, affected path, exploit prerequisites, compatibility decision and evidence. The original 146-row / 94-canonical mapping remains preserved. Updated raw scanner output has **138 records**, not 138 proven vulnerabilities.
+All 50 historical follow-up rows remain in `dependency-followup.csv`. **35 fixed** (4 retained previous fixes + 31 Pillow fixes), 2 false positives, 1 previously verified native vendor fix, 3 inactive-module conditions, and **9 unresolved**. Remaining severity: **0 critical, 3 high, 4 moderate, 2 low**. These are unresolved advisories, not nine confirmed exploitable CRM endpoints. Updated image audit has 76 raw records; it is not an exploitable-vulnerability count. All three original Critical Pillow findings now use the fixed release.
 
-| Follow-up disposition | Count |
-|---|---:|
-| Newly fixed and verified (PDF backport + cleaner update) | 4 |
-| False positives: cryptography below affected introduced versions, required API absent | 2 |
-| Existing native OpenSSL fix newly verified | 1 |
-| Not reachable in measured configuration: auth_passkey/CBOR module uninstalled | 3 |
-| Still unresolved: compatibility or exact native/deployment path | **40** |
+See `pilot-security-followup.md` for CVE/GHSA, impact and evidence. Residual High paths concern cryptography RSA key exchange, pyOpenSSL DTLS cookie callbacks and urllib3 HTTPS-proxy TLS policies. The intended private/no-egress configuration reduces exposure, but resolved YAML is not proof that all runtime/native attack paths are absent. They remain open; no blanket crypto upgrade was made without compatibility validation.
 
-Open severity: **3 critical, 21 high, 14 moderate, 2 low**. This is upstream advisory severity, not proof of an exploitable CRM endpoint. Thirty-one open advisories concern Pillow; 13.0.0 fixes exist, but Odoo/Python 3.12 pins 10.2.0 and a broad native image compatibility review has not been completed. Custom allowlisting is not blanket proof of safety for native Odoo. Crypto pairing, native HTTP/proxy/IDNA and SOAP paths also remain documented decisions. CBOR must be reassessed before activating passkeys or certifying a deployed module inventory. All packages are present in the CI image; no actual deployment image/host exists to inspect.
+Customer-facing application bugs open at start: **0**; new reproduced application bugs: **0**; previously fixed families retained: **7**. New test-harness errors corrected: **2**. Security fixes in this round: **31 canonical advisories**. No unrelated cosmetic redesign/refactoring was performed.
 
-**Counts:** application bugs open at start: **0**; prior families reverified: **7**; new customer-facing application bugs reproduced/fixed: **0**; one library-level failure reproduced and corrected, and **4 canonical security advisories newly fixed**; currently open reproduced application bugs: **0**. Residual potential security findings: **40**, with the severity breakdown above. Exact exploitable-endpoint count is not established, so it must not be reported as zero or forty proven exploits.
+## Requirements and scope boundaries
 
-## Specification coverage
+The 39-row specification matrix remains **23 verified, 9 partial, 6 external-blocked, 1 not yet tested**: 23/33 = 69.7% of requirements excluding external dependencies (23/39 = 59.0% overall). The extra image and document regressions strengthen existing evidence but do not complete every edge case of a partial requirement. Closed synthetic pilot scope excludes live Morning/Gmail/WhatsApp, actual payments and real-customer documents; it does not waive authorization or data integrity checks.
 
-39 requirements mapped: **23 verified, 9 partial, 6 external-blocked, 1 not yet tested**. Verified coverage is **23/33 = 69.7%** excluding the six externally blocked requirements, or **23/39 = 59.0%** of the full matrix. This is not 100% end-to-end certification; evidence scope is explicit per row. No requirement is classified wholly Not Implemented, but partial rows contain remaining implementation/acceptance work.
+Physical camera/home-screen installation, Firefox/WebKit, full screen-reader/manual keyboard acceptance, comprehensive two-tab/offline/session-expiry behavior and actual host load/monitoring are not newly verified. No claim of complete specification or production readiness is made.
 
-Verified areas include customer/dispatch models, document separation/access, payment and approval-before-closure, contractor isolation/photos, spreadsheet-based rates/reconciliation, owner metric calculations and signed webhook behavior. Partial coverage remains for exhaustive search/filter/two-tab/offline states, every native Project/CRM/settings dialog, full manual accessibility and broader performance. Live Morning/Gmail/WhatsApp are not tested; original customer PDFs are issued externally and uploaded, not legal financial issuance by this QA.
+## Remaining release gates, in order
 
-## Status and remaining work
-
-| Area | Status | Remaining |
-|---|---|---|
-| Specification | Partially verified | 9 partial, 6 external, 1 not-yet-tested rows |
-| Business workflows | Critical tested scope passes | Offline/two-tab/session-expiry edge cases and live providers |
-| UI/UX | Seven previous fixes remain verified | Complete manual keyboard/screen-reader/contrast acceptance; native dialogs |
-| Mobile/RTL | Four viewport widths pass | Physical iPhone/Android camera/home-screen/network checks, deferred by user |
-| Security | Improved; release blocked | 40 unresolved advisories, exact host/module attestation |
-| PDFs | Parser fix, real rendering and access pass | Live Morning issuance/import remains separate |
-| Permissions | Tested role/company/document boundaries pass | Actual deployment users/groups/MFA acceptance |
-| Performance | Bounded calculation and CI timings pass | Actual host sizing and representative concurrent load |
-| Operations | Scripts/config reviewed, synthetic restore and mocked failures pass | Host, TLS, off-site provider/restore, logging/alerts and rollout rehearsal |
-
-No current executed regression remains failed. The initial bounded PDF reproduction failed as intended and passes after the fix. An initial local cleaner test incorrectly rejected harmless empty SVG/Math containers and was corrected to assert removal of executable content; no application behavior was weakened. Firefox/WebKit, screen reader/full manual contrast, physical device/offline/network interruption and actual external backup/monitoring/provider acceptance were **not performed**. Axe still lists manual-review items; zero automated violations is not accessibility certification.
-
-## Ordered closure plan — NO-GO
-
-1. **Security release gate:** resolve the three critical Pillow/native-format findings and remaining high-priority open paths with supported backports or an isolated, tested compatibility upgrade. Record each row's resolution; preserve PDF/image/rich-text/transport regressions. Recheck measured module state on the eventual deployment image.
-2. **Runtime and infrastructure gate:** build/pin the approved runtime image, select the host/domain, configure secrets/private ingress/HTTPS, off-site backup and a real matched database/filestore restore. Rehearse update/rollback; verify log rotation and alerts. This task authorizes preparation, not execution of deployment.
-3. **Scope/integration gate:** configure controlled Gmail/Meta recipients and account permissions, then test real provider acceptance only with separate authorization. Keep missing channels disabled and explicitly excluded until accepted. Morning API remains a separate external dependency; manual externally issued PDFs stay supported.
-4. **Acceptance gate:** complete physical-device checks when the user-authorized deployed test environment exists; finish keyboard/screen-reader/contrast and failure/recovery edge cases with synthetic data. Resolve documented product deviations such as amber vs red margin warning rather than silently changing business rules.
-
-See `operational-readiness.md`, `requirements-coverage.md`, `bug-report.md`, and `dependency-review.md`. Final [UI artifact 13588260430](https://github.com/naor291291/odoo-pilot/actions/runs/42406366976/artifacts/13588260430) expires 2026-11-21. Compact scan results, runtime inventory, affected-range evidence and sanitized CI summary are committed under `evidence/`; original before/after screenshots remain available there. The previous assessment is retained as `evidence/previous-pre-deployment-report.md`.
+1. Resolve or demonstrate non-reachability of the **three High** dependency paths in a running, attested closed-pilot configuration; retain each advisory's evidence. Remaining lower-severity findings need explicit disposition. Configuration validation alone is insufficient.
+2. Select an existing suitable host/private network (or approve another solution separately), pin the reviewed runtime and other image digests, configure secrets and named synthetic tester accounts. Test actual HTTPS/source-IP denial, no-egress, private ports and persistence. No deployment is authorized by this task.
+3. Configure a durable external backup destination and verify real database+filestore restore and operator recovery on the chosen host. CI synthetic restore and mocked failure controls do not certify an external backup service.
+4. Run the host smoke list in `deploy/PILOT.md` before inviting testers, including the synthetic lifecycle and role/document isolation. Keep providers off. Production with real customers remains **NO-GO**.

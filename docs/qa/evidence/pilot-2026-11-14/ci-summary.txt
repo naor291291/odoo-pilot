@@ -1,0 +1,15 @@
+2026-11-14T15:01:03.1683358Z PASS: 7 closed-pilot configuration groups (network, ports, proxy, integrations, outbound proxy variables, persistent data, bounded logs)
+2026-11-14T15:01:06.5227894Z Valid configuration
+2026-11-14T15:03:08.2664979Z 2026-11-14 15:03:07,179 7 INFO odoo_pilot_tests odoo.tests.result: 0 failed, 0 error(s) of 207 tests when loading database 'odoo_pilot_tests' 
+2026-11-14T15:03:08.2665817Z Verified 207 Odoo integration tests.
+2026-11-14T15:03:09.2115959Z Ran 6 tests in 0.041s
+2026-11-14T15:03:10.0795827Z Ran 2 tests in 0.000s
+2026-11-14T15:03:11.2367928Z Ran 4 tests in 0.002s
+2026-11-14T15:03:21.6519119Z PASS: 15 native Odoo image tests; synthetic isolated database
+2026-11-14T15:03:58.3568164Z PASS: startup, generated admin and contractor logins, Hebrew, sample task/lead, portal, reviewer/owner roles and restart restoring existing-admin ownership while preserving data.
+2026-11-14T15:04:21.4194588Z {"synthetic_quote_invoice_lifecycle": "passed", "parallel_overpayment": "passed", "parallel_idempotency": "passed", "statement_html_escape_and_cache": "passed", "report_read_only": "passed", "real_pdf": "passed", "logout_session_replay": "passed", "fixture": "synthetic local CI pilot", "optional_modules": [{"id": 1, "name": "account", "state": "uninstalled"}, {"id": 23, "name": "auth_passkey", "state": "uninstalled"}, {"id": 44, "name": "base_vat", "state": "uninstalled"}, {"id": 49, "name": "certificate", "state": "uninstalled"}]}
+2026-11-14T15:06:48.4999648Z PASS: real Chrome rendered new draft, desktop/mobile forms, missing-field dialog Continue action, focused pricing input geometry, amount saving and negative values; partial receipts, paid closure, contractor payout, cancellation and collection queues; no JS errors.
+2026-11-14T15:09:21.4958589Z PASS: CRM screen coverage: 43 captures, scoped dashboard/clients/tasks/calendar/rates/guide, native read-only smoke, role separation and no JS errors.
+2026-11-14T15:09:49.5281587Z PASS: browser journey regressions 0
+2026-11-14T15:10:24.7015494Z {"screens":44,"errors":0,"failed":false}
+2026-11-14T15:10:29.6321505Z {"database_restore": "passed", "record_counts": {"crm_lead": 8, "project_task": 7, "ir_attachment": 49, "field_work_payment": 33, "field_work_entitlement": 2}, "attachment_checksums_verified": 48, "backup_private": true, "postgres_client_server_major": 16, "separate_database": true}
