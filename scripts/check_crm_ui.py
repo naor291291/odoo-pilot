@@ -108,7 +108,7 @@ with sync_playwright() as playwright, capture_on_failure():
     page = page_for(owner)
 
     # Hub: real scoped data, each responsive width and keyboard navigation.
-    for width in (1440, 1024, 768, 390):
+    for width in (1440, 1024, 768, 390, 375):
         page.set_viewport_size({'width': width, 'height': 1000})
         open_action(page, 'action_field_dashboard')
         expect(page.get_by_role('heading', name='מה צריך לקדם היום?', exact=True)).to_be_visible()
@@ -217,7 +217,7 @@ with sync_playwright() as playwright, capture_on_failure():
     page.set_viewport_size({'width': 1440, 'height': 1100})
 
     # Today agenda keeps time/client/address/contractor together and opens work directly.
-    for width in (1440, 768, 390):
+    for width in (1440, 768, 390, 375):
         page.set_viewport_size({'width': width, 'height': 844})
         open_action(page, 'action_field_today')
         card = page.locator('.o_field_agenda .o_kanban_record').filter(has_text='עבודת סקירה')

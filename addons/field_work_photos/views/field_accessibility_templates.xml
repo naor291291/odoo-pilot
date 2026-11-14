@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="field_document_language" inherit_id="web.layout" name="Document language for assistive technology">
+        <xpath expr="//html" position="attributes">
+            <attribute name="t-att-lang">(request.env.context.get('lang') or 'he_IL').replace('_', '-')</attribute>
+        </xpath>
+    </template>
+    <template id="field_allow_webclient_zoom" inherit_id="web.webclient_bootstrap" name="Allow browser zoom">
+        <xpath expr="//meta[@name='viewport']" position="attributes">
+            <attribute name="content">width=device-width, initial-scale=1</attribute>
+        </xpath>
+    </template>
+</odoo>

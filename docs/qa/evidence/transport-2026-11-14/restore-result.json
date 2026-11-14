@@ -1,0 +1,14 @@
+{
+  "database_restore": "passed",
+  "record_counts": {
+    "crm_lead": 8,
+    "project_task": 7,
+    "ir_attachment": 49,
+    "field_work_payment": 33,
+    "field_work_entitlement": 2
+  },
+  "attachment_checksums_verified": 48,
+  "backup_private": true,
+  "postgres_client_server_major": 16,
+  "separate_database": true
+}

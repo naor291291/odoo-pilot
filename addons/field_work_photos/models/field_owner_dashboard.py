@@ -16,6 +16,8 @@ class FieldWorkOwnerDashboard(models.TransientModel):
     _name = 'field.work.owner.dashboard'
     _description = 'מדדי עבודות שטח לבעלים'
 
+    name = fields.Char(default='מדדי בעלים', readonly=True)
+
     company_id = fields.Many2one('res.company', compute='_compute_metrics', string='חברה')
     currency_id = fields.Many2one('res.currency', compute='_compute_metrics')
     sale_total = fields.Monetary(compute='_compute_metrics', string='עסקאות שאושרו לפני מע״מ')

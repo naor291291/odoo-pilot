@@ -198,6 +198,31 @@ class TestFieldPilotMetrics(TransactionCase):
             self.assertEqual(lead.field_dispatch_code, 'completed')
             self.assertEqual(lead.field_delivery_attempt_ids.sudo()._deliver()[0], 'superseded')
 
+    def test_prepaid_invoice_closes_when_execution_is_approved_last(self):
+        lead = self.lead(field_invoice_pdf=self.pdf, field_invoice_number='I-PREPAID',
+                         field_worker_id=self.ops.id, field_visit_at='2026-09-10 09:00:00')
+        with self.delivery_config(FIELD_WORK_WHATSAPP_MODE='off'), \
+                patch('odoo.addons.field_work_photos.models.field_document_delivery.send_email') as email:
+            for _ in range(4):
+                lead.action_next_field_stage()
+            self.env['field.work.payment'].with_user(self.ops).create({
+                'lead_id': lead.id, 'amount': 1180, 'reference': 'PREPAID'})
+            self.assertEqual(lead.field_dispatch_code, 'field')
+            self.assertFalse(lead.field_delivery_attempt_ids)
+            stream = BytesIO()
+            Image.new('RGB', (8, 8), 'blue').save(stream, 'PNG')
+            photo = base64.b64encode(stream.getvalue())
+            lead.write({'field_report_before_image': photo, 'field_report_after_image': photo,
+                        'field_visit_summary': 'בדיקה'})
+            lead.action_submit_field_report()
+            self.assertEqual(lead.field_dispatch_code, 'field')
+            lead.action_approve_field_report()
+            self.assertEqual(lead.field_dispatch_code, 'paid')
+            self.assertEqual(len(lead.field_delivery_attempt_ids), 1)
+            self.assertEqual(lead.field_delivery_attempt_ids.document_kind, 'invoice')
+            self.assertEqual(lead.field_delivery_attempt_ids.status, 'queued')
+            email.assert_not_called()
+
     def test_webhook_signature_checks_exact_bytes(self):
         payload = b'{"object":"whatsapp_business_account"}'
         signature = 'sha256=' + hmac.new(b'test-secret', payload, hashlib.sha256).hexdigest()
@@ -238,3 +263,29 @@ class TestFieldWhatsAppWebhook(HttpCase):
         self.assertEqual(lead.field_dispatch_code, 'new')
         self.assertEqual(lead.company_id, self.env.company)
         self.assertEqual(lead.field_work_description, 'פנייה סינתטית')
+
+    def test_signed_malformed_event_structure_is_rejected(self):
+        endpoint = '/field-work/whatsapp/webhook'
+        malformed = [
+            {'entry': 'invalid'},
+            {'entry': [None]},
+            {'entry': [{'changes': [None]}]},
+            {'entry': [{'changes': [{'field': 'messages', 'value': []}]}]},
+            {'entry': [{'changes': [{'field': 'messages', 'value': {
+                'metadata': {'phone_number_id': '1234'}, 'statuses': [None]}}]}]},
+            {'entry': [{'changes': [{'field': 'messages', 'value': {
+                'metadata': {'phone_number_id': '1234'}, 'messages': [None]}}]}]},
+        ]
+        with patch.dict(os.environ, {
+            'FIELD_WORK_DELIVERY_DB': self.env.cr.dbname,
+            'FIELD_WORK_DELIVERY_COMPANY': str(self.env.company.id),
+            'FIELD_WORK_WHATSAPP_APP_SECRET': 'fixture-app',
+            'FIELD_WORK_WHATSAPP_PHONE_ID': '1234',
+            'FIELD_WORK_WHATSAPP_INBOUND': '1',
+        }):
+            for data in malformed:
+                body = json.dumps({'object': 'whatsapp_business_account', **data}).encode()
+                signature = 'sha256=' + hmac.new(b'fixture-app', body, hashlib.sha256).hexdigest()
+                response = self.url_open(endpoint, data=body, headers={
+                    'Content-Type': 'application/json', 'X-Hub-Signature-256': signature})
+                self.assertEqual(response.status_code, 400)

@@ -1,0 +1,32 @@
+{
+  "synthetic_quote_invoice_lifecycle": "passed",
+  "parallel_overpayment": "passed",
+  "parallel_idempotency": "passed",
+  "statement_html_escape_and_cache": "passed",
+  "report_read_only": "passed",
+  "real_pdf": "passed",
+  "logout_session_replay": "passed",
+  "fixture": "synthetic local CI pilot",
+  "optional_modules": [
+    {
+      "id": 1,
+      "name": "account",
+      "state": "uninstalled"
+    },
+    {
+      "id": 23,
+      "name": "auth_passkey",
+      "state": "uninstalled"
+    },
+    {
+      "id": 44,
+      "name": "base_vat",
+      "state": "uninstalled"
+    },
+    {
+      "id": 49,
+      "name": "certificate",
+      "state": "uninstalled"
+    }
+  ]
+}
