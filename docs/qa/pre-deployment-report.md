@@ -56,3 +56,16 @@ Physical camera/home-screen installation, Firefox/WebKit, full screen-reader/man
 2. Select an existing suitable host/private network (or approve another solution separately), pin the reviewed runtime and other image digests, configure secrets and named synthetic tester accounts. Test actual HTTPS/source-IP denial, no-egress, private ports and persistence. No deployment is authorized by this task.
 3. Configure a durable external backup destination and verify real database+filestore restore and operator recovery on the chosen host. CI synthetic restore and mocked failure controls do not certify an external backup service.
 4. Run the host smoke list in `deploy/PILOT.md` before inviting testers, including the synthetic lifecycle and role/document isolation. Keep providers off. Production with real customers remains **NO-GO**.
+
+## Focused pilot feedback — 2026-11-19
+
+Scope: six reported pilot issues; no deployment, existing records, currency conversion or role changes.
+
+- Fixed field-card reopen actions losing field-service creation defaults; ordinary CRM records remain ordinary. Original Cloady incident record is still unidentified.
+- Empty custom PDF fields no longer block ordinary CRM edits; real document access remains dispatcher/company guarded. Customer receipts and contractor payouts retain their different permissions.
+- Added separate PDF filename fields and view bindings, retaining parser checks, 8MB limit and protected download controller. Standard module upgrade is required for the new fields; not performed on the pilot.
+- Added an administrator-only contractor creation action, portal-only defaults and no invitation. Dispatcher/Finance alone cannot create identities. Existing 70%/65%/50% pricing and private financial fields are unchanged.
+- Copy an existing customer's address only into a blank draft / an omitted create value. Preserve explicit addresses and explicit empty create values.
+- Hebrew terminology is scoped to field-work form/search/action; Hebrew defaults for new field clients require an active Hebrew language and respect explicit language choices. Existing user/contact language and company currency are unchanged; business monetary fields already use ILS.
+- Validation: 77 existing related regressions passed in [CI 44518809029](https://github.com/naor291291/odoo-pilot/actions/runs/44518809029), commit `cbe904a5c69c4257d11f1c777b1fcbb3ecf5b9df`; 13 new tests passed and one new test had a test-harness TypeError (Odoo assertRaises does not accept an exception tuple). Fixed the assertion and rerun only the 14 new tests. Final [CI 44519445231](https://github.com/naor291291/odoo-pilot/actions/runs/44519445231), commit `ab259dc089b978b19330eadac6b12d41393ceacb`: **14 passed, 0 failed, 0 errors**. Combined evidence covers **91 distinct passing tests** (77 existing + 14 new); the 77 unchanged regressions were not repeated after the assertion/label-only follow-up.
+- Python/XML syntax and diff whitespace checks passed. No full 207-test rerun; no browser/physical-device or Cloady acceptance is claimed. Test data and HTTP requests were confined to disposable CI. No production-readiness claim.
