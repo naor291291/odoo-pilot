@@ -1,7 +1,7 @@
 name: Focused pilot feedback regression
 on:
   push:
-    branches: [fix/pilot-kobi-feedback]
+    branches: [fix/pilot-kobi-feedback, fix/pilot-kobi-access-check]
     paths: ['addons/field_work_photos/**', 'scripts/test_pilot_feedback.py', '.github/workflows/pilot-feedback.yml']
 permissions:
   contents: read

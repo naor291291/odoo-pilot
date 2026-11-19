@@ -12,7 +12,7 @@ import pilot
 parser = argparse.ArgumentParser()
 parser.add_argument('--related', action='store_true', help='Also run the 77 existing related regressions')
 args = parser.parse_args()
-FILES = ['test_pilot_feedback.py']
+FILES = ['test_pilot_access.py']
 if args.related:
     FILES += ['test_field_documents.py', 'test_field_pricing.py', 'test_field_collection.py', 'test_field_dispatch.py']
 classes = []
