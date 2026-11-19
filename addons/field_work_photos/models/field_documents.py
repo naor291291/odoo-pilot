@@ -20,20 +20,29 @@ class CrmLead(models.Model):
     _inherit = 'crm.lead'
 
     field_quote_pdf = fields.Binary(string='PDF הצעת מחיר', copy=False, groups=OPS)
+    field_quote_filename = fields.Char(string='שם קובץ ההצעה', default='quote.pdf', copy=False, groups=OPS)
+    field_invoice_filename = fields.Char(string='שם קובץ החשבונית', default='invoice.pdf', copy=False, groups=OPS)
     field_invoice_number = fields.Char(string='מספר חשבונית', copy=False, groups=OPS, tracking=True)
     field_invoice_pdf = fields.Binary(string='PDF חשבונית', copy=False, groups=OPS)
 
     def _check_field_document_access(self, operation='read'):
         self._require_dispatcher()
         self.check_access(operation)
-        if any(not lead.is_field_service or not lead.company_id or
+        if any(not lead.is_field_service for lead in self):
+            raise AccessError('מסמכי עבודות שטח אינם זמינים בפנייה רגילה. פתחו פנייה דרך לוח עבודות במרכז עבודות השטח.')
+        if any(not lead.company_id or
                lead.company_id not in self.env.companies for lead in self):
             raise AccessError('מסמכים זמינים לעבודות שטח בחברה מורשית בלבד.')
 
     @api.constrains('field_quote_pdf', 'field_invoice_pdf')
     def _check_field_pdfs(self):
-        self._check_field_document_access('write')
-        for lead in self.with_context(bin_size=False):
+        # Native CRM forms/copies can explicitly submit empty custom Binary fields.
+        # Empty fields on ordinary opportunities are not field-document operations.
+        documents = self.with_context(bin_size=False).filtered(
+            lambda lead: lead.is_field_service or lead.field_quote_pdf or lead.field_invoice_pdf)
+        if documents:
+            documents._check_field_document_access('write')
+        for lead in documents:
             for field in ('field_quote_pdf', 'field_invoice_pdf'):
                 payload = lead[field]
                 if not payload:

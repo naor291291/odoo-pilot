@@ -12,7 +12,7 @@
     <record id="view_field_service_search" model="ir.ui.view">
         <field name="name">crm.lead.field.service.search</field><field name="model">crm.lead</field>
         <field name="arch" type="xml"><search string="חיפוש פניות ועבודות">
-            <field name="name"/><field name="partner_id"/><field name="field_contractor_id"/>
+            <field name="name" string="תיאור הפנייה / סוג עבודה"/><field name="partner_id" string="לקוח"/><field name="field_contractor_id"/>
             <filter name="unassigned" string="ממתינות לשיבוץ" domain="[('field_dispatch_code', '=', 'schedule')]"/>
             <filter name="review" string="ממתינות לאישור ביצוע" domain="[('field_task_ids.field_review_state', '=', 'pending')]"/>
             <filter name="correction" string="דיווחים לתיקון" domain="[('field_task_ids.field_review_state', '=', 'changes_requested')]"/>

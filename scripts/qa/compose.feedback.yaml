@@ -1,0 +1,5 @@
+# Only for disposable focused model tests; no deployment settings.
+services:
+  odoo:
+    build:
+      target: runtime

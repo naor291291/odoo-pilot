@@ -1,0 +1,33 @@
+name: Focused pilot feedback regression
+on:
+  push:
+    branches: [fix/pilot-kobi-feedback, fix/pilot-kobi-access-check]
+    paths: ['addons/field_work_photos/**', 'scripts/test_pilot_feedback.py', 'scripts/qa/compose.feedback.yaml', '.github/workflows/pilot-feedback.yml']
+permissions:
+  contents: read
+jobs:
+  focused:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Build reviewed runtime and start isolated synthetic database
+        run: |
+          mkdir -p .local-data
+          chmod 777 .local-data
+          docker compose -f .devcontainer/compose.yaml -f scripts/qa/compose.feedback.yaml build odoo
+          docker compose -f .devcontainer/compose.yaml up -d --wait db
+      - name: Run only affected model and permission regressions
+        run: docker compose -f .devcontainer/compose.yaml -f scripts/qa/compose.feedback.yaml run --rm odoo python3 scripts/test_pilot_feedback.py
+      - name: Preserve focused test evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pilot-feedback-tests
+          path: .local-data/feedback-tests.log
+          retention-days: 7
+      - name: Clean up disposable CI resources
+        if: always()
+        run: docker compose -f .devcontainer/compose.yaml down -v

@@ -61,8 +61,12 @@ class CrmLead(models.Model):
             raise ValidationError('אזור העבודה אינו קיים.')
         if focus == 'finance' and not (self.env.su or self.env.user.has_group('field_work_photos.group_field_finance')):
             raise AccessError('עלויות והתחשבנות קבלן זמינות לבעלים בלבד.')
-        return {'type': 'ir.actions.act_window', 'res_model': 'crm.lead', 'res_id': self.id,
-                'views': [(self.env.ref('field_work_photos.' + views[focus]).id, 'form')], 'target': 'current'}
+        return {'type': 'ir.actions.act_window', 'name': 'לוח עבודות', 'res_model': 'crm.lead', 'res_id': self.id,
+                'views': [(self.env.ref('field_work_photos.' + views[focus]).id, 'form')], 'target': 'current',
+                'context': {'default_is_field_service': True, 'default_type': 'opportunity',
+                            'field_service_pipeline': True, 'default_company_id': self.company_id.id,
+                            'default_team_id': self.env.ref('field_work_photos.team_field_service').id,
+                            'default_stage_id': self.env.ref('field_work_photos.stage_field_new').id}}
 
     def action_open_field_workspace(self):
         return self._field_workspace_action()

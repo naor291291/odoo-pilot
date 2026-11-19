@@ -8,7 +8,8 @@
             <xpath expr="//div[hasclass('o_field_quote_card')]//field[@name='field_quote_number']/.." position="after">
                 <div class="o_field_control" groups="field_work_photos.group_field_dispatcher">
                     <label for="field_quote_pdf"/>
-                    <field name="field_quote_pdf" options="{'accepted_file_extensions': '.pdf'}"/>
+                    <field name="field_quote_filename" invisible="1"/>
+                    <field name="field_quote_pdf" filename="field_quote_filename" options="{'accepted_file_extensions': '.pdf'}"/>
                     <div class="d-flex flex-wrap gap-2" invisible="not id or not field_quote_pdf">
                         <button name="action_preview_field_quote" type="object" string="צפייה בהצעה" class="btn btn-link"/>
                         <button name="action_download_field_quote" type="object" string="הורדת ההצעה" class="btn btn-link"/>
@@ -21,7 +22,8 @@
                     <p class="o_field_help">הזינו את מספר החשבונית וצרפו את הקובץ שהופק במורנינג. רישום התקבול נעשה בנפרד.</p>
                     <group>
                         <field name="field_invoice_number" class="o_field_numeric" placeholder="מספר החשבונית ממורנינג"/>
-                        <field name="field_invoice_pdf" options="{'accepted_file_extensions': '.pdf'}"/>
+                        <field name="field_invoice_filename" invisible="1"/>
+                    <field name="field_invoice_pdf" filename="field_invoice_filename" options="{'accepted_file_extensions': '.pdf'}"/>
                     </group>
                     <div class="d-flex flex-wrap gap-2" invisible="not id or not field_invoice_pdf">
                         <button name="action_preview_field_invoice" type="object" string="צפייה בחשבונית" class="btn btn-link"/>
