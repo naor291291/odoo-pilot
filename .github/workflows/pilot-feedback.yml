@@ -20,7 +20,7 @@ jobs:
           docker compose -f .devcontainer/compose.yaml -f scripts/qa/compose.feedback.yaml build odoo
           docker compose -f .devcontainer/compose.yaml up -d --wait db
       - name: Run only affected model and permission regressions
-        run: docker compose -f .devcontainer/compose.yaml -f scripts/qa/compose.feedback.yaml run --rm --no-build odoo python3 scripts/test_pilot_feedback.py
+        run: docker compose -f .devcontainer/compose.yaml -f scripts/qa/compose.feedback.yaml run --rm odoo python3 scripts/test_pilot_feedback.py
       - name: Preserve focused test evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
