@@ -35,6 +35,16 @@ class TestPilotFeedback(TransactionCase):
         lead.write({'field_quote_pdf': self.pdf})
         lead._lock_collection()
 
+    def test_new_from_reopened_work_card_stays_field_service(self):
+        action = self.lead().action_open_field_workspace()
+        model = self.env['crm.lead'].with_user(self.ops).with_context(**action['context'])
+        lead = model.create({'name': 'New from reopened card'})
+        self.assertTrue(lead.is_field_service)
+        self.assertEqual(lead.team_id, self.env.ref('field_work_photos.team_field_service'))
+        self.assertEqual(lead.field_dispatch_code, 'new')
+        lead.write({'field_quote_pdf': self.pdf})
+        lead._lock_collection()
+
     def test_ordinary_opportunity_empty_documents_remain_editable(self):
         lead = self.env['crm.lead'].with_user(self.ops).create({'name': 'Ordinary', 'field_quote_pdf': False, 'field_invoice_pdf': False})
         lead.write({'field_quote_pdf': False})
