@@ -1,4 +1,5 @@
 """Focused synthetic Odoo regression run; no existing pilot database is used."""
+import argparse
 import ast
 from pathlib import Path
 import re
@@ -8,8 +9,12 @@ import tempfile
 
 import pilot
 
-FILES = ['test_pilot_feedback.py', 'test_field_documents.py', 'test_field_pricing.py',
-         'test_field_collection.py', 'test_field_dispatch.py']
+parser = argparse.ArgumentParser()
+parser.add_argument('--related', action='store_true', help='Also run the 77 existing related regressions')
+args = parser.parse_args()
+FILES = ['test_pilot_feedback.py']
+if args.related:
+    FILES += ['test_field_documents.py', 'test_field_pricing.py', 'test_field_collection.py', 'test_field_dispatch.py']
 classes = []
 expected = 0
 for filename in FILES:

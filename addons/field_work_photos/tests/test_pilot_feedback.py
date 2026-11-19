@@ -79,7 +79,7 @@ class TestPilotFeedback(TransactionCase):
                              company_id=other.id, company_ids=[(6, 0, other.ids)])
         with self.assertRaises(AccessError):
             lead.with_user(user)._check_field_document_access()
-        with self.assertRaises((AccessError, ValidationError)):
+        with self.assertRaises(AccessError):
             lead.with_user(user)._lock_collection()
         with self.assertRaises(AccessError):
             lead._check_collection_kind('contractor')
@@ -149,6 +149,10 @@ class TestPilotFeedback(TransactionCase):
         result = self.env['crm.lead'].with_user(self.ops).get_view(
             self.env.ref('field_work_photos.view_field_lead_form').id, 'form')
         root = etree.fromstring(result['arch'].encode())
+        search = self.env['crm.lead'].with_user(self.ops).get_view(
+            self.env.ref('field_work_photos.view_field_service_search').id, 'search')
+        self.assertIn('תיאור הפנייה / סוג עבודה', search['arch'])
+        self.assertEqual(self.env.ref('field_work_photos.action_field_service_leads').name, 'לוח עבודות')
         for kind in ('quote', 'invoice'):
             nodes = root.xpath(f"//field[@name='field_{kind}_pdf']")
             self.assertTrue(nodes)
