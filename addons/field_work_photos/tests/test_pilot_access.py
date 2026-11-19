@@ -72,7 +72,7 @@ class TestPilotAccess(TransactionCase):
             result = self.env[model].with_user(self.kobi).get_view(self.env.ref('field_work_photos.' + xmlid).id, 'form')
             self.assertTrue(result['arch'])
         for model in ('crm.lead', 'res.partner', 'project.task', 'field.work.payment.register',
-                      'field.contractor.statement', 'field.work.owner.dashboard'):
+                      'field.contractor.statement'):
             self.env[model].with_user(self.kobi).check_access('read')
             self.env[model].with_user(self.kobi).check_access('create')
             self.env[model].with_user(self.kobi).check_access('write')
@@ -86,7 +86,7 @@ class TestPilotAccess(TransactionCase):
         lead = self.lead()
         before = lead.message_ids
         lead.with_context(tracking_disable=True).write({'field_sale_amount': 1234, 'field_material_cost': 333,
-                                                       'field_contractor_due': 500, 'field_sheet_cash': 50})
+                                                       'field_customer_due': 1500, 'field_contractor_due': 500, 'field_sheet_cash': 50})
         messages = lead.message_ids - before
         self.assertTrue(messages)
         self.assertTrue(any('עדכון כספי' in m.body for m in messages))

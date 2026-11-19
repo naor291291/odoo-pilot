@@ -3,7 +3,7 @@ from odoo import models
 from .field_entitlement import SHEET_FIELDS
 from .field_pricing import RATE_FIELDS
 
-LEAD_FIELDS = {'field_sale_amount', 'field_material_cost', 'field_contractor_due', *SHEET_FIELDS}
+LEAD_FIELDS = {'field_sale_amount', 'field_material_cost', 'field_customer_due', 'field_contractor_due', *SHEET_FIELDS}
 
 
 def snapshot(records, values, names):

@@ -28,24 +28,26 @@ def preflight(env, login, expected_uid=None):
 
 def enable(env, login, expected_uid):
     """Execute ONLY after separate approval; retain the returned receipt for rollback."""
-    before = preflight(env, login, expected_uid)
-    added = not before['finance']
-    if added:
-        env['res.users'].browse(expected_uid).write({'groups_id': [(4, env.ref(FINANCE).id)]})
-    after = preflight(env, login, expected_uid)
-    if after['company_ids'] != before['company_ids'] or not after['finance']:
-        raise ValidationError('אימות הרשאות נכשל; יש לבטל את העסקה.')
-    return {**before, 'added_finance': added}
+    with env.cr.savepoint():
+        before = preflight(env, login, expected_uid)
+        added = not before['finance']
+        if added:
+            env['res.users'].browse(expected_uid).write({'groups_id': [(4, env.ref(FINANCE).id)]})
+        after = preflight(env, login, expected_uid)
+        if after['company_ids'] != before['company_ids'] or not after['finance']:
+            raise ValidationError('אימות הרשאות נכשל; יש לבטל את העסקה.')
+        return {**before, 'added_finance': added}
 
 
 def restore(env, receipt):
     """Remove only Finance added by enable; preserve prior Finance and other groups."""
-    current = preflight(env, receipt['login'], receipt['uid'])
-    if current['company_ids'] != receipt['company_ids'] or current['company_id'] != receipt['company_id']:
-        raise ValidationError('שיוך החברות השתנה מאז ההרחבה; נדרשת בדיקה נפרדת.')
-    if receipt['added_finance']:
-        env['res.users'].browse(receipt['uid']).write({'groups_id': [(3, env.ref(FINANCE).id)]})
-    result = preflight(env, receipt['login'], receipt['uid'])
-    if result['finance'] != receipt['finance']:
-        raise ValidationError('החזרת ההרשאות לא הושלמה; יש לבטל את העסקה.')
-    return result
+    with env.cr.savepoint():
+        current = preflight(env, receipt['login'], receipt['uid'])
+        if current['company_ids'] != receipt['company_ids'] or current['company_id'] != receipt['company_id']:
+            raise ValidationError('שיוך החברות השתנה מאז ההרחבה; נדרשת בדיקה נפרדת.')
+        if receipt['added_finance']:
+            env['res.users'].browse(receipt['uid']).write({'groups_id': [(3, env.ref(FINANCE).id)]})
+        result = preflight(env, receipt['login'], receipt['uid'])
+        if result['finance'] != receipt['finance']:
+            raise ValidationError('החזרת ההרשאות לא הושלמה; יש לבטל את העסקה.')
+        return result
