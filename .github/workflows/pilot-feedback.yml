@@ -2,7 +2,7 @@ name: Focused pilot feedback regression
 on:
   push:
     branches: [fix/pilot-kobi-feedback, fix/pilot-kobi-access-check]
-    paths: ['addons/field_work_photos/**', 'scripts/test_pilot_feedback.py', '.github/workflows/pilot-feedback.yml']
+    paths: ['addons/field_work_photos/**', 'scripts/test_pilot_feedback.py', 'scripts/qa/compose.feedback.yaml', '.github/workflows/pilot-feedback.yml']
 permissions:
   contents: read
 jobs:
@@ -15,10 +15,12 @@ jobs:
           persist-credentials: false
       - name: Build reviewed runtime and start isolated synthetic database
         run: |
-          PILOT_UID="$(id -u)" docker compose -f .devcontainer/compose.yaml build odoo
+          mkdir -p .local-data
+          chmod 777 .local-data
+          docker compose -f .devcontainer/compose.yaml -f scripts/qa/compose.feedback.yaml build odoo
           docker compose -f .devcontainer/compose.yaml up -d --wait db
       - name: Run only affected model and permission regressions
-        run: docker compose -f .devcontainer/compose.yaml run --rm odoo python3 scripts/test_pilot_feedback.py
+        run: docker compose -f .devcontainer/compose.yaml -f scripts/qa/compose.feedback.yaml run --rm --no-build odoo python3 scripts/test_pilot_feedback.py
       - name: Preserve focused test evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

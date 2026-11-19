@@ -31,7 +31,7 @@ class TestPilotAccess(TransactionCase):
         with self.assertRaises(ValidationError):
             pilot_access.preflight(self.env, 'missing_pilot_account')
         with self.assertRaises(AccessError):
-            pilot_access.preflight(self.env(user=self.kobi), self.kobi.login)
+            pilot_access.preflight(self.env(user=self.kobi.id), self.kobi.login)
 
     def test_role_change_and_restore_preserve_companies_and_groups(self):
         groups, companies = self.kobi.groups_id, self.kobi.company_ids
