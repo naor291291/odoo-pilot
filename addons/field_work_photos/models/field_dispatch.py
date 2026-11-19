@@ -156,6 +156,41 @@ class CrmLead(models.Model):
         if not self.env.su and not self.env.user.has_group('field_work_photos.group_field_dispatcher'):
             raise AccessError('רק מנהלת תפעול או בעל הרשאת שיבוץ יכולים לעדכן עבודות שטח.')
 
+    @api.onchange('partner_id')
+    def _onchange_field_site_address(self):
+        for lead in self:
+            if lead.is_field_service and not lead.field_site_address and lead.partner_id:
+                lead.field_site_address = lead._field_partner_address(lead.partner_id)
+
+    @api.model
+    def _field_partner_address(self, partner):
+        partner.check_access('read')
+        return ', '.join(value.strip() for value in
+                         (partner.street, partner.street2, partner.city, partner.zip) if value and value.strip())
+
+    def action_create_field_contractor(self):
+        self.ensure_one()
+        self._require_dispatcher()
+        self.check_access('write')
+        if not self.is_field_service:
+            raise ValidationError('יש לפתוח את הפעולה מתוך כרטיס עבודת שטח.')
+        # Creating portal identities remains an administrator operation; no sudo,
+        # extra ACL, invitations or modification of an existing user's groups.
+        if not self.env.user.has_group('base.group_system'):
+            raise AccessError('יצירת חשבון קבלן זמינה למנהל המערכת בלבד.')
+        self.env['res.users'].check_access('create')
+        company = self.company_id
+        if not company or company not in self.env.companies:
+            raise AccessError('יש לבחור חברה מורשית לפני יצירת קבלן.')
+        context = {'default_groups_id': [(6, 0, self.env.ref('field_work_photos.group_field_contractor').ids)],
+                   'default_company_id': company.id, 'default_company_ids': [(6, 0, company.ids)],
+                   'no_reset_password': True}
+        if self.env['res.lang'].search_count([('code', '=', 'he_IL'), ('active', '=', True)]):
+            context['default_lang'] = 'he_IL'
+        return {'type': 'ir.actions.act_window', 'name': 'יצירת חשבון קבלן',
+                'res_model': 'res.users', 'views': [(self.env.ref('base.view_users_simple_form').id, 'form')],
+                'target': 'new', 'context': context}
+
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
@@ -165,6 +200,8 @@ class CrmLead(models.Model):
                 if not vals.get('stage_id'):
                     vals['stage_id'] = self.env.ref('field_work_photos.stage_field_new').id
                 vals.setdefault('type', 'opportunity')
+                if 'field_site_address' not in vals and vals.get('partner_id'):
+                    vals['field_site_address'] = self._field_partner_address(self.env['res.partner'].browse(vals['partner_id']))
                 if self.env['crm.stage'].browse(vals['stage_id']).field_dispatch_code != 'new':
                     raise ValidationError('פניית שטח חדשה מתחילה בשלב לקוח חדש / פנייה. יש להתקדם באמצעות המשך.')
             if vals.get('field_task_ids'):

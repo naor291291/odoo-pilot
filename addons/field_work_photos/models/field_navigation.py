@@ -158,6 +158,15 @@ class ResPartner(models.Model):
 
     field_crm_client = fields.Boolean(string='לקוח עבודות שטח', groups=OPS, copy=False)
 
+    @api.model
+    def default_get(self, fields_list):
+        values = super().default_get(fields_list)
+        if (self.env.context.get('default_field_crm_client') and 'lang' in fields_list
+                and 'default_lang' not in self.env.context
+                and self.env['res.lang'].search_count([('code', '=', 'he_IL'), ('active', '=', True)])):
+            values['lang'] = 'he_IL'
+        return values
+
     def action_open_field_client_work(self):
         self.ensure_one()
         self.check_access('read')

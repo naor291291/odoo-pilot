@@ -11,3 +11,5 @@ from . import test_field_documents
 from . import test_field_pilot_metrics
 
 from . import test_native_image_runtime
+
+from . import test_pilot_feedback

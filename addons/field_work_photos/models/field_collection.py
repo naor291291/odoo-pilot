@@ -76,7 +76,9 @@ class CrmLead(models.Model):
     def _lock_collection(self):
         self._require_dispatcher()
         self.check_access('write')
-        if any(not lead.is_field_service or not lead.active or not lead.company_id or
+        if any(not lead.is_field_service for lead in self):
+            raise ValidationError('רישום תשלום זה מיועד לעבודת שטח. פתחו את העבודה דרך לוח עבודות במרכז עבודות השטח.')
+        if any(not lead.active or not lead.company_id or
                lead.company_id not in self.env.companies for lead in self):
             raise ValidationError('הפעולה זמינה לעבודת שטח פעילה בחברה המורשית בלבד.')
         if self:

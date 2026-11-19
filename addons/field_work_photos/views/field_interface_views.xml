@@ -62,7 +62,7 @@
             <xpath expr="//div[hasclass('o_field_customer_card')]/group" position="replace">
                 <div class="o_field_message" role="status" invisible="not field_dispatch_locked">פרטי העבודה נעולים בזמן בדיקת הדיווח ולאחר אישורו. לשינוי פרטים, החזירו את העבודה לתיקון דרך לשונית ביצוע.</div>
                 <div class="o_field_form_grid">
-                    <div class="o_field_control o_field_control_wide"><label for="name" string="שם העבודה"/><field name="name" string="שם העבודה" placeholder="למשל: החלפת ברז במטבח" required="1" readonly="field_dispatch_locked"/></div>
+                    <div class="o_field_control o_field_control_wide"><label for="name" string="תיאור הפנייה / סוג עבודה"/><field name="name" string="תיאור הפנייה / סוג עבודה" placeholder="למשל: החלפת ברז במטבח" required="1" readonly="field_dispatch_locked"/></div>
                     <div class="o_field_control"><label for="partner_id" string="לקוח"/><field name="partner_id" string="לקוח" context="{'form_view_ref': 'field_work_photos.view_field_client_form', 'default_field_crm_client': True}" readonly="field_dispatch_locked"/><p class="o_field_required_hint" role="status" invisible="partner_id">בחרו לקוח כדי להמשיך להצעת מחיר.</p><button name="action_open_field_customer" type="object" string="פתיחת פרטי הלקוח" class="btn btn-link" invisible="not partner_id"/></div>
                     <div class="o_field_control"><label for="phone" string="טלפון לתיאום"/><field name="phone" widget="phone" class="o_field_numeric" placeholder="0501234567" readonly="field_dispatch_locked"/><p class="o_field_required_hint" role="status" invisible="phone">הזינו טלפון לתיאום עם הלקוח.</p></div>
                     <div class="o_field_control o_field_control_wide"><label for="field_site_address"/><field name="field_site_address" placeholder="רחוב, מספר ועיר" readonly="field_dispatch_locked"/><p class="o_field_required_hint" role="status" invisible="field_site_address">הזינו רחוב, מספר ועיר שבהם תבוצע העבודה.</p></div>
@@ -91,6 +91,10 @@
                 <div class="o_field_form_grid o_field_form_grid_single">
                     <div class="o_field_control"><label for="field_execution_type"/><field name="field_execution_type" readonly="field_dispatch_locked"/></div>
                     <div class="o_field_control" invisible="field_execution_type != 'subcontractor'"><label for="planning_contractor" string="קבלן מבצע"/><field name="field_contractor_id" id="planning_contractor" options="{'no_create': True, 'no_open': True}" readonly="field_dispatch_locked"/></div>
+                    <div class="o_field_control" invisible="field_execution_type != 'subcontractor'">
+                        <button name="action_create_field_contractor" type="object" string="יצירת קבלן חדש" groups="base.group_system" invisible="field_dispatch_locked" class="btn btn-link"/>
+                        <p class="o_field_help">קבלן חסר ברשימה? מנהל המערכת יוצר את חשבון הפורטל. לאחר היצירה בחרו אותו ברשימה. מחירונים זמינים לבעלי הרשאת כספים בלבד.</p>
+                    </div>
                     <div class="o_field_control" invisible="field_execution_type != 'direct'"><label for="field_worker_id"/><field name="field_worker_id" options="{'no_create': True}" readonly="field_dispatch_locked"/></div>
                     <div class="o_field_control"><label for="field_visit_at"/><field name="field_visit_at" readonly="field_dispatch_locked"/><p class="o_field_required_hint" role="status" invisible="field_visit_at or field_dispatch_code != 'schedule'">קבעו מועד ביצוע לפני אישור השיבוץ.</p></div>
                 </div>
