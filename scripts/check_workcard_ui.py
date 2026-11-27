@@ -151,7 +151,7 @@ with sync_playwright() as p:
         pay(450, 'FULL-' + token)
         page.get_by_role('button', name='סגירת עבודה — שולם', exact=True).click()
         expect(page.locator('.modal:visible')).to_contain_text('קבלה')
-        page.locator('.modal:visible').get_by_role('button', name='סגור', exact=True).click()
+        page.locator('.modal:visible .modal-footer').get_by_role('button', name='סגור', exact=True).click()
         assert read('field_dispatch_code')['field_dispatch_code'] == 'completed'
         document('receipt', 'RECEIPT-' + token, 700, pdf.getvalue())
         page.get_by_role('button', name='סגירת עבודה — שולם', exact=True).click(); settle(page)
