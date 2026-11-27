@@ -26,7 +26,7 @@ class ResPartner(models.Model):
             # An illustrative sale in the middle tier; use this contractor's live rate.
             rate = partner.field_rate_medium
             cost = currency.round(1000 * rate / 100)
-            partner.field_rate_example = f'עסקה של 1,000 ₪ × {rate:g}% = {cost:,.2f} ₪ לקבלן (לפני מע״מ).'
+            partner.field_rate_example = f'בסיס עמלה לאחר הוצאות של 1,000 ₪ × {rate:g}% = {cost:,.2f} ₪ לקבלן (לפני מע״מ).'
 
     @api.constrains(*RATE_FIELDS)
     def _check_field_rates(self):

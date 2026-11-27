@@ -47,7 +47,7 @@
                     </group>
                     <group string="חשבונית וקישור למסלולי המסמכים הקיימים"><field name="field_invoice_number"/><field name="field_invoice_filename" invisible="1"/>
                         <field name="field_invoice_pdf" filename="field_invoice_filename"/><button name="action_preview_field_invoice" type="object" string="צפייה בחשבונית" invisible="not field_invoice_pdf"/>
-                    </group><group string="שליחה ותיעוד"><button name="action_simulate_field_quote" type="object" string="הדמיית שליחת הצעה" invisible="not field_quote_pdf"/>
+                    </group><group string="שליחה ותיעוד"><field name="field_whatsapp_opt_in"/><button name="action_simulate_field_quote" type="object" string="הדמיית שליחת הצעה" invisible="not field_quote_pdf"/>
                         <button name="action_simulate_field_invoice" type="object" string="הדמיית שליחת חשבונית" invisible="not field_invoice_pdf"/>
                         <field name="field_delivery_attempt_ids" readonly="1"/></group><h2>מסמכים והיסטוריה</h2><p>מוסיפים מסמך עם מספר וסכום כולל מע״מ. חשבון עסקה וחשבונית מתייחסים לחוב אחד. רישום קבלה אינו מוחק מסמכים קודמים.</p>
                     <field name="field_document_history_ids" context="{'default_lead_id': id}">

@@ -2,6 +2,7 @@ import base64
 from io import BytesIO
 
 from PIL import Image
+from psycopg2 import IntegrityError
 from odoo import fields, Command
 from odoo.exceptions import AccessError, ValidationError
 from odoo.tests import TransactionCase, tagged, new_test_user
@@ -131,7 +132,7 @@ class TestClientWorkcard(TransactionCase):
         work = self.work(); doc = self.document(work, 'invoice', 'INV', 700)
         for operation in [lambda: doc.write({'number': 'OTHER'}), doc.unlink]:
             with self.assertRaises(AccessError), self.cr.savepoint(): operation()
-        with self.assertRaises(Exception), self.cr.savepoint(): self.document(work, 'invoice', 'INV', 700)
+        with self.assertRaises((ValidationError, IntegrityError)), self.cr.savepoint(): self.document(work, 'invoice', 'INV', 700)
         self.document(work, 'receipt', 'R', 700)
         self.assertEqual(doc.number, 'INV')
 
@@ -158,6 +159,30 @@ class TestClientWorkcard(TransactionCase):
         work._archive_legacy_documents(update_debt=False)
         self.assertEqual(work.field_customer_due, old_due)
         self.assertEqual(work.field_document_history_ids.number, 'HIST-INV')
+
+    def test_upgrade_preserves_historical_formula_and_documents(self):
+        import importlib.util
+        from pathlib import Path
+        migration = Path(__file__).resolve().parents[1] / 'migrations/18.0.18.0.0'
+        closed = self.work(field_customer_due=700, field_invoice_number='MIG-INV')
+        opened = self.work()
+        # Model a pre-upgrade closed row: old releases did not require a receipt.
+        self.env.flush_all()
+        self.cr.execute("UPDATE crm_lead SET stage_id=%s, field_commission_formula='gross' WHERE id=%s",
+                        [self.env.ref('field_work_photos.stage_field_paid').id, closed.id])
+        self.cr.execute("UPDATE crm_lead SET field_commission_formula='gross' WHERE id=%s", [opened.id])
+        for name in ('pre', 'post'):
+            spec = importlib.util.spec_from_file_location('workcard_' + name, migration / (name + '-migrate.py'))
+            module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+            self.env.invalidate_all()
+            module.migrate(self.cr, '18.0.17.0.2')
+        self.env.invalidate_all()
+        self.assertEqual(closed.field_commission_formula, 'gross')
+        self.assertEqual(opened.field_commission_formula, 'net')
+        self.assertEqual(closed.field_customer_due, 700)
+        self.assertEqual(closed.field_dispatch_code, 'paid')
+        self.assertEqual(closed.field_document_history_ids.number, 'MIG-INV')
+        self.assertFalse(closed.field_document_history_ids.filtered(lambda doc: doc.kind == 'receipt'))
 
     def test_zero_rate_contractor_can_still_receive_approved_expenses(self):
         self.contractor.partner_id.field_rate_medium = 0
