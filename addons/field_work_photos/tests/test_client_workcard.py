@@ -58,6 +58,9 @@ class TestClientWorkcard(TransactionCase):
         work.field_sheet_contractor_expenses = 60
         self.assertFalse(work.field_expenses_approved)
         self.assertEqual(work.field_contractor_cost, 277.55)
+        work.field_expenses_approved = True
+        work.with_user(self.ops).write({'field_execution_type': 'direct', 'field_worker_id': self.ops.id})
+        self.assertFalse(work.field_expenses_approved)
 
     def test_negative_base_is_visible_and_payout_blocked(self):
         work = self.work(field_material_cost=800, field_contractor_due=100)

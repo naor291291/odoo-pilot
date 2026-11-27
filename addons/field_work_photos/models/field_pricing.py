@@ -150,7 +150,7 @@ class CrmLead(models.Model):
                 service.field_task_ids._lock_dispatch_work()
             if any(task.field_review_state in ('pending', 'approved') for task in service.field_task_ids):
                 raise ValidationError('יש להחזיר את העבודה לתיקון לפני שינוי סכומים.')
-        reset_expenses = bool({'field_sheet_contractor_expenses', 'field_contractor_id'}.intersection(vals) and 'field_expenses_approved' not in vals)
+        reset_expenses = bool({'field_sheet_contractor_expenses', 'field_contractor_id', 'field_execution_type'}.intersection(vals) and 'field_expenses_approved' not in vals)
         result = super().write(vals)
         if reset_expenses:
             # Assignment is already authorized. Reset only the private approval,
