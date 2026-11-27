@@ -181,7 +181,10 @@ class CrmLead(models.Model):
         if SHEET_OUTPUT_FIELDS.intersection(vals):
             raise AccessError('תוצאות הגיליון מחושבות לפי הנתונים שהוזנו.')
         sensitive = {'field_contractor_due', 'field_contractor_id', 'field_execution_type', 'company_id'}
-        sheet_inputs = tuple(name for name in SHEET_FIELDS if name in vals)
+        # An approved manual amount must be reviewed again when its net-price
+        # inputs change; never silently keep an approval for a stale calculation.
+        approval_inputs = (*SHEET_FIELDS, 'field_sale_amount', 'field_material_cost', 'field_expenses_approved')
+        sheet_inputs = tuple(name for name in approval_inputs if name in vals)
         old = {}
         if sensitive.intersection(vals) or sheet_inputs:
             service = self.filtered('is_field_service')

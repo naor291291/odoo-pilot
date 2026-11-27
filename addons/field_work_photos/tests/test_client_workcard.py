@@ -99,6 +99,15 @@ class TestClientWorkcard(TransactionCase):
             self.work(field_commission_formula='gross')
         self.assertEqual(self.work().field_commission_formula, 'net')
 
+    def test_financial_input_change_requires_amount_reapproval(self):
+        work = self.work(field_contractor_due=300)
+        work.action_approve_contractor_amount()
+        self.assertTrue(work.field_contractor_amount_approved)
+        work.field_material_cost = 200
+        self.assertFalse(work.field_contractor_amount_approved)
+        self.assertEqual(work.field_contractor_due, 300)
+        self.assertEqual(work.field_commission_amount, 325)
+
     def test_rate_snapshot_and_cost_updates(self):
         work = self.work(); work.action_workcard_dispatch()
         self.contractor.partner_id.field_rate_medium = 20
@@ -178,6 +187,9 @@ class TestClientWorkcard(TransactionCase):
         migration = Path(__file__).resolve().parents[1] / 'migrations/18.0.18.0.0'
         closed = self.work(field_customer_due=700, field_invoice_number='MIG-INV')
         opened = self.work()
+        approved = self.work(field_contractor_due=300)
+        approved.action_approve_contractor_amount()
+        approved.sudo()._migrate_commission_formula('gross')
         # Model a pre-upgrade closed row: old releases did not require a receipt.
         self.env.flush_all()
         self.cr.execute("UPDATE crm_lead SET stage_id=%s, field_commission_formula='gross' WHERE id=%s",
@@ -191,6 +203,8 @@ class TestClientWorkcard(TransactionCase):
         self.env.invalidate_all()
         self.assertEqual(closed.field_commission_formula, 'gross')
         self.assertEqual(opened.field_commission_formula, 'net')
+        self.assertEqual(approved.field_commission_formula, 'gross')
+        self.assertTrue(approved.field_contractor_amount_approved)
         self.assertEqual(closed.field_customer_due, 700)
         self.assertEqual(closed.field_dispatch_code, 'paid')
         self.assertEqual(closed.field_document_history_ids.number, 'MIG-INV')
@@ -233,6 +247,13 @@ class TestClientWorkcard(TransactionCase):
         work = self.work(); self.document(work, 'proforma', 'PF', 700)
         self.assertIn(work.id, self.env['crm.lead'].search(pending).ids)
         self.assertNotIn(work.id, self.env['crm.lead'].search(paid).ids)
+
+    def test_all_business_entry_points_open_the_central_card(self):
+        card = self.env.ref('field_work_photos.view_field_workcard')
+        for name in ('action_field_service_leads', 'action_field_collections', 'action_field_collections_paid',
+                     'action_field_payouts', 'action_field_work_attention'):
+            action = self.env.ref('field_work_photos.' + name)
+            self.assertEqual(action.view_ids.filtered(lambda view: view.view_mode == 'form').view_id, card)
 
     def test_new_workcard_has_no_tabs_and_finance_fields_hidden_from_ops(self):
         view = self.env.ref('field_work_photos.view_field_workcard')

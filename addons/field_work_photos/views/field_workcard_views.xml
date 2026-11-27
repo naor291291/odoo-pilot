@@ -96,6 +96,8 @@
         <field name="domain">[('is_field_service','=',True),('field_customer_due','&gt;',0),('field_dispatch_code','!=','paid')]</field>
         <field name="view_ids" eval="[(5,0,0),(0,0,{'view_mode':'list','view_id':ref('view_field_collection_list')}),(0,0,{'view_mode':'form','view_id':ref('view_field_workcard')})]"/>
     </record>
+    <record id="action_field_payouts" model="ir.actions.act_window"><field name="view_ids" eval="[(5,0,0),(0,0,{'view_mode':'list','view_id':ref('view_field_payout_list')}),(0,0,{'view_mode':'form','view_id':ref('view_field_workcard')})]"/></record>
+    <record id="action_field_work_attention" model="ir.actions.act_window"><field name="view_ids" eval="[(5,0,0),(0,0,{'view_mode':'list','view_id':ref('view_field_lead_list')}),(0,0,{'view_mode':'form','view_id':ref('view_field_workcard')})]"/></record>
     <record id="action_field_collections_paid" model="ir.actions.act_window">
         <field name="name">גבייה שהושלמה / שולם</field><field name="res_model">crm.lead</field><field name="view_mode">list,form</field>
         <field name="domain">[('is_field_service','=',True),('field_dispatch_code','=','paid')]</field>
