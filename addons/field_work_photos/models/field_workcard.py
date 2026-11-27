@@ -74,23 +74,24 @@ class FieldWorkDocument(models.Model):
             values['amount_known'] = not (not update_debt and values.get('kind') in ('invoice', 'invoice_receipt', 'proforma') and amount <= 0)
             prepared.append(values)
         records = super().create(prepared)
-        last_billing = {doc.lead_id.id: doc.id for doc in records
-                        if doc.kind in ('proforma', 'invoice', 'invoice_receipt')}
-        for doc in records:
-            if update_debt:
-                # Keep the existing download/delivery integrations pointed at the
-                # current document, while originals remain in immutable history.
-                lead_values = {}
-                if doc.kind in ('proforma', 'invoice', 'invoice_receipt') and last_billing[doc.lead_id.id] == doc.id:
-                    # One explicit VAT-inclusive debt per work, never a sum of documents.
-                    lead_values['field_customer_due'] = doc.amount
+        updates = {}
+        if update_debt:
+            # Apply each work's final document pointers and single debt together.
+            # One form save may contain a quote, proforma and invoice; an
+            # intermediate total must not conflict with the final registered bill.
+            for doc in records:
+                values = updates.setdefault(doc.lead_id.id, {})
+                if doc.kind in ('proforma', 'invoice', 'invoice_receipt'):
+                    values['field_customer_due'] = doc.amount
                 if doc.kind in ('quote', 'invoice', 'invoice_receipt'):
                     prefix = 'field_quote' if doc.kind == 'quote' else 'field_invoice'
-                    lead_values.update({prefix + '_number': doc.number,
-                                        prefix + '_pdf': doc.with_context(bin_size=False).pdf,
-                                        prefix + '_filename': doc.filename})
-                if lead_values:
-                    doc.lead_id.write(lead_values)
+                    values.update({prefix + '_number': doc.number,
+                                   prefix + '_pdf': doc.with_context(bin_size=False).pdf,
+                                   prefix + '_filename': doc.filename})
+            for lead_id, values in updates.items():
+                if values:
+                    self.env['crm.lead'].browse(lead_id).write(values)
+        for doc in records:
             doc.lead_id._message_log(body='נוסף מסמך להיסטוריית העבודה; מסמכים קודמים נשמרו.')
             if update_debt and doc.kind in ('receipt', 'invoice_receipt'):
                 doc.lead_id._auto_document_stage('invoice')

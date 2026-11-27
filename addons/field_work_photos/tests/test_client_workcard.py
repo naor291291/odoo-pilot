@@ -150,6 +150,18 @@ class TestClientWorkcard(TransactionCase):
         self.assertEqual(work.field_customer_balance, 150)
         self.assertEqual(len(work.field_document_history_ids), 2)
 
+    def test_multiple_documents_in_one_save_set_one_final_debt(self):
+        work = self.work()
+        documents = self.env['field.work.document'].with_user(self.owner).create([
+            {'lead_id': work.id, 'kind': 'quote', 'number': 'BATCH-Q'},
+            {'lead_id': work.id, 'kind': 'proforma', 'number': 'BATCH-PF', 'amount': 700},
+            {'lead_id': work.id, 'kind': 'invoice', 'number': 'BATCH-INV', 'amount': 650}])
+        self.assertEqual(len(documents), 3)
+        self.assertEqual(work.field_customer_due, 650)
+        self.assertEqual(work.field_customer_balance, 650)
+        self.assertEqual(work.field_invoice_number, 'BATCH-INV')
+        self.assertEqual(work.field_quote_number, 'BATCH-Q')
+
     def test_full_payment_requires_receipt_then_closes(self):
         work = self.work(); self.document(work, 'invoice', 'INV', 700); self.complete(work)
         self.payment(work, 700, 'paid')
