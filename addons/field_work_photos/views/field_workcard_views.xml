@@ -61,10 +61,13 @@
                         <field name="field_payment_ids" readonly="1"/></group>
                     <group string="תשלומים לקבלן" groups="field_work_photos.group_field_finance"><field name="field_contractor_due"/><field name="field_contractor_amount_approved"/><button name="action_approve_contractor_amount" type="object" string="אישור סכום לקבלן"/><field name="field_contractor_paid"/><field name="field_contractor_balance"/>
                         <button name="action_register_contractor_payment" type="object" string="רישום תשלום לקבלן"/><field name="field_payout_ids" readonly="1"/></group>
-                    <h2>תמונות, ביצוע והערות</h2><field name="field_report_before_image" widget="image"/><field name="field_report_after_image" widget="image"/>
+                    <h2>תמונות, ביצוע והערות</h2><div class="o_field_photo_grid">
+                        <div><label for="field_report_before_image" string="לפני ביצוע"/><field name="field_report_before_image" widget="image" nolabel="1" readonly="not field_task_count or field_report_state in ['pending','approved']"/></div>
+                        <div><label for="field_report_after_image" string="אחרי ביצוע"/><field name="field_report_after_image" widget="image" nolabel="1" readonly="not field_task_count or field_report_state in ['pending','approved']"/></div></div>
+                    <h3>תמונות נוספות</h3>
                     <field name="field_extra_photo_ids" readonly="1" nolabel="1"><kanban create="false" edit="false" delete="false" class="o_field_extra_gallery">
                         <field name="kind"/><field name="image"/><templates><t t-name="card"><field name="image" widget="image" options="{'size':[200,160]}"/><div><field name="kind"/></div></t></templates>
-                    </kanban></field><field name="field_visit_result"/><field name="field_visit_summary"/><field name="field_visit_reason"/><field name="field_visit_notes"/>
+                    </kanban></field><group><field name="field_visit_result"/><field name="field_visit_summary"/><field name="field_visit_reason"/><field name="field_visit_notes"/><field name="field_report_note"/></group>
                     <group string="מצב עבודה ומעקב"><field name="field_report_state"/><field name="stage_id" readonly="1"/><field name="field_closed_at"/><field name="field_closed_by"/></group></group>
                 </sheet><chatter/>
             </form>

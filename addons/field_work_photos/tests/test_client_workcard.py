@@ -216,6 +216,16 @@ class TestClientWorkcard(TransactionCase):
         self.assertEqual(work.field_commission_amount, 0)
         self.assertEqual(work.field_contractor_cost, 50)
 
+    def test_register_keeps_existing_document_integration_current(self):
+        work = self.work()
+        first = self.document(work, 'invoice', 'ORIGINAL', 700)
+        self.assertEqual(work.field_invoice_number, 'ORIGINAL')
+        self.document(work, 'invoice_receipt', 'COMBINED', 700)
+        self.assertEqual(work.field_invoice_number, 'COMBINED')
+        self.assertEqual(len(work.field_document_history_ids), 2)
+        self.assertEqual(first.number, 'ORIGINAL')
+        self.assertEqual(work.field_customer_due, 700)
+
     def test_invalid_pdf_and_receipt_number(self):
         work = self.work()
         with self.assertRaises(ValidationError), self.cr.savepoint(): self.document(work, 'receipt', '   ')

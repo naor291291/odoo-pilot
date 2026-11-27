@@ -62,10 +62,20 @@ class FieldWorkDocument(models.Model):
             prepared.append(values)
         records = super().create(prepared)
         for doc in records:
-            if update_debt and doc.kind in ('proforma', 'invoice', 'invoice_receipt'):
-                # One debt per work, not one debt per fiscal document. The amount
-                # is entered explicitly including VAT; never infer a VAT rate.
-                doc.lead_id.write({'field_customer_due': doc.amount})
+            if update_debt:
+                # Keep the existing download/delivery integrations pointed at the
+                # current document, while originals remain in immutable history.
+                lead_values = {}
+                if doc.kind in ('proforma', 'invoice', 'invoice_receipt'):
+                    # One explicit VAT-inclusive debt per work, never a sum of documents.
+                    lead_values['field_customer_due'] = doc.amount
+                if doc.kind in ('quote', 'invoice', 'invoice_receipt'):
+                    prefix = 'field_quote' if doc.kind == 'quote' else 'field_invoice'
+                    lead_values.update({prefix + '_number': doc.number,
+                                        prefix + '_pdf': doc.with_context(bin_size=False).pdf,
+                                        prefix + '_filename': doc.filename})
+                if lead_values:
+                    doc.lead_id.write(lead_values)
             doc.lead_id._message_log(body='נוסף מסמך להיסטוריית העבודה; מסמכים קודמים נשמרו.')
             if update_debt and doc.kind in ('receipt', 'invoice_receipt'):
                 doc.lead_id._auto_document_stage('invoice')
@@ -185,7 +195,7 @@ class CrmLead(models.Model):
             if not number:
                 continue
             pdf = self.with_context(bin_size=False)[prefix + '_pdf']
-            existing = self.env['field.work.document'].search([('lead_id', '=', self.id), ('kind', '=', kind), ('number', '=', number)], limit=1)
+            existing = self.env['field.work.document'].search([('lead_id', '=', self.id), ('kind', 'in', ['invoice', 'invoice_receipt'] if kind == 'invoice' else ['quote']), ('number', '=', number)], limit=1)
             if existing:
                 if pdf:
                     self.env.cr.execute('SELECT id FROM field_work_document WHERE id = %s FOR UPDATE', [existing.id])
