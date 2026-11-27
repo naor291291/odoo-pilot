@@ -119,6 +119,7 @@ def main(skip_pdf=False):
     photo = base64.b64encode(photo_stream.getvalue()).decode('ascii')
     call(owner, 'crm.lead', 'write', [[lead], {'field_report_before_image': photo,
          'field_report_after_image': photo, 'field_visit_summary': 'Synthetic completed fixture'}])
+    call(owner, 'field.work.document', 'create', [{'lead_id': lead, 'kind': 'receipt', 'number': 'SYNTHETIC-SECURITY-RECEIPT'}])
     call(owner, 'crm.lead', 'action_submit_field_report', [[lead]])
     try:
         call(owner, 'crm.lead', 'action_close_field_work', [[lead]])

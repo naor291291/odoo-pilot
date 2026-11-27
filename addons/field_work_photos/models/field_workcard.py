@@ -140,10 +140,14 @@ class CrmLead(models.Model):
 
     def _payment_dialog(self, kind):
         if kind == 'contractor':
+            self._check_collection_kind(kind)
+            self._lock_collection()
             self._check_contractor_commission_payment()
         return super()._payment_dialog(kind)
 
     def action_approve_contractor_amount(self):
+        self._check_collection_kind('contractor')
+        self._lock_collection()
         self._check_contractor_commission_payment()
         return super().action_approve_contractor_amount()
 

@@ -62,8 +62,10 @@
                     <group string="תשלומים לקבלן" groups="field_work_photos.group_field_finance"><field name="field_contractor_due"/><field name="field_contractor_amount_approved"/><button name="action_approve_contractor_amount" type="object" string="אישור סכום לקבלן"/><field name="field_contractor_paid"/><field name="field_contractor_balance"/>
                         <button name="action_register_contractor_payment" type="object" string="רישום תשלום לקבלן"/><field name="field_payout_ids" readonly="1"/></group>
                     <h2>תמונות, ביצוע והערות</h2><field name="field_report_before_image" widget="image"/><field name="field_report_after_image" widget="image"/>
-                    <field name="field_extra_photo_ids" readonly="1"/><field name="field_visit_result"/><field name="field_visit_summary"/><field name="field_visit_reason"/><field name="field_visit_notes"/>
-                    <group string="מצב עבודה ומעקב"><field name="stage_id" readonly="1"/><field name="field_closed_at"/><field name="field_closed_by"/></group></group>
+                    <field name="field_extra_photo_ids" readonly="1" nolabel="1"><kanban create="false" edit="false" delete="false" class="o_field_extra_gallery">
+                        <field name="kind"/><field name="image"/><templates><t t-name="card"><field name="image" widget="image" options="{'size':[200,160]}"/><div><field name="kind"/></div></t></templates>
+                    </kanban></field><field name="field_visit_result"/><field name="field_visit_summary"/><field name="field_visit_reason"/><field name="field_visit_notes"/>
+                    <group string="מצב עבודה ומעקב"><field name="field_report_state"/><field name="stage_id" readonly="1"/><field name="field_closed_at"/><field name="field_closed_by"/></group></group>
                 </sheet><chatter/>
             </form>
         </field>
@@ -77,6 +79,18 @@
     <record id="view_partner_enrol_contractor" model="ir.ui.view">
         <field name="name">res.partner.enrol.field.contractor</field><field name="model">res.partner</field><field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml"><xpath expr="//sheet" position="before"><header><button name="action_enrol_field_contractor" type="object" string="הפעלת פורטל קבלן ושיבוץ" groups="field_work_photos.group_field_finance" confirm="יש לאמת שזה איש הקשר וכתובת הדוא״ל של הקבלן. להפעיל גישת פורטל לעבודות שישויכו אליו בלבד?"/></header></xpath></field>
+    </record>
+    <record id="view_client_enrol_contractor" model="ir.ui.view">
+        <field name="name">res.partner.field.client.enrol.contractor</field><field name="model">res.partner</field><field name="inherit_id" ref="view_field_client_form"/>
+        <field name="arch" type="xml"><xpath expr="//button[@name='action_open_field_client_work']" position="after"><button name="action_enrol_field_contractor" type="object" string="הפעלת פורטל קבלן ושיבוץ" groups="field_work_photos.group_field_finance" invisible="not id" confirm="יש לאמת את שם איש הקשר וכתובת הדוא״ל. להפעיל פורטל לעבודות שישויכו אליו בלבד?"/></xpath></field>
+    </record>
+    <record id="view_rates_enrol_contractor" model="ir.ui.view">
+        <field name="name">res.partner.field.rates.enrol.contractor</field><field name="model">res.partner</field><field name="inherit_id" ref="view_field_partner_rates_form"/>
+        <field name="arch" type="xml"><xpath expr="//sheet" position="before"><header><button name="action_enrol_field_contractor" type="object" string="הפעלת פורטל קבלן ושיבוץ" groups="field_work_photos.group_field_finance" confirm="יש לאמת את שם איש הקשר וכתובת הדוא״ל. להפעיל פורטל לעבודות שישויכו אליו בלבד?"/></header></xpath>
+            <xpath expr="//field[@name='phone']" position="after"><field name="email" widget="email"/></xpath>
+            <xpath expr="//div[hasclass('o_field_rates_content')]/p[1]" position="replace"><p>המדרגה נבחרת לפי סכום העסקה לפני מע״מ. בעבודות חדשות האחוז חל על בסיס העמלה לאחר ניכוי הוצאות העסק והחומרים.</p></xpath>
+            <xpath expr="//p[contains(text(),'האחוז חל')]" position="replace"><p>האחוז חל על מלוא בסיס העמלה, ולא רק על החלק שמעל גבול המדרגה. כל הסכומים לפני מע״מ. אפשר להזין אחוז בין 0 ל־100.</p></xpath>
+        </field>
     </record>
     <record id="action_field_collections" model="ir.actions.act_window">
         <field name="domain">[('is_field_service','=',True),('field_customer_due','&gt;',0),('field_dispatch_code','!=','paid')]</field>

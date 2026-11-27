@@ -79,6 +79,19 @@ class TestClientWorkcard(TransactionCase):
             work.action_approve_contractor_amount()
         self.assertFalse(work.field_payout_ids)
 
+    def test_negative_base_does_not_disclose_private_finances_to_dispatcher(self):
+        work = self.work(field_material_cost=800, field_contractor_due=100).with_user(self.ops)
+        for action in (work.action_register_contractor_payment, work.action_approve_contractor_amount):
+            with self.assertRaises(AccessError), self.cr.savepoint():
+                action()
+
+    def test_enrolment_rejects_foreign_company_portal_account(self):
+        company = self.env['res.company'].create({'name': 'Separate contractor company'})
+        self.other.company_ids |= company
+        self.other.partner_id.email = 'cross-company@example.invalid'
+        with self.assertRaises(AccessError), self.cr.savepoint():
+            self.other.partner_id.with_user(self.owner).action_enrol_field_contractor()
+
     def test_legacy_formula_cannot_bypass_negative_base(self):
         work = self.work(field_material_cost=800)
         with self.assertRaises(AccessError), self.cr.savepoint():
