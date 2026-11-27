@@ -141,9 +141,12 @@ class CrmLead(models.Model):
                 service.field_task_ids._lock_dispatch_work()
             if any(task.field_review_state in ('pending', 'approved') for task in service.field_task_ids):
                 raise ValidationError('יש להחזיר את העבודה לתיקון לפני שינוי סכומים.')
-        if {'field_sheet_contractor_expenses', 'field_contractor_id'}.intersection(vals) and 'field_expenses_approved' not in vals:
-            vals = dict(vals, field_expenses_approved=False)
+        reset_expenses = bool({'field_sheet_contractor_expenses', 'field_contractor_id'}.intersection(vals) and 'field_expenses_approved' not in vals)
         result = super().write(vals)
+        if reset_expenses:
+            # Assignment is already authorized. Reset only the private approval,
+            # without granting the dispatcher write access to any finance field.
+            super(CrmLead, self.sudo()).write({'field_expenses_approved': False})
         # Preserve the contractor's rates at dispatch, including legitimate
         # reassignment while a task is in draft/correction. Later profile changes
         # affect future jobs only. This private super call bypasses only the

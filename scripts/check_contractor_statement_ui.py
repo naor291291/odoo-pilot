@@ -122,6 +122,7 @@ with sync_playwright() as playwright:
         page.get_by_role('button', name='אישור', exact=True).click()
         settle(page)
         capture('amount-approved-1440')
+        rpc('field.work.document', 'create', [{'lead_id': lead, 'kind': 'receipt', 'number': 'STATEMENT-UI-RECEIPT'}])
         rpc('crm.lead', 'action_close_field_work', [[lead]])
 
         action_id = xmlid('action_contractor_statement')

@@ -155,14 +155,15 @@ class CrmLead(models.Model):
         # new files in an append-only register, so replacement never erases history.
         changed = set(values).intersection({'field_quote_number', 'field_quote_pdf', 'field_quote_filename',
                                            'field_invoice_number', 'field_invoice_pdf', 'field_invoice_filename'})
-        if changed:
-            self._check_field_document_access('write')
-            self._lock_collection()
-            for lead in self:
+        documents = self.filtered(lambda lead: lead.is_field_service or any(values.get(key) for key in changed)) if changed else self.browse()
+        if documents:
+            documents._check_field_document_access('write')
+            documents._lock_collection()
+            for lead in documents:
                 lead._archive_legacy_documents()
         result = super().write(values)
-        if changed:
-            for lead in self:
+        if documents:
+            for lead in documents:
                 lead._archive_legacy_documents()
         return result
 
@@ -175,8 +176,17 @@ class CrmLead(models.Model):
             pdf = self.with_context(bin_size=False)[prefix + '_pdf']
             existing = self.env['field.work.document'].search([('lead_id', '=', self.id), ('kind', '=', kind), ('number', '=', number)], limit=1)
             if existing:
-                if pdf and existing.with_context(bin_size=False).pdf and pdf != existing.with_context(bin_size=False).pdf:
-                    raise ValidationError('אין להחליף PDF של מספר מסמך קיים. יש להוסיף מסמך חדש עם מספר חדש.')
+                if pdf:
+                    self.env.cr.execute('SELECT id FROM field_work_document WHERE id = %s FOR UPDATE', [existing.id])
+                    existing.invalidate_recordset(['pdf'])
+                    original = existing.with_context(bin_size=False).pdf
+                    if original and pdf != original:
+                        raise ValidationError('אין להחליף PDF של מספר מסמך קיים. יש להוסיף מסמך חדש עם מספר חדש.')
+                    if not original:
+                        # One-time attachment of the issued original; no RPC write
+                        # permission, identity/amount changes or replacement allowed.
+                        super(FieldWorkDocument, existing.sudo()).write({'pdf': pdf, 'filename': self[prefix + '_filename']})
+                        self._message_log(body='צורף PDF מקורי למסמך שנרשם בהיסטוריה.')
                 continue
             # Old invoices had no explicit document amount. Do not invent a debt.
             if kind == 'invoice' and self.field_customer_due <= 0:

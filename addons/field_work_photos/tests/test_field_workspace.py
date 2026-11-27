@@ -188,18 +188,18 @@ class TestFieldWorkspace(TransactionCase):
     def test_workspace_focus_follows_planning_execution_and_collection(self):
         draft = self.env['crm.lead'].with_user(self.ops).create({'name': 'Plan', 'is_field_service': True})
         self.assertEqual(draft.action_open_field_workspace()['views'][0][0],
-                         self.env.ref('field_work_photos.view_field_lead_form').id)
+                         self.env.ref('field_work_photos.view_field_workcard').id)
         lead = self.lead()
         self.assertEqual(lead.action_open_field_workspace()['views'][0][0],
-                         self.env.ref('field_work_photos.view_field_lead_execution_focus').id)
+                         self.env.ref('field_work_photos.view_field_workcard').id)
         lead.write({'field_report_before_image': self.photo, 'field_report_after_image': self.photo})
         lead.action_submit_field_report()
         action = lead.action_approve_field_report()
-        self.assertEqual(action['views'][0][0], self.env.ref('field_work_photos.view_field_lead_collection_focus').id)
+        self.assertEqual(action['views'][0][0], self.env.ref('field_work_photos.view_field_workcard').id)
         self.assertEqual(action['res_id'], lead.id)
         from lxml import etree
         focused_arch = etree.fromstring(lead.get_view(view_id=action['views'][0][0], view_type='form')['arch'])
-        self.assertTrue(focused_arch.xpath('//page[@name="field_collection" and @autofocus="autofocus"]'))
+        self.assertFalse(focused_arch.xpath('//notebook'))
         self.assertEqual(lead.field_dispatch_code, 'completed')
 
     def test_private_finance_focus_and_portal_workspace_access(self):
@@ -210,7 +210,7 @@ class TestFieldWorkspace(TransactionCase):
             lead.with_user(self.contractor).action_open_field_workspace()
         owner = lead.with_user(self.env.ref('base.user_admin'))
         self.assertEqual(owner._field_workspace_action(focus='finance')['views'][0][0],
-                         self.env.ref('field_work_photos.view_field_lead_finance_focus').id)
+                         self.env.ref('field_work_photos.view_field_workcard').id)
 
     def test_workspace_rejects_ordinary_crm_records(self):
         lead = self.env['crm.lead'].with_user(self.ops).create({'name': 'Ordinary sales record'})

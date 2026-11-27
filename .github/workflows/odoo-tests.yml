@@ -38,7 +38,7 @@ jobs:
       - name: Check browser setup and sample task
         run: |
           docker compose -f .devcontainer/compose.yaml run --rm odoo python3 scripts/pilot.py smoke
-      - name: Check guided form in desktop and mobile Chrome
+      - name: Check central workcard and portal in desktop and mobile Chrome
         run: |
           python3 -m pip install --quiet --target "$RUNNER_TEMP/field-ui-python" playwright pypdf Pillow
           docker compose -f .devcontainer/compose.yaml run --rm -d --name field-work-ui -p 127.0.0.1:8069:8069 odoo python3 scripts/pilot.py worker
@@ -46,7 +46,7 @@ jobs:
           docker exec field-work-ui python3 scripts/check_security_runtime.py
           CHROME_BIN="$(command -v google-chrome)" PYTHONPATH="$RUNNER_TEMP/field-ui-python" python3 scripts/check_contractor_statement_ui.py
           FIELD_FLOW_RESULT=0
-          CHROME_BIN="$(command -v google-chrome)" PYTHONPATH="$RUNNER_TEMP/field-ui-python" python3 scripts/check_field_ui.py || FIELD_FLOW_RESULT=$?
+          CHROME_BIN="$(command -v google-chrome)" PYTHONPATH="$RUNNER_TEMP/field-ui-python" python3 scripts/check_workcard_ui.py || FIELD_FLOW_RESULT=$?
           CRM_SCREEN_RESULT=0
           CHROME_BIN="$(command -v google-chrome)" PYTHONPATH="$RUNNER_TEMP/field-ui-python" python3 scripts/check_crm_ui.py || CRM_SCREEN_RESULT=$?
           JOURNEY_RESULT=0

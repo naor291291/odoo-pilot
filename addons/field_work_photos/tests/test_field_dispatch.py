@@ -92,9 +92,8 @@ class TestFieldDispatch(TransactionCase):
         lead = self.lead(stage_id=self.env.ref('field_work_photos.stage_field_new').id)
         self.assertEqual(lead.field_dispatch_code, 'new')
 
-    def test_quote_required_before_sent(self):
-        with self.assertRaises(ValidationError), self.cr.savepoint():
-            self.lead(field_quote_number=False)
+    def test_quote_reference_optional_for_field_work(self):
+        self.assertFalse(self.lead(field_quote_number=False).field_quote_number)
 
     def test_reassignment_and_schedule_sync(self):
         lead, task = self.dispatch()
@@ -192,14 +191,9 @@ class TestFieldDispatch(TransactionCase):
         self.assertEqual(lead.field_dispatch_code, 'new')
         self.assertFalse(lead.field_task_ids)
 
-    def test_next_requires_quote_reference(self):
+    def test_scheduling_does_not_require_quote_reference(self):
         lead = self.lead(stage_id=self.env.ref('field_work_photos.stage_field_quote').id,
                          field_quote_number=False)
-        with self.assertRaises(ValidationError), self.cr.savepoint():
-            lead.action_next_field_stage()
-        self.assertEqual(lead.field_dispatch_code, 'quote')
-        lead.field_quote_number = 'Q-123'
-        self.assertEqual(lead.field_dispatch_code, 'quote')
         lead.action_next_field_stage()
         self.assertEqual(lead.field_dispatch_code, 'sent')
 
