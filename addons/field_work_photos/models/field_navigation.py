@@ -87,7 +87,7 @@ class FieldWorkDashboard(models.TransientModel):
             'schedule_count': [('field_dispatch_code', '=', 'schedule')],
             'review_count': [('field_task_ids.field_review_state', '=', 'pending')],
             'active_count': [('field_dispatch_code', '=', 'field')],
-            'collection_count': [('field_dispatch_code', '=', 'completed')],
+            'collection_count': [('field_customer_due', '>', 0), ('field_dispatch_code', '!=', 'paid')],
         }
         values = {name: Lead.search_count(base + domain) for name, domain in domains.items()}
         for dashboard in self:
@@ -118,12 +118,12 @@ class FieldWorkDashboard(models.TransientModel):
         action = self.env['ir.actions.actions']._for_xml_id('field_work_photos.action_field_service_leads')
         action['domain'] = [('is_field_service', '=', True)] + domain
         action['views'] = [(self.env.ref('field_work_photos.view_field_lead_list').id, 'list'),
-                           (self.env.ref('field_work_photos.view_field_lead_form').id, 'form')]
+                           (self.env.ref('field_work_photos.view_field_workcard').id, 'form')]
         return action
 
     def action_new_work(self):
         action = self._leads([])
-        action.update(res_id=False, views=[(self.env.ref('field_work_photos.view_field_lead_form').id, 'form')])
+        action.update(res_id=False, views=[(self.env.ref('field_work_photos.view_field_setup').id, 'form')])
         return action
 
     def action_new_queue(self):

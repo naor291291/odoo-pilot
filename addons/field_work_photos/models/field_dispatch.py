@@ -258,8 +258,6 @@ class CrmLead(models.Model):
             code = lead.field_dispatch_code
             if not code:
                 raise ValidationError('יש לבחור שלב מתוך מסלול עבודות השטח.')
-            if code in ('sent', 'schedule', 'field', 'completed', 'paid') and not (lead.field_quote_number or '').strip():
-                raise ValidationError('יש להזין מספר הצעת מחיר ממורנינג לפני המשך הטיפול.')
             if lead.field_task_ids and code not in ('field', 'completed', 'paid'):
                 raise ValidationError('לא ניתן להחזיר פנייה ששובצה לשלב טרום ביצוע.')
             if code == 'field' and any(t.field_review_state == 'approved' for t in lead.field_task_ids):
@@ -306,6 +304,7 @@ class CrmLead(models.Model):
                     **lead._field_task_values(), 'name': lead.name,
                     'project_id': self.env.ref('field_work_photos.project_field_dispatch').id,
                     'field_service_lead_id': lead.id, 'field_report_required': True,
+                    'stage_id': self.env.ref('field_work_photos.task_stage_field_dispatch').id,
                     'company_id': lead.company_id.id,
                 })
 

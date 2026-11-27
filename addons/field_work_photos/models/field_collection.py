@@ -244,6 +244,8 @@ class FieldWorkPayment(models.Model):
                 raise ValidationError('לא ניתן לרשום תשלום ללא לקוח או בעבודה סגורה.')
             if kind == 'contractor' and (lead.field_execution_type != 'subcontractor' or not lead.field_contractor_id):
                 raise ValidationError('תשלום לקבלן מחייב עבודה המשויכת לקבלן משנה.')
+            if kind == 'contractor':
+                lead._check_contractor_commission_payment()
             currency = self.env.ref('base.ILS')
             amount = _money(vals.get('amount', 0), currency)
             due = lead.sudo().field_customer_due if kind == 'customer' else lead.sudo().field_contractor_due

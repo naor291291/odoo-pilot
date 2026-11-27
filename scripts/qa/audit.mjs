@@ -68,6 +68,12 @@ try {
     if (!rows.length) {errors.push({screen:name,type:'Missing action'});continue;}
     await audit(owner,name,`/odoo/action-${rows[0].res_id}`,'.o_action_manager .o_content');
   }
+  const workActions = await rpc(owner,'ir.model.data','search_read',[[['module','=','field_work_photos'],['name','=','action_field_service_leads']]],{fields:['res_id']});
+  const workItems = await rpc(owner,'crm.lead','search',[[['is_field_service','=',true]]],{limit:1});
+  if (workActions.length && workItems.length) {
+    await audit(owner,'central-workcard',`/odoo/action-${workActions[0].res_id}/${workItems[0]}`,'.o_field_central_workcard');
+    await audit(owner,'work-setup',`/odoo/action-${workActions[0].res_id}/new`,'.o_field_central_workcard');
+  } else errors.push({screen:'central-workcard',type:'Missing synthetic fixture'});
   const contractor = await browser.newContext({locale:'he-IL'});
   await authenticate(contractor,credentials.contractors[0]);
   await audit(contractor,'contractor-list','/my/field-work','.o_field_portal');

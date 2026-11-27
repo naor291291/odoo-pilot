@@ -26,7 +26,7 @@ class ResPartner(models.Model):
             # An illustrative sale in the middle tier; use this contractor's live rate.
             rate = partner.field_rate_medium
             cost = currency.round(1000 * rate / 100)
-            partner.field_rate_example = f'עסקה של 1,000 ₪ × {rate:g}% = {cost:,.2f} ₪ לקבלן (לפני מע״מ).'
+            partner.field_rate_example = f'בסיס עמלה לאחר הוצאות של 1,000 ₪ × {rate:g}% = {cost:,.2f} ₪ לקבלן (לפני מע״מ).'
 
     @api.constrains(*RATE_FIELDS)
     def _check_field_rates(self):
@@ -47,6 +47,10 @@ class CrmLead(models.Model):
 
     field_sale_amount = fields.Monetary(string='סכום עסקה לפני מע״מ', currency_field='field_pricing_currency_id', copy=False)
     field_material_cost = fields.Monetary(string='עלות חומרים לפני מע״מ', currency_field='field_pricing_currency_id', copy=False, groups=FINANCE_GROUP)
+    field_commission_formula = fields.Selection([('gross', 'חישוב קודם — נשמר להיסטוריה'), ('net', 'עמלה לאחר הוצאות עסק וחומרים')], default='net', required=True, copy=False, groups=FINANCE_GROUP)
+    field_expenses_approved = fields.Boolean(string='הוצאות הקבלן אושרו להחזר', groups=FINANCE_GROUP, copy=False)
+    field_commission_base = fields.Monetary(string='בסיס עמלה', currency_field='field_pricing_currency_id', compute='_compute_field_pricing', compute_sudo=True, groups=FINANCE_GROUP)
+    field_commission_amount = fields.Monetary(string='עמלת קבלן', currency_field='field_pricing_currency_id', compute='_compute_field_pricing', compute_sudo=True, groups=FINANCE_GROUP)
     field_rates_frozen = fields.Boolean(copy=False, readonly=True, groups=FINANCE_GROUP)
     field_rate_small_snapshot = fields.Float(copy=False, readonly=True, groups=FINANCE_GROUP)
     field_rate_medium_snapshot = fields.Float(copy=False, readonly=True, groups=FINANCE_GROUP)
@@ -62,7 +66,9 @@ class CrmLead(models.Model):
                  'field_contractor_id.partner_id.field_rate_medium',
                  'field_contractor_id.partner_id.field_rate_large',
                  'field_rates_frozen', 'field_rate_small_snapshot',
-                 'field_rate_medium_snapshot', 'field_rate_large_snapshot')
+                 'field_rate_medium_snapshot', 'field_rate_large_snapshot',
+                 'field_sheet_business_expenses', 'field_sheet_contractor_expenses',
+                 'field_expenses_approved', 'field_commission_formula')
     def _compute_field_pricing(self):
         currency = self.env.ref('base.ILS')
         for lead in self:
@@ -72,8 +78,14 @@ class CrmLead(models.Model):
                 tier = 'small' if sale <= 500 else 'medium' if sale <= 1250 else 'large'
                 rate = (lead['field_rate_' + tier + '_snapshot'] if lead.field_rates_frozen
                         else lead.field_contractor_id.partner_id['field_rate_' + tier])
-            cost = currency.round(sale * rate / 100)
-            profit = currency.round(sale - cost - lead.field_material_cost)
+            business = currency.round(lead.field_material_cost + (lead.field_sheet_business_expenses if lead.field_commission_formula == 'net' else 0))
+            base = sale if lead.field_commission_formula == 'gross' else currency.round(sale - business)
+            commission = currency.round(base * rate / 100)
+            reimbursement = currency.round(lead.field_sheet_contractor_expenses) if lead.field_commission_formula == 'net' and lead.field_expenses_approved and lead.field_execution_type == 'subcontractor' and lead.field_contractor_id else 0
+            cost = currency.round(commission + reimbursement)
+            profit = currency.round(sale - business - cost)
+            lead.field_commission_base = base
+            lead.field_commission_amount = commission
             lead.field_applied_rate = rate
             lead.field_contractor_cost = cost
             lead.field_gross_profit = profit
@@ -100,16 +112,25 @@ class CrmLead(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
+        if any('field_commission_formula' in vals and vals['field_commission_formula'] != 'net' for vals in vals_list):
+            raise AccessError('עבודה חדשה מחושבת לפי עמלה לאחר הוצאות בלבד.')
         if any(SNAPSHOT_FIELDS.intersection(vals) for vals in vals_list):
             raise AccessError('מחירון העבודה נשמר אוטומטית בעת השיבוץ.')
-        return super().create(vals_list)
+        return super(CrmLead, self.with_context(default_field_commission_formula='net')).create(vals_list)
 
     @api.model
     def default_get(self, fields_list):
         return {key: value for key, value in super().default_get(fields_list).items()
                 if key not in SNAPSHOT_FIELDS}
 
+    def _migrate_commission_formula(self, formula):
+        if not self.env.su or formula not in ('gross', 'net'):
+            raise AccessError('שינוי נוסחה היסטורית מותר רק בתהליך הסבת נתונים.')
+        return super().write({'field_commission_formula': formula})
+
     def write(self, vals):
+        if 'field_commission_formula' in vals:
+            raise AccessError('נוסחת העמלה נשמרת אוטומטית; אין לשנות חישוב היסטורי דרך כרטיס העבודה.')
         if SNAPSHOT_FIELDS.intersection(vals):
             raise AccessError('לא ניתן לשנות את מחירון העבודה השמור באופן ישיר.')
         assignments = {}
@@ -129,7 +150,12 @@ class CrmLead(models.Model):
                 service.field_task_ids._lock_dispatch_work()
             if any(task.field_review_state in ('pending', 'approved') for task in service.field_task_ids):
                 raise ValidationError('יש להחזיר את העבודה לתיקון לפני שינוי סכומים.')
+        reset_expenses = bool({'field_sheet_contractor_expenses', 'field_contractor_id', 'field_execution_type'}.intersection(vals) and 'field_expenses_approved' not in vals)
         result = super().write(vals)
+        if reset_expenses:
+            # Assignment is already authorized. Reset only the private approval,
+            # without granting the dispatcher write access to any finance field.
+            super(CrmLead, self.sudo()).write({'field_expenses_approved': False})
         # Preserve the contractor's rates at dispatch, including legitimate
         # reassignment while a task is in draft/correction. Later profile changes
         # affect future jobs only. This private super call bypasses only the

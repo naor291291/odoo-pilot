@@ -15,3 +15,5 @@ from . import test_native_image_runtime
 from . import test_pilot_feedback
 
 from . import test_pilot_access
+
+from . import test_client_workcard

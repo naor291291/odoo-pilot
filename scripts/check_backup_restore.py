@@ -23,7 +23,7 @@ from psycopg2 import sql
 ROOT = Path(__file__).resolve().parents[1]
 LOCAL = ROOT / '.local-data'
 DATABASE = 'odoo_pilot'
-TABLES = ('crm_lead', 'project_task', 'ir_attachment', 'field_work_payment', 'field_work_entitlement')
+TABLES = ('crm_lead', 'project_task', 'ir_attachment', 'field_work_payment', 'field_work_entitlement', 'field_work_document')
 
 
 def snapshot(connection):
@@ -33,7 +33,11 @@ def snapshot(connection):
             cursor.execute(sql.SQL('SELECT count(*) FROM {}').format(sql.Identifier(table)))
             counts[table] = cursor.fetchone()[0]
         cursor.execute("SELECT store_fname, checksum FROM ir_attachment WHERE store_fname IS NOT NULL")
-        return counts, sorted(cursor.fetchall())
+        attachments = sorted(cursor.fetchall())
+        cursor.execute('SELECT id, pdf FROM field_work_document ORDER BY id')
+        documents = [(identifier, hashlib.sha256(bytes(payload or b'')).hexdigest())
+                     for identifier, payload in cursor.fetchall()]
+        return counts, attachments, documents
 
 
 def main():
@@ -85,6 +89,7 @@ def main():
                     assert hashlib.sha1(path.read_bytes(), usedforsecurity=False).hexdigest() == checksum
                 result = {'database_restore': 'passed', 'record_counts': actual[0],
                           'attachment_checksums_verified': len(actual[1]),
+                          'document_checksums_verified': len(actual[2]),
                           'backup_private': (backup.stat().st_mode & 0o077) == 0,
                           'postgres_client_server_major': server_major,
                           'separate_database': True}

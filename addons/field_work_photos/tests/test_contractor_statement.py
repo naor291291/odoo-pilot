@@ -54,6 +54,8 @@ class TestContractorStatement(TransactionCase):
             self.pay(lead, 1180, when, kind='customer')
             if approve:
                 lead.action_approve_contractor_amount()
+            self.env['field.work.document'].with_user(self.owner).create({
+                'lead_id': lead.id, 'kind': 'receipt', 'number': 'STATEMENT-RECEIPT'})
             lead.with_user(self.ops).action_close_field_work()
 
     def statement(self, start='2026-09-01', end='2026-09-30', contractor=None, **values):

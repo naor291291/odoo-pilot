@@ -110,18 +110,14 @@ with sync_playwright() as playwright:
         rpc('crm.lead', 'action_approve_field_report', [[lead]])
         pay(1180, today, 'CUSTOMER-NOT-PAYOUT', kind='customer')
 
-        # Verify approval control in the real native finance tab, including confirmation.
+        # Approval remains accessible directly on the central card.
         page.goto(f'{BASE}/odoo/action-{xmlid("action_field_payouts")}/{lead}')
         settle(page)
-        finance_tab = page.get_by_role('tab', name='עלויות וקבלן', exact=True)
-        if finance_tab.count():
-            finance_tab.click()
-        else:
-            page.locator('.o_notebook_headers').get_by_text('עלויות', exact=False).click()
-        page.get_by_role('button', name='אישור סכום הקבלן לדוח', exact=True).click()
-        page.get_by_role('button', name='אישור', exact=True).click()
+        expect(page.locator('.o_field_central_workcard')).to_be_visible()
+        page.get_by_role('button', name='אישור סכום לקבלן', exact=True).click()
         settle(page)
         capture('amount-approved-1440')
+        rpc('field.work.document', 'create', [{'lead_id': lead, 'kind': 'receipt', 'number': 'STATEMENT-UI-RECEIPT'}])
         rpc('crm.lead', 'action_close_field_work', [[lead]])
 
         action_id = xmlid('action_contractor_statement')

@@ -38,6 +38,7 @@ class TestFieldCollection(TransactionCase):
                     'field_visit_summary': 'הוחלף הברז ונבדק'})
         lead.action_submit_field_report()
         lead.action_approve_field_report()
+        self.env['field.work.document'].with_user(self.owner).create({'lead_id': lead.id, 'kind': 'receipt', 'number': 'COL-RECEIPT'})
         return lead
 
     def pay(self, lead, amount, reference='PAY-1', kind='customer', **vals):
