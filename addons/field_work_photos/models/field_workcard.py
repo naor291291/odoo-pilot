@@ -27,9 +27,19 @@ class FieldWorkDocument(models.Model):
                              ('invoice_receipt', 'חשבונית מס קבלה')], required=True, string='סוג מסמך')
     number = fields.Char(required=True, string='מספר מסמך')
     amount = fields.Monetary(currency_field='currency_id', string='סכום כולל מע״מ')
+    amount_known = fields.Boolean(string='סכום הוזן', default=True, readonly=True,
+        help='בחשבונית היסטורית ללא סכום מתועד נשמר המסמך בלי להמציא סכום חוב.')
     filename = fields.Char(string='שם קובץ')
     pdf = fields.Binary(string='מסמך PDF', attachment=False)
     _sql_constraints = [('work_document_number_unique', 'unique(lead_id, kind, number)', 'מספר המסמך כבר קיים בעבודה.')]
+
+    @api.model
+    def default_get(self, names):
+        protected = {'company_id', 'currency_id', 'amount_known', 'create_uid', 'create_date', 'write_uid', 'write_date'}
+        values = {key: value for key, value in super().default_get(names).items() if key not in protected}
+        if 'amount_known' in names:
+            values['amount_known'] = True
+        return values
 
     @api.model_create_multi
     def create(self, values_list):
@@ -42,6 +52,8 @@ class FieldWorkDocument(models.Model):
         seen = set()
         for values in values_list:
             values = dict(values)
+            if {'company_id', 'currency_id', 'create_uid', 'create_date', 'write_uid', 'write_date'}.intersection(values) or values.get('amount_known') is False:
+                raise AccessError('פרטי הבקרה והחברה נשמרים אוטומטית ואינם ניתנים להזנה ישירה.')
             lead = self.env['crm.lead'].browse(values.get('lead_id')).exists()
             if len(lead) != 1:
                 raise ValidationError('יש לבחור עבודה קיימת.')
@@ -51,7 +63,7 @@ class FieldWorkDocument(models.Model):
             amount = values.get('amount', 0)
             if not number or len(number) > 128 or not math.isfinite(amount) or amount < 0:
                 raise ValidationError('יש להזין מספר מסמך תקין וסכום לא שלילי.')
-            if values.get('kind') in ('proforma', 'invoice', 'invoice_receipt') and amount <= 0:
+            if update_debt and values.get('kind') in ('proforma', 'invoice', 'invoice_receipt') and amount <= 0:
                 raise ValidationError('מסמך חיוב מחייב סכום כולל מע״מ חיובי.')
             key = (lead.id, values.get('kind'), number)
             if key in seen or self.search_count([('lead_id', '=', lead.id), ('kind', '=', values.get('kind')), ('number', '=', number)]):
@@ -59,6 +71,7 @@ class FieldWorkDocument(models.Model):
             seen.add(key)
             values['number'] = number
             values['amount'] = self.env.ref('base.ILS').round(amount)
+            values['amount_known'] = not (not update_debt and values.get('kind') in ('invoice', 'invoice_receipt', 'proforma') and amount <= 0)
             prepared.append(values)
         records = super().create(prepared)
         for doc in records:
@@ -172,6 +185,13 @@ class CrmLead(models.Model):
         return action
 
     def write(self, values):
+        if {'partner_id', 'company_id', 'is_field_service'}.intersection(values):
+            service = self.filtered('is_field_service')
+            service._lock_collection()
+            for lead in service:
+                if values.get('is_field_service') is False or any(key in values and values[key] != lead[key].id for key in ('partner_id', 'company_id')):
+                    if self.env['field.work.document'].sudo().search_count([('lead_id', '=', lead.id)]):
+                        raise ValidationError('אין לשנות לקוח או חברה בעבודה עם מסמכים שנרשמו. יש לפתוח עבודה נפרדת ולשמור על היסטוריית המסמכים.')
         # Legacy single-PDF integrations remain available. Snapshot both old and
         # new files in an append-only register, so replacement never erases history.
         changed = set(values).intersection({'field_quote_number', 'field_quote_pdf', 'field_quote_filename',
@@ -209,12 +229,11 @@ class CrmLead(models.Model):
                         super(FieldWorkDocument, existing.sudo()).write({'pdf': pdf, 'filename': self[prefix + '_filename']})
                         self._message_log(body='צורף PDF מקורי למסמך שנרשם בהיסטוריה.')
                 continue
-            # Old invoices had no explicit document amount. Do not invent a debt.
-            if kind == 'invoice' and self.field_customer_due <= 0:
-                continue
+            # Unknown legacy amounts are archived, without inventing a debt.
+            change_debt = update_debt and (kind != 'invoice' or self.field_customer_due > 0)
             self.env['field.work.document']._create_documents([{'lead_id': self.id, 'kind': kind, 'number': number,
                 'amount': self.field_customer_due if kind == 'invoice' else 0,
-                'pdf': pdf, 'filename': self[prefix + '_filename']}], update_debt=update_debt)
+                'pdf': pdf, 'filename': self[prefix + '_filename']}], update_debt=change_debt)
 
 
 class ResPartner(models.Model):

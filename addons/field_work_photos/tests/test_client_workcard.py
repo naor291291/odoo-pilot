@@ -226,6 +226,39 @@ class TestClientWorkcard(TransactionCase):
         self.assertEqual(first.number, 'ORIGINAL')
         self.assertEqual(work.field_customer_due, 700)
 
+    def test_document_audit_identity_cannot_be_spoofed(self):
+        work = self.work()
+        for extra in ({'create_uid': self.ops.id}, {'company_id': self.env.company.id}, {'currency_id': self.env.ref('base.USD').id}):
+            with self.assertRaises(AccessError), self.cr.savepoint():
+                self.document(work, 'receipt', 'SPOOF', **extra)
+        model = self.env['field.work.document'].with_user(self.owner).with_context(default_create_uid=self.ops.id)
+        self.assertNotIn('create_uid', model.default_get(['create_uid']))
+        document = self.document(work, 'receipt', 'REAL')
+        self.assertEqual(document.create_uid, self.owner)
+
+    def test_issued_document_cannot_be_moved_to_another_customer(self):
+        work = self.work()
+        document = self.document(work, 'invoice', 'BOUND-TO-CUSTOMER', 700)
+        customer = self.env['res.partner'].create({'name': 'Different synthetic customer'})
+        with self.assertRaises(ValidationError), self.cr.savepoint():
+            work.write({'partner_id': customer.id})
+        with self.assertRaises(ValidationError), self.cr.savepoint():
+            work.write({'is_field_service': False})
+        self.assertEqual(work.partner_id, self.partner)
+        self.assertEqual(document.lead_id.partner_id, self.partner)
+        work.write({'field_site_address': 'Corrected work address'})
+        self.assertEqual(work.field_site_address, 'Corrected work address')
+
+    def test_legacy_invoice_without_amount_is_preserved_without_inventing_debt(self):
+        work = self.work(field_invoice_number='LEGACY-UNKNOWN')
+        work._archive_legacy_documents()
+        document = work.field_document_history_ids
+        self.assertEqual(document.kind, 'invoice')
+        self.assertFalse(document.amount_known)
+        self.assertEqual(work.field_customer_due, 0)
+        with self.assertRaises(AccessError), self.cr.savepoint():
+            self.document(work, 'invoice', 'FORGED-UNKNOWN', 100, amount_known=False)
+
     def test_invalid_pdf_and_receipt_number(self):
         work = self.work()
         with self.assertRaises(ValidationError), self.cr.savepoint(): self.document(work, 'receipt', '   ')

@@ -51,7 +51,7 @@
                         <button name="action_simulate_field_invoice" type="object" string="הדמיית שליחת חשבונית" invisible="not field_invoice_pdf"/>
                         <field name="field_delivery_attempt_ids" readonly="1"/></group><h2>מסמכים והיסטוריה</h2><p>מוסיפים מסמך עם מספר וסכום כולל מע״מ. חשבון עסקה וחשבונית מתייחסים לחוב אחד. רישום קבלה אינו מוחק מסמכים קודמים.</p>
                     <field name="field_document_history_ids" context="{'default_lead_id': id}">
-                        <list editable="bottom" delete="false"><field name="currency_id" column_invisible="True"/><field name="id" column_invisible="True"/><field name="kind" readonly="id"/><field name="number" readonly="id"/><field name="amount" readonly="id"/>
+                        <list editable="bottom" delete="false"><field name="currency_id" column_invisible="True"/><field name="id" column_invisible="True"/><field name="kind" readonly="id"/><field name="number" readonly="id"/><field name="amount_known" readonly="1"/><field name="amount" readonly="id" invisible="id and not amount_known"/>
                             <field name="filename" column_invisible="True"/><field name="pdf" filename="filename" readonly="id"/>
                             <field name="create_date" readonly="1"/><field name="create_uid" readonly="1"/>
                         </list>
