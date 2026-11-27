@@ -2,7 +2,6 @@ import base64
 from io import BytesIO
 
 from PIL import Image
-from psycopg2 import IntegrityError
 from odoo import fields, Command
 from odoo.exceptions import AccessError, ValidationError
 from odoo.tests import TransactionCase, tagged, new_test_user
@@ -145,7 +144,7 @@ class TestClientWorkcard(TransactionCase):
         work = self.work(); doc = self.document(work, 'invoice', 'INV', 700)
         for operation in [lambda: doc.write({'number': 'OTHER'}), doc.unlink]:
             with self.assertRaises(AccessError), self.cr.savepoint(): operation()
-        with self.assertRaises((ValidationError, IntegrityError)), self.cr.savepoint(): self.document(work, 'invoice', 'INV', 700)
+        with self.assertRaises(ValidationError), self.cr.savepoint(): self.document(work, 'invoice', 'INV', 700)
         self.document(work, 'receipt', 'R', 700)
         self.assertEqual(doc.number, 'INV')
 

@@ -89,7 +89,7 @@
         <field name="arch" type="xml"><xpath expr="//sheet" position="before"><header><button name="action_enrol_field_contractor" type="object" string="הפעלת פורטל קבלן ושיבוץ" groups="field_work_photos.group_field_finance" confirm="יש לאמת את שם איש הקשר וכתובת הדוא״ל. להפעיל פורטל לעבודות שישויכו אליו בלבד?"/></header></xpath>
             <xpath expr="//field[@name='phone']" position="after"><field name="email" widget="email"/></xpath>
             <xpath expr="//div[hasclass('o_field_rates_content')]/p[1]" position="replace"><p>המדרגה נבחרת לפי סכום העסקה לפני מע״מ. בעבודות חדשות האחוז חל על בסיס העמלה לאחר ניכוי הוצאות העסק והחומרים.</p></xpath>
-            <xpath expr="//p[contains(text(),'האחוז חל')]" position="replace"><p>האחוז חל על מלוא בסיס העמלה, ולא רק על החלק שמעל גבול המדרגה. כל הסכומים לפני מע״מ. אפשר להזין אחוז בין 0 ל־100.</p></xpath>
+            <xpath expr="//p[contains(text(),'האחוז חל על כל סכום העסקה')]" position="replace"><p>האחוז חל על מלוא בסיס העמלה, ולא רק על החלק שמעל גבול המדרגה. כל הסכומים לפני מע״מ. אפשר להזין אחוז בין 0 ל־100.</p></xpath>
         </field>
     </record>
     <record id="action_field_collections" model="ir.actions.act_window">

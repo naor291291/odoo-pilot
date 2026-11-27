@@ -39,6 +39,7 @@ class FieldWorkDocument(models.Model):
         if not self.env.su and not self.env.user.has_group(OPS):
             raise AccessError('רישום מסמך מחייב הרשאת תפעול.')
         prepared = []
+        seen = set()
         for values in values_list:
             values = dict(values)
             lead = self.env['crm.lead'].browse(values.get('lead_id')).exists()
@@ -52,6 +53,10 @@ class FieldWorkDocument(models.Model):
                 raise ValidationError('יש להזין מספר מסמך תקין וסכום לא שלילי.')
             if values.get('kind') in ('proforma', 'invoice', 'invoice_receipt') and amount <= 0:
                 raise ValidationError('מסמך חיוב מחייב סכום כולל מע״מ חיובי.')
+            key = (lead.id, values.get('kind'), number)
+            if key in seen or self.search_count([('lead_id', '=', lead.id), ('kind', '=', values.get('kind')), ('number', '=', number)]):
+                raise ValidationError('מספר המסמך כבר קיים בעבודה. לא נוצר חיוב נוסף.')
+            seen.add(key)
             values['number'] = number
             values['amount'] = self.env.ref('base.ILS').round(amount)
             prepared.append(values)
