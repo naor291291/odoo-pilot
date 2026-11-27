@@ -138,6 +138,18 @@ class TestClientWorkcard(TransactionCase):
         self.assertEqual(work.field_collection_status, 'partial')
         self.assertEqual(len(work.field_document_history_ids), 2)
 
+    def test_manual_total_cannot_bypass_registered_bill(self):
+        work = self.work()
+        self.document(work, 'invoice', 'ACTUAL-700', 700)
+        self.payment(work, 500, 'PART-500')
+        with self.assertRaises(ValidationError), self.cr.savepoint():
+            work.write({'field_customer_due': 500})
+        self.assertEqual(work.field_customer_due, 700)
+        self.assertEqual(work.field_customer_balance, 200)
+        self.document(work, 'invoice', 'CORRECTED-650', 650)
+        self.assertEqual(work.field_customer_balance, 150)
+        self.assertEqual(len(work.field_document_history_ids), 2)
+
     def test_full_payment_requires_receipt_then_closes(self):
         work = self.work(); self.document(work, 'invoice', 'INV', 700); self.complete(work)
         self.payment(work, 700, 'paid')

@@ -74,12 +74,14 @@ class FieldWorkDocument(models.Model):
             values['amount_known'] = not (not update_debt and values.get('kind') in ('invoice', 'invoice_receipt', 'proforma') and amount <= 0)
             prepared.append(values)
         records = super().create(prepared)
+        last_billing = {doc.lead_id.id: doc.id for doc in records
+                        if doc.kind in ('proforma', 'invoice', 'invoice_receipt')}
         for doc in records:
             if update_debt:
                 # Keep the existing download/delivery integrations pointed at the
                 # current document, while originals remain in immutable history.
                 lead_values = {}
-                if doc.kind in ('proforma', 'invoice', 'invoice_receipt'):
+                if doc.kind in ('proforma', 'invoice', 'invoice_receipt') and last_billing[doc.lead_id.id] == doc.id:
                     # One explicit VAT-inclusive debt per work, never a sum of documents.
                     lead_values['field_customer_due'] = doc.amount
                 if doc.kind in ('quote', 'invoice', 'invoice_receipt'):
@@ -123,6 +125,25 @@ class CrmLead(models.Model):
 
     field_document_history_ids = fields.One2many('field.work.document', 'lead_id', string='היסטוריית מסמכים', groups=OPS, copy=False)
 
+    @api.model_create_multi
+    def create(self, values_list):
+        records = super().create(values_list)
+        for lead in records.filtered('is_field_service'):
+            lead._archive_legacy_documents()
+        records._validate_registered_document_debt()
+        return records
+
+    def _validate_registered_document_debt(self):
+        # A manual total must not bypass an issued bill by lowering the debt to
+        # the amount already collected. Corrections remain separate documents.
+        currency = self.env.ref('base.ILS')
+        for lead in self.filtered('is_field_service'):
+            latest = self.env['field.work.document'].sudo().search([
+                ('lead_id', '=', lead.id), ('kind', 'in', ['proforma', 'invoice', 'invoice_receipt']),
+                ('amount_known', '=', True)], order='id desc', limit=1)
+            if latest and currency.compare_amounts(lead.field_customer_due, latest.amount):
+                raise ValidationError('החוב נקבע לפי מסמך החיוב העדכני. לשינוי הסכום יש לרשום מסמך מתקן בהיסטוריה, בלי לדרוס מסמך קיים.')
+
     def _field_progress_missing(self, target_code):
         # Internal statuses remain for reports. Quotation numbering must no longer
         # force users through a sequence of screens before they can schedule work.
@@ -156,6 +177,7 @@ class CrmLead(models.Model):
 
     def action_close_field_work(self):
         self._lock_collection()
+        self._validate_registered_document_debt()
         if not self.env['field.work.document'].search_count([
                 ('lead_id', 'in', self.ids), ('kind', 'in', ['receipt', 'invoice_receipt'])]):
             raise ValidationError('לפני הסגירה יש לרשום קבלה או חשבונית מס קבלה.')
@@ -189,7 +211,9 @@ class CrmLead(models.Model):
             service = self.filtered('is_field_service')
             service._lock_collection()
             for lead in service:
-                if values.get('is_field_service') is False or any(key in values and values[key] != lead[key].id for key in ('partner_id', 'company_id')):
+                if (values.get('is_field_service') is False
+                        or ('partner_id' in values and lead.partner_id and values['partner_id'] != lead.partner_id.id)
+                        or ('company_id' in values and values['company_id'] != lead.company_id.id)):
                     if self.env['field.work.document'].sudo().search_count([('lead_id', '=', lead.id)]):
                         raise ValidationError('אין לשנות לקוח או חברה בעבודה עם מסמכים שנרשמו. יש לפתוח עבודה נפרדת ולשמור על היסטוריית המסמכים.')
         # Legacy single-PDF integrations remain available. Snapshot both old and
@@ -206,6 +230,8 @@ class CrmLead(models.Model):
         if documents:
             for lead in documents:
                 lead._archive_legacy_documents()
+        if {'field_customer_due', 'stage_id', 'field_document_history_ids'}.intersection(values) or changed:
+            self._validate_registered_document_debt()
         return result
 
     def _archive_legacy_documents(self, update_debt=True):

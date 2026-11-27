@@ -66,7 +66,7 @@
                             <div class="alert alert-info" role="status" invisible="not id or amount_known">במסמך היסטורי זה לא תועד סכום. לא נוצר חוב משוער.</div>
                         </form>
                     </field>
-                    <group string="גבייה מהלקוח"><field name="field_customer_due"/><field name="field_customer_paid"/><field name="field_customer_balance"/>
+                    <group string="גבייה מהלקוח"><p>אחרי רישום מסמך חיוב, החוב נקבע לפיו. לשינוי הסכום מוסיפים מסמך מתקן; התשלומים הקיימים נשמרים.</p><field name="field_customer_due"/><field name="field_customer_paid"/><field name="field_customer_balance"/>
                         <button name="action_register_customer_payment" type="object" string="רישום תשלום מהלקוח" invisible="field_customer_due &lt;= 0 or field_customer_balance &lt;= 0"/>
                         <field name="field_payment_ids" readonly="1"/></group>
                     <group string="תשלומים לקבלן" groups="field_work_photos.group_field_finance"><field name="field_contractor_due"/><field name="field_contractor_amount_approved"/><button name="action_approve_contractor_amount" type="object" string="אישור סכום לקבלן"/><field name="field_contractor_paid"/><field name="field_contractor_balance"/>

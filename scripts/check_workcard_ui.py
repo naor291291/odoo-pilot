@@ -71,7 +71,9 @@ with sync_playwright() as p:
         table = page.locator('[name="field_document_history_ids"]')
         table.get_by_text('הוסף שורה', exact=True).click()
         dialog = page.locator('.modal:visible')
-        dialog.locator('[name="kind"] select').select_option(kind)
+        labels = {'quote': 'הצעת מחיר', 'proforma': 'חשבון עסקה', 'invoice': 'חשבונית מס',
+                  'receipt': 'קבלה', 'invoice_receipt': 'חשבונית מס קבלה'}
+        dialog.locator('[name="kind"] select').select_option(label=labels[kind])
         input_field('number', dialog).fill(number)
         input_field('amount', dialog).fill(str(amount))
         if pdf:
