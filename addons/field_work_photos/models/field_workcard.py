@@ -62,6 +62,8 @@ class FieldWorkDocument(models.Model):
                 # is entered explicitly including VAT; never infer a VAT rate.
                 doc.lead_id.write({'field_customer_due': doc.amount})
             doc.lead_id._message_log(body='נוסף מסמך להיסטוריית העבודה; מסמכים קודמים נשמרו.')
+            if update_debt and doc.kind in ('receipt', 'invoice_receipt'):
+                doc.lead_id._auto_document_stage('invoice')
         return records
 
     @api.constrains('pdf')

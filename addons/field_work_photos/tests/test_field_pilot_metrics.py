@@ -192,6 +192,9 @@ class TestFieldPilotMetrics(TransactionCase):
             self.assertEqual(lead.field_dispatch_code, 'completed')
             self.assertFalse(lead.field_delivery_attempt_ids)
             final = payments.create({'lead_id': lead.id, 'amount': 780, 'reference': 'FINAL'})
+            self.assertEqual(lead.field_dispatch_code, 'completed')
+            self.env['field.work.document'].with_user(self.owner).create({
+                'lead_id': lead.id, 'kind': 'receipt', 'number': 'RECEIPT-FINAL'})
             self.assertEqual(lead.field_dispatch_code, 'paid')
             self.assertEqual(lead.field_delivery_attempt_ids.document_kind, 'invoice')
             final._cancel_registration('Synthetic cancellation')
@@ -217,6 +220,9 @@ class TestFieldPilotMetrics(TransactionCase):
             lead.action_submit_field_report()
             self.assertEqual(lead.field_dispatch_code, 'field')
             lead.action_approve_field_report()
+            self.assertEqual(lead.field_dispatch_code, 'completed')
+            self.env['field.work.document'].with_user(self.owner).create({
+                'lead_id': lead.id, 'kind': 'receipt', 'number': 'RECEIPT-PREPAID'})
             self.assertEqual(lead.field_dispatch_code, 'paid')
             self.assertEqual(len(lead.field_delivery_attempt_ids), 1)
             self.assertEqual(lead.field_delivery_attempt_ids.document_kind, 'invoice')

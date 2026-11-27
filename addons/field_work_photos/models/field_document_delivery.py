@@ -94,7 +94,9 @@ class CrmLead(models.Model):
                     lead.action_next_field_stage()
             elif kind == 'invoice' and lead.field_dispatch_code == 'completed' and lead.field_collection_status == 'paid':
                 number, pdf = DOCUMENTS['invoice'][:2]
-                if (lead[number] or '').strip() and lead.with_context(bin_size=True)[pdf]:
+                if ((lead[number] or '').strip() and lead.with_context(bin_size=True)[pdf]
+                        and self.env['field.work.document'].sudo().search_count([
+                            ('lead_id', '=', lead.id), ('kind', 'in', ['receipt', 'invoice_receipt'])])):
                     lead.action_close_field_work()
 
     def write(self, vals):
