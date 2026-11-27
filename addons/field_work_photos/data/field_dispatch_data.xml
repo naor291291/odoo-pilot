@@ -37,4 +37,8 @@
         <field name="team_id" ref="team_field_service"/><field name="field_dispatch_code">paid</field>
         <field name="fold">True</field>
     </record>
+    <record id="task_stage_field_dispatch" model="project.task.type">
+        <field name="name">עבודת שטח פתוחה</field><field name="sequence">10</field>
+        <field name="project_ids" eval="[(4, ref('project_field_dispatch'))]"/>
+    </record>
 </odoo>

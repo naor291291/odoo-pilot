@@ -16,7 +16,7 @@ class TestFieldPricing(TransactionCase):
 
     def lead(self, amount=1000, materials=0, **vals):
         return self.env['crm.lead'].with_user(self.owner).create({
-            'name': 'Pricing example', 'is_field_service': True,
+            'name': 'Pricing example', 'is_field_service': True, 'field_commission_formula': 'gross',
             'partner_id': self.customer.id, 'phone': '0501234567',
             'field_quote_number': 'PRICE-100', 'field_contractor_id': self.contractor.id,
             'field_visit_at': fields.Datetime.now(), 'field_site_address': 'Test Street 10',

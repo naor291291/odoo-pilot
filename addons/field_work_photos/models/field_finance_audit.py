@@ -3,7 +3,7 @@ from odoo import models
 from .field_entitlement import SHEET_FIELDS
 from .field_pricing import RATE_FIELDS
 
-LEAD_FIELDS = {'field_sale_amount', 'field_material_cost', 'field_customer_due', 'field_contractor_due', *SHEET_FIELDS}
+LEAD_FIELDS = {'field_sale_amount', 'field_material_cost', 'field_customer_due', 'field_contractor_due', *SHEET_FIELDS, 'field_expenses_approved', 'field_commission_formula'}
 
 
 def log_updates(records, names):

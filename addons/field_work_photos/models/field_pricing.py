@@ -47,6 +47,10 @@ class CrmLead(models.Model):
 
     field_sale_amount = fields.Monetary(string='סכום עסקה לפני מע״מ', currency_field='field_pricing_currency_id', copy=False)
     field_material_cost = fields.Monetary(string='עלות חומרים לפני מע״מ', currency_field='field_pricing_currency_id', copy=False, groups=FINANCE_GROUP)
+    field_commission_formula = fields.Selection([('gross', 'חישוב קודם — נשמר להיסטוריה'), ('net', 'עמלה לאחר הוצאות עסק וחומרים')], default='net', required=True, copy=False, groups=FINANCE_GROUP)
+    field_expenses_approved = fields.Boolean(string='הוצאות הקבלן אושרו להחזר', groups=FINANCE_GROUP, copy=False)
+    field_commission_base = fields.Monetary(string='בסיס עמלה', currency_field='field_pricing_currency_id', compute='_compute_field_pricing', compute_sudo=True, groups=FINANCE_GROUP)
+    field_commission_amount = fields.Monetary(string='עמלת קבלן', currency_field='field_pricing_currency_id', compute='_compute_field_pricing', compute_sudo=True, groups=FINANCE_GROUP)
     field_rates_frozen = fields.Boolean(copy=False, readonly=True, groups=FINANCE_GROUP)
     field_rate_small_snapshot = fields.Float(copy=False, readonly=True, groups=FINANCE_GROUP)
     field_rate_medium_snapshot = fields.Float(copy=False, readonly=True, groups=FINANCE_GROUP)
@@ -62,7 +66,9 @@ class CrmLead(models.Model):
                  'field_contractor_id.partner_id.field_rate_medium',
                  'field_contractor_id.partner_id.field_rate_large',
                  'field_rates_frozen', 'field_rate_small_snapshot',
-                 'field_rate_medium_snapshot', 'field_rate_large_snapshot')
+                 'field_rate_medium_snapshot', 'field_rate_large_snapshot',
+                 'field_sheet_business_expenses', 'field_sheet_contractor_expenses',
+                 'field_expenses_approved', 'field_commission_formula')
     def _compute_field_pricing(self):
         currency = self.env.ref('base.ILS')
         for lead in self:
@@ -72,8 +78,14 @@ class CrmLead(models.Model):
                 tier = 'small' if sale <= 500 else 'medium' if sale <= 1250 else 'large'
                 rate = (lead['field_rate_' + tier + '_snapshot'] if lead.field_rates_frozen
                         else lead.field_contractor_id.partner_id['field_rate_' + tier])
-            cost = currency.round(sale * rate / 100)
-            profit = currency.round(sale - cost - lead.field_material_cost)
+            business = currency.round(lead.field_material_cost + (lead.field_sheet_business_expenses if lead.field_commission_formula == 'net' else 0))
+            base = sale if lead.field_commission_formula == 'gross' else currency.round(sale - business)
+            commission = currency.round(base * rate / 100)
+            reimbursement = currency.round(lead.field_sheet_contractor_expenses) if lead.field_commission_formula == 'net' and lead.field_expenses_approved and lead.field_execution_type == 'subcontractor' and lead.field_contractor_id else 0
+            cost = currency.round(commission + reimbursement)
+            profit = currency.round(sale - business - cost)
+            lead.field_commission_base = base
+            lead.field_commission_amount = commission
             lead.field_applied_rate = rate
             lead.field_contractor_cost = cost
             lead.field_gross_profit = profit
@@ -129,6 +141,8 @@ class CrmLead(models.Model):
                 service.field_task_ids._lock_dispatch_work()
             if any(task.field_review_state in ('pending', 'approved') for task in service.field_task_ids):
                 raise ValidationError('יש להחזיר את העבודה לתיקון לפני שינוי סכומים.')
+        if {'field_sheet_contractor_expenses', 'field_contractor_id'}.intersection(vals) and 'field_expenses_approved' not in vals:
+            vals = dict(vals, field_expenses_approved=False)
         result = super().write(vals)
         # Preserve the contractor's rates at dispatch, including legitimate
         # reassignment while a task is in draft/correction. Later profile changes

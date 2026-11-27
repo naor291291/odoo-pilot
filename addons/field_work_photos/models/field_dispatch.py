@@ -306,6 +306,7 @@ class CrmLead(models.Model):
                     **lead._field_task_values(), 'name': lead.name,
                     'project_id': self.env.ref('field_work_photos.project_field_dispatch').id,
                     'field_service_lead_id': lead.id, 'field_report_required': True,
+                    'stage_id': self.env.ref('field_work_photos.task_stage_field_dispatch').id,
                     'company_id': lead.company_id.id,
                 })
 

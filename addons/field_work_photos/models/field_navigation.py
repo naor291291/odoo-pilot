@@ -118,12 +118,12 @@ class FieldWorkDashboard(models.TransientModel):
         action = self.env['ir.actions.actions']._for_xml_id('field_work_photos.action_field_service_leads')
         action['domain'] = [('is_field_service', '=', True)] + domain
         action['views'] = [(self.env.ref('field_work_photos.view_field_lead_list').id, 'list'),
-                           (self.env.ref('field_work_photos.view_field_lead_form').id, 'form')]
+                           (self.env.ref('field_work_photos.view_field_workcard').id, 'form')]
         return action
 
     def action_new_work(self):
         action = self._leads([])
-        action.update(res_id=False, views=[(self.env.ref('field_work_photos.view_field_lead_form').id, 'form')])
+        action.update(res_id=False, views=[(self.env.ref('field_work_photos.view_field_setup').id, 'form')])
         return action
 
     def action_new_queue(self):
