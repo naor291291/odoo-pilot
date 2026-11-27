@@ -190,3 +190,10 @@
 @media (prefers-reduced-motion: reduce) {
     .o_field_ui *, .o_field_ui *::before, .o_field_ui *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
+
+// Chatter is rendered beside the form renderer, outside the workcard's own root.
+.o_form_view.o_field_central_workcard .o-mail-Chatter,
+.o_form_view:has(.o_field_central_workcard) .o-mail-Chatter {
+    .text-muted, .o-mail-Message-date, .position-absolute.end-0.top-0 { color: #465d70 !important; }
+    .o-mail-NotificationMessage, .o-mail-Message-date, .text-muted { opacity: 1 !important; }
+}

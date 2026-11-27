@@ -70,12 +70,14 @@ with sync_playwright() as p:
     def document(kind, number, amount=0, pdf=None):
         table = page.locator('[name="field_document_history_ids"]')
         table.get_by_text('הוסף שורה', exact=True).click()
-        row = table.locator('.o_data_row').last
-        row.locator('[name="kind"] select').select_option(kind)
-        input_field('number', row).fill(number)
-        input_field('amount', row).fill(str(amount))
+        dialog = page.locator('.modal:visible')
+        dialog.locator('[name="kind"] select').select_option(kind)
+        input_field('number', dialog).fill(number)
+        input_field('amount', dialog).fill(str(amount))
         if pdf:
-            row.locator('input[type="file"]').set_input_files({'name': number + '.pdf', 'mimeType': 'application/pdf', 'buffer': pdf})
+            dialog.locator('input[type="file"]').set_input_files({'name': number + '.pdf', 'mimeType': 'application/pdf', 'buffer': pdf})
+        dialog.get_by_role('button', name='שמור וסגור', exact=True).click()
+        expect(dialog).to_have_count(0)
         save()
 
     def pay(amount, reference):

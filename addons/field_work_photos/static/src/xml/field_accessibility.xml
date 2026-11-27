@@ -58,4 +58,20 @@
     <t t-inherit="web.NavBar.SectionsMenu.MoreDropdown" t-inherit-mode="extension">
         <xpath expr="//Dropdown/button" position="attributes"><attribute name="role">menuitem</attribute><attribute name="aria-label">תפריטים נוספים</attribute></xpath>
     </t>
+    <t t-inherit="web.Breadcrumbs" t-inherit-mode="extension">
+        <xpath expr="//button[hasclass('o_back_button')]" position="attributes"><attribute name="aria-label">חזרה למסך הקודם</attribute></xpath>
+    </t>
+    <t t-inherit="mail.Chatter" t-inherit-mode="extension">
+        <xpath expr="//i[hasclass('oi-search')]" position="attributes"><attribute name="role"/><attribute name="aria-hidden">true</attribute></xpath>
+        <xpath expr="//i[hasclass('fa-user-o')]" position="attributes"><attribute name="role"/><attribute name="aria-hidden">true</attribute></xpath>
+    </t>
+    <t t-inherit="mail.Message" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o-mail-Message-avatarContainer')]" position="attributes">
+            <attribute name="t-att-role">getAuthorText() ? 'button' : 'img'</attribute><attribute name="t-att-tabindex">getAuthorText() ? 0 : undefined</attribute>
+            <attribute name="t-att-aria-label">getAuthorText() || authorName || 'מבצע הפעולה'</attribute>
+            <attribute name="t-on-keydown">ev => this.getAuthorText() &amp;&amp; ['Enter', ' '].includes(ev.key) &amp;&amp; (ev.preventDefault(), this.onClickAuthor(ev))</attribute>
+        </xpath>
+        <xpath expr="//img[hasclass('o-mail-Message-avatar')]" position="attributes"><attribute name="t-att-alt">''</attribute></xpath>
+        <xpath expr="//li[hasclass('o-mail-Message-tracking')]" position="attributes"><attribute name="role"/></xpath>
+    </t>
 </templates>
