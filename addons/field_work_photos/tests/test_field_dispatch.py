@@ -63,7 +63,8 @@ class TestFieldDispatch(TransactionCase):
 
     def test_dispatch_requires_all_details(self):
         for field in ('partner_id', 'field_contractor_id', 'field_visit_at', 'field_site_address', 'field_work_description'):
-            lead = self.lead()
+            # Missing-details validation is independent of issued-document identity protection.
+            lead = self.lead(field_quote_number=False)
             lead.write({field: False})
             with self.assertRaises(ValidationError), self.cr.savepoint():
                 lead.action_dispatch_field_work()
