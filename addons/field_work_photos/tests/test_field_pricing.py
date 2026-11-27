@@ -15,14 +15,17 @@ class TestFieldPricing(TransactionCase):
         cls.customer = cls.env['res.partner'].create({'name': 'Pricing customer', 'phone': '0501234567'})
 
     def lead(self, amount=1000, materials=0, **vals):
-        return self.env['crm.lead'].with_user(self.owner).create({
-            'name': 'Pricing example', 'is_field_service': True, 'field_commission_formula': 'gross',
+        lead = self.env['crm.lead'].with_user(self.owner).create({
+            'name': 'Pricing example', 'is_field_service': True,
             'partner_id': self.customer.id, 'phone': '0501234567',
             'field_quote_number': 'PRICE-100', 'field_contractor_id': self.contractor.id,
             'field_visit_at': fields.Datetime.now(), 'field_site_address': 'Test Street 10',
             'field_work_description': 'Replace tap', 'field_sale_amount': amount,
             'field_material_cost': materials, **vals,
         })
+        # Historical-pricing regression fixtures retain the pre-migration formula.
+        lead.sudo()._migrate_commission_formula('gross')
+        return lead
 
     def dispatch(self, lead):
         for _ in range(4):

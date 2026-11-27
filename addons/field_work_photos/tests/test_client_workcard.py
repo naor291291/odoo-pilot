@@ -78,6 +78,14 @@ class TestClientWorkcard(TransactionCase):
             work.action_approve_contractor_amount()
         self.assertFalse(work.field_payout_ids)
 
+    def test_legacy_formula_cannot_bypass_negative_base(self):
+        work = self.work(field_material_cost=800)
+        with self.assertRaises(AccessError), self.cr.savepoint():
+            work.write({'field_commission_formula': 'gross'})
+        with self.assertRaises(AccessError), self.cr.savepoint():
+            self.work(field_commission_formula='gross')
+        self.assertEqual(self.work().field_commission_formula, 'net')
+
     def test_rate_snapshot_and_cost_updates(self):
         work = self.work(); work.action_workcard_dispatch()
         self.contractor.partner_id.field_rate_medium = 20
@@ -126,6 +134,36 @@ class TestClientWorkcard(TransactionCase):
         with self.assertRaises(Exception), self.cr.savepoint(): self.document(work, 'invoice', 'INV', 700)
         self.document(work, 'receipt', 'R', 700)
         self.assertEqual(doc.number, 'INV')
+
+    def test_number_then_pdf_is_archived_once_without_replacement(self):
+        from reportlab.pdfgen import canvas
+        stream = BytesIO(); pdf = canvas.Canvas(stream); pdf.drawString(20, 20, 'Original'); pdf.save()
+        payload = base64.b64encode(stream.getvalue())
+        work = self.work()
+        work.field_quote_number = 'LEGACY-Q'
+        doc = work.field_document_history_ids
+        self.assertEqual(len(doc), 1)
+        self.assertFalse(doc.pdf)
+        work.write({'field_quote_pdf': payload, 'field_quote_filename': 'original.pdf'})
+        self.assertEqual(doc.pdf, payload)
+        self.assertEqual(doc.filename, 'original.pdf')
+        self.assertEqual(len(work.field_document_history_ids), 1)
+        with self.assertRaises(AccessError), self.cr.savepoint():
+            doc.with_user(self.ops).write({'pdf': payload})
+
+    def test_historical_archive_does_not_rewrite_debt(self):
+        # A migration snapshot must not rerun collection writes on historical work.
+        work = self.work(field_customer_due=700, field_invoice_number='HIST-INV')
+        old_due = work.field_customer_due
+        work._archive_legacy_documents(update_debt=False)
+        self.assertEqual(work.field_customer_due, old_due)
+        self.assertEqual(work.field_document_history_ids.number, 'HIST-INV')
+
+    def test_zero_rate_contractor_can_still_receive_approved_expenses(self):
+        self.contractor.partner_id.field_rate_medium = 0
+        work = self.work(field_sheet_contractor_expenses=50, field_expenses_approved=True)
+        self.assertEqual(work.field_commission_amount, 0)
+        self.assertEqual(work.field_contractor_cost, 50)
 
     def test_invalid_pdf_and_receipt_number(self):
         work = self.work()

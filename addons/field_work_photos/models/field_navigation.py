@@ -87,7 +87,7 @@ class FieldWorkDashboard(models.TransientModel):
             'schedule_count': [('field_dispatch_code', '=', 'schedule')],
             'review_count': [('field_task_ids.field_review_state', '=', 'pending')],
             'active_count': [('field_dispatch_code', '=', 'field')],
-            'collection_count': [('field_dispatch_code', '=', 'completed')],
+            'collection_count': [('field_customer_due', '>', 0), ('field_dispatch_code', '!=', 'paid')],
         }
         values = {name: Lead.search_count(base + domain) for name, domain in domains.items()}
         for dashboard in self:

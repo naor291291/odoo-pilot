@@ -29,7 +29,7 @@
                     <field name="field_collection_status" invisible="1"/><field name="field_pricing_currency_id" invisible="1"/>
                     <group invisible="id" string="פתיחת עבודה"><field name="partner_id" required="not id"/><field name="name" string="שם העבודה"/>
                         <field name="field_site_address" required="not id"/><field name="field_work_description" required="not id"/><field name="phone"/></group>
-                    <group col="1" invisible="not id"><h1><field name="partner_id"/></h1><h2><field name="name"/></h2>
+                    <group col="1" invisible="not id"><label for="workcard_customer" string="לקוח"/><h1><field name="partner_id" id="workcard_customer"/></h1><label for="workcard_title" string="שם העבודה"/><h2><field name="name" id="workcard_title"/></h2>
                     <button name="action_open_field_customer" type="object" string="פתיחת פרטי הלקוח"/><group string="פרטי הלקוח והעבודה"><group><field name="phone"/><field name="contact_name"/><field name="field_site_address"/><field name="field_site_unit"/></group>
                         <group><field name="field_work_description"/><field name="field_access_instructions"/><field name="company_id" groups="base.group_multi_company"/></group></group>
                     <group string="עסקה והצעת מחיר"><field name="field_sale_amount"/><field name="field_quote_number"/>
