@@ -33,13 +33,8 @@ jobs:
           python3 deploy/cloady/generate_dockerfile.py --check
           python3 deploy/cloady/test_startup.py
           docker compose config --quiet
-      - name: PostgreSQL lock and paired backup restore
-        env:
-          CLOADY_SYNTHETIC_TEST: '1'
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y postgresql-client-16
-          python3 -m pip install psycopg2-binary==2.9.10
-          python3 deploy/cloady/test_postgres.py
       - name: Build from repository root with shared security fixes
         run: docker build -f deploy/cloady/Dockerfile -t cloady-odoo:ci .
+      - name: PostgreSQL lock and paired backup restore using release image tools
+        run: |
+          docker run --rm --network host --entrypoint python3 -e CLOADY_SYNTHETIC_TEST=1 -v "$PWD/deploy/cloady:/tests:ro" cloady-odoo:ci /tests/test_postgres.py
