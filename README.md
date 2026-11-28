@@ -307,3 +307,7 @@ The disposable pilot setup replaces only the exact default company name `My Comp
   אינו שולח הודעה ואינו משנה שלב, סכום או תקבול.
 
 הגדרת הספקים, אימות על נמעני ניסוי, פריסה עם HTTPS וגיבוי חיצוני מתועדים ב־[מדריך המסירה](deploy/README.md).
+
+## פריסה קבועה ב־Cloady דרך Git
+
+הוראות הפריסה, התחזוקה, השחזור ותוצאות האימות בפועל נמצאות ב־[מדריך Cloady](deploy/cloady/README.md). אפליקציית Git נוצרה בענף `main`; ההעברה ובדיקת Redeploy עם שימור הנתונים עדיין לא הושלמו. אין לראות בבניית Image או בתשובת HTTP של מצב תחזוקה אישור להפעלת CRM.

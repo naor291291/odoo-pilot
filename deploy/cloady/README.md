@@ -12,18 +12,34 @@ No paid resource may be created before the user approves the displayed immediate
 charge and monthly increment. No old application or volume may be deleted before
 successful authenticated acceptance and separate deletion approval.
 
-The existing account on 2026-11-28 showed $11.70 invoiced this period, $0 outstanding,
-$12.25 at renewal; resource subtotal $11.25 (2.5 vCPU, 5 GB RAM, 8 GB SSD).
-The $1 discrepancy is unresolved. Idle apps retain subscribed capacity.
-The authenticated Git preview recognizes compose.yaml, two services, 1 vCPU,
-2 GB RAM, two 1 GB volumes and Odoo port 8069. It quotes $3.89/month for the app
-but $11.25/month workspace total, inconsistent with existing renewal. Immediate
-proration and final post-cleanup bill remain UNVERIFIED. No Deploy was clicked.
-Public pricing gives Small (1 vCPU / 2 GB) at $5/month; this is an estimate for
-one remaining app, not an account-specific confirmed renewal quote.
+On 2026-11-28 PR #24 merged as `898d5d8`. The existing Upload application
+was Running and had no Git deployment trigger. Its data and volumes remain intact.
+The authenticated quote was $7.36/month before, $11.25/month after, a $3.89/month
+increment. Creation of `odoo-crm-git` was submitted within the user's $4 immediate
+and $4 monthly cap. Exact charged proration still requires invoice verification.
+The Git app tracks `naor291291/odoo-pilot`, `main`; automatic deploy-on-push and
+preview branches are disabled. Two dedicated 1 GB volumes were created.
+
+The first Git build produced the image successfully, but rollout failed and neither
+service ran. The UI supplied no runtime log. A required Compose variable,
+`ODOO_PREVIOUS_RELEASE`, was absent in the initial environment. Initial restoration
+also needs an explicit maintenance process, because the supervisor deliberately
+refuses an uninitialized database. Do not describe this launch as a working CRM.
+
+A fresh source backup contains 310 tables and 58 file-backed attachment references.
+The paired dump/archive hashes and all 58 file checksums were verified after private
+S3 download. An independent encrypted copy was verified by decrypting in memory.
+A full database restore has NOT yet been verified. No production migration or traffic
+cutover has occurred. Live Redeploy/data-preservation acceptance remains pending.
 
 ## Startup contract
 
+* For the initial restore, set `ODOO_MAINTENANCE=1` before deployment. Only a static
+  maintenance HTTP responder runs; it does not import Odoo, connect to PostgreSQL,
+  start cron, initialize a database or run migrations. HTTP 200 in this mode is a
+  platform health response, **not** a successful Odoo acceptance test. Use the same
+  existing service/volumes for restoration, then verify the paired restore and set
+  `ODOO_PREVIOUS_RELEASE` before switching maintenance to 0 and redeploying.
 * Import an existing PostgreSQL database and its matching filestore first. No empty
   database initialization, user creation or password reset occurs in this image.
 * Target version comes from the addon manifest; installed version from PostgreSQL.

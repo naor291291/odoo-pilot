@@ -33,7 +33,8 @@ services:
       DB_NAME: field_crm
       DB_SSLMODE: disable
       ODOO_ADMIN_PASSWORD: ${ODOO_ADMIN_PASSWORD:?Preserve the existing master secret}
-      ODOO_PREVIOUS_RELEASE: ${ODOO_PREVIOUS_RELEASE:?Record previous immutable release}
+      ODOO_PREVIOUS_RELEASE: ${ODOO_PREVIOUS_RELEASE:-}
+      ODOO_MAINTENANCE: ${ODOO_MAINTENANCE:-0}
     ports:
       - '8069:8069'
     volumes:
