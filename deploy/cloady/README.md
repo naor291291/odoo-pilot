@@ -93,6 +93,6 @@ or discard writes. No deletion/reset is scripted.
 `python3 deploy/cloady/test_startup.py` tests safety decisions, restart blocking,
 termination, lease loss and disk headroom. `test_postgres.py` uses disposable CI
 PostgreSQL 16 to verify exclusion and actual dump/restore+attachment correspondence.
-CI also validates compose and builds the image; existing application CI remains intact.
+CI also builds the image and exercises an actual 18.0.17.0.2 to 18.0.18.0.0 upgrade, HTTP readiness, password-hash preservation, competing-server refusal and restart without repeated migration. Existing application CI remains intact.
 Production migration, storage persistence, HTTPS and authenticated acceptance are
 pending the paid-resource approval and actual migration, not claimed complete.

@@ -38,3 +38,9 @@ jobs:
       - name: PostgreSQL lock and paired backup restore using release image tools
         run: |
           docker run --rm --network host --entrypoint python3 -e CLOADY_SYNTHETIC_TEST=1 -v "$PWD/deploy/cloady:/tests:ro" cloady-odoo:ci /tests/test_postgres.py
+      - name: Actual single-module migration and restart from previous release
+        run: |
+          git fetch --depth=1 origin 693156a61e85c5df386c581cf8a20406213b4c76
+          mkdir .cloady-old-addons
+          git archive FETCH_HEAD addons | tar -x -C .cloady-old-addons --strip-components=1
+          python3 deploy/cloady/test_migration.py
