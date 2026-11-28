@@ -216,6 +216,7 @@ def maintenance():
 
 
 def main():
+    print('Release supervisor revision: git-redeploy-proof-20261128', flush=True)
     mode = os.environ.get('ODOO_MAINTENANCE', '0')
     if mode not in ('0', '1'):
         raise Stop('ODOO_MAINTENANCE must be 0 or 1')

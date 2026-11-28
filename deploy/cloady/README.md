@@ -1,4 +1,4 @@
-# Git-managed Cloady migration — preparation, not deployed
+# Git-managed Cloady deployment
 
 Target: main containing PR #23, module 18.0.18.0.0. Root compose.yaml builds
 `deploy/cloady/Dockerfile` from the repository root, including the shared runtime
@@ -20,17 +20,46 @@ and $4 monthly cap. Exact charged proration still requires invoice verification.
 The Git app tracks `naor291291/odoo-pilot`, `main`; automatic deploy-on-push and
 preview branches are disabled. Two dedicated 1 GB volumes were created.
 
-The first Git build produced the image successfully, but rollout failed and neither
-service ran. The UI supplied no runtime log. A required Compose variable,
-`ODOO_PREVIOUS_RELEASE`, was absent in the initial environment. Initial restoration
-also needs an explicit maintenance process, because the supervisor deliberately
-refuses an uninitialized database. Do not describe this launch as a working CRM.
+PR #25 merged as `e3ad711` after all three CI workflows passed. Cloady built and
+started this revision in the same Git app (deployment `24b65de1`), with the explicit
+maintenance responder and PostgreSQL 16.16. This resolved initial rollout; the
+maintenance HTTP response is not a working CRM.
 
-A fresh source backup contains 310 tables and 58 file-backed attachment references.
-The paired dump/archive hashes and all 58 file checksums were verified after private
-S3 download. An independent encrypted copy was verified by decrypting in memory.
-A full database restore has NOT yet been verified. No production migration or traffic
-cutover has occurred. Live Redeploy/data-preservation acceptance remains pending.
+Both the initial backup and the final snapshot `20261128T153648Z` were restored
+into the dedicated target database while no Odoo process was running. Validation
+passed for all 310 table counts, 58 file-backed attachments, and hashes of all
+users/passwords and group memberships. Private encrypted independent backup copies
+were verified by decryption. No credentials or customer backups belong in Git.
+
+The source changed after the first snapshot. A final paired snapshot was captured
+under bounded table locks (90-second hard deadline, automatic rollback); after its
+private download and checksum verification, the old Upload app was stopped through
+Cloady before the bounded write hold expired. Its volumes remain intact. The final
+snapshot was restored and verified again before launching the managed upgrade.
+Live upgraded-version, authenticated-screen and same-app Redeploy acceptance are
+still pending; update this paragraph only from observed results.
+
+## Future update procedure
+
+1. Merge a reviewed change to `main` after CI passes. Increment the addon manifest
+   only when addon code changes; the supervisor reads that version dynamically.
+2. Verify an accessible paired backup and previous release reference. Arrange a
+   maintenance window. In the **same Git application**, stop it and wait for both
+   services to show Stopped; never change/delete its named volumes.
+3. Use Start (which builds current main) or Settings → Deployments → Deploy now
+   after the app is stopped. Keep deploy-on-push disabled to avoid rolling writers.
+4. Startup checks the installed version, holds its database lease, backs up before
+   a necessary upgrade, and starts HTTP only after successful version verification.
+5. Verify the installed version, users, documents and business screens before
+   reopening usage. A same-version redeploy must not rerun migrations.
+6. On a failed/interrupted migration, keep the app stopped. Preserve attempt.json
+   and logs; inspect the database before deciding whether to acknowledge a completed
+   migration or restore the paired snapshot with its matching previous image.
+   Switching an image alone is not a database rollback. Never delete the old app
+   without separate approval.
+
+The harmless startup log marker `git-redeploy-proof-20261128` is used for the live
+Git update acceptance check; it does not change addon fingerprints or business data.
 
 ## Startup contract
 
