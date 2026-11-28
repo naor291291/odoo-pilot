@@ -2,12 +2,14 @@
 
 CI only: Docker services, fixture credentials and volumes; never reads production.
 """
+import ast
 import json
 from pathlib import Path
 import subprocess
 import time
 import urllib.request
 
+TARGET_VERSION = ast.literal_eval((Path(__file__).resolve().parents[2] / 'addons/field_work_photos/__manifest__.py').read_text())['version']
 IMAGE='cloady-odoo:ci'
 NAME='cloady-migration-smoke'
 VOLUME='cloady-migration-fixture'
@@ -61,7 +63,7 @@ try:
     run('docker','run','-d','--name',NAME,'--network','host',*ENV,
         '-v',VOLUME+':/var/lib/odoo',IMAGE,stdout=subprocess.DEVNULL)
     ready(); after=snapshot()
-    assert after['state']==['installed','18.0.18.0.0'], after['state']
+    assert after['state']==['installed',TARGET_VERSION], after['state']
     assert before['users']==after['users'], 'Synthetic users/password hashes changed'
     result=subprocess.run(['docker','run','--rm','--network','host',*ENV,
         '-v',VOLUME+':/var/lib/odoo',IMAGE],capture_output=True,text=True,timeout=30)
@@ -71,7 +73,7 @@ try:
     assert restarted==after, 'Restart changed module state or users'
     run('docker','exec',NAME,'python3','-c',
         "from pathlib import Path; r=Path('/var/lib/odoo/release-control'); assert not (r/'attempt.json').exists(); assert len(list(r.glob('backup-*')))==1")
-    print('PASS: actual 18.0.17.0.2 -> 18.0.18.0.0 migration, HTTP, preserved users, competing-server refusal, restart without duplicate migration')
+    print(f'PASS: actual 18.0.17.0.2 -> {TARGET_VERSION} migration, HTTP, preserved users, competing-server refusal, restart without duplicate migration')
 except Exception:
     subprocess.run(['docker','logs','--tail','80',NAME],check=False)
     raise

@@ -41,7 +41,7 @@
                         <p>כל סכומי התמחור לפני מע״מ. הוצאות עסק אחרות אינן כוללות את החומרים שהוזנו בנפרד. הוצאות קבלן אינן מנוכות מבסיס העמלה, ומתווספות להחזר רק לאחר אישור.</p>
                         <group><field name="field_material_cost"/><field name="field_sheet_business_expenses" string="הוצאות עסק אחרות — ללא החומרים"/>
                             <field name="field_sheet_contractor_expenses"/><field name="field_expenses_approved"/></group>
-                        <group><field name="field_commission_formula" readonly="1"/><field name="field_commission_base"/><field name="field_applied_rate"/><field name="field_commission_amount"/>
+                        <group><field name="field_commission_formula" string="שיטת חישוב העמלה" readonly="1"/><field name="field_commission_base"/><field name="field_applied_rate"/><field name="field_commission_amount"/>
                             <field name="field_contractor_cost"/><field name="field_gross_profit"/><field name="field_gross_margin"/></group>
                         <div class="alert alert-warning" role="alert" invisible="field_commission_base &gt;= 0">בסיס העמלה שלילי. רישום תשלום לקבלן חסום עד להחלטה עסקית.</div>
                     </group>
@@ -54,14 +54,14 @@
                             <field name="channel"/><field name="status" widget="badge"/></list></field></group><h2>מסמכים והיסטוריה</h2><p>מוסיפים מסמך עם מספר וסכום כולל מע״מ. חשבון עסקה וחשבונית מתייחסים לחוב אחד. רישום קבלה אינו מוחק מסמכים קודמים.</p>
                     <field name="field_document_history_ids" context="{'default_lead_id': id}">
                         <list edit="false" delete="false"><field name="currency_id" column_invisible="True"/><field name="id" column_invisible="True"/><field name="kind" readonly="id"/><field name="number" readonly="id"/><field name="amount_known" readonly="1"/><field name="amount" readonly="id" invisible="id and not amount_known"/>
-                            <field name="filename" column_invisible="True"/><field name="pdf" filename="filename" readonly="id"/>
-                            <field name="create_date" readonly="1"/><field name="create_uid" readonly="1"/>
+                            <field name="filename" column_invisible="True"/><field name="pdf" widget="binary" filename="filename" readonly="id"/>
+                            <field name="create_date" string="נוצר בתאריך" readonly="1"/><field name="create_uid" string="נוצר על ידי" readonly="1"/>
                         </list>
                         <form string="הוספת מסמך עבודה" edit="false" delete="false" duplicate="false">
                             <group><field name="lead_id" invisible="1"/><field name="company_id" invisible="1"/><field name="currency_id" invisible="1"/>
                                 <field name="kind" readonly="id"/><field name="number" readonly="id"/><field name="amount_known" invisible="1"/>
                                 <field name="amount" readonly="id" invisible="id and not amount_known"/>
-                                <field name="filename" invisible="1"/><field name="pdf" filename="filename" readonly="id"/>
+                                <field name="filename" invisible="1"/><field name="pdf" widget="binary" filename="filename" readonly="id"/>
                             </group><p>הסכום כולל מע״מ. ניתן לצרף PDF ללא סיסמה, עד 8MB. מסמך שנרשם נשמר בהיסטוריה ואינו ניתן להחלפה.</p>
                             <div class="alert alert-info" role="status" invisible="not id or amount_known">במסמך היסטורי זה לא תועד סכום. לא נוצר חוב משוער.</div>
                         </form>
@@ -113,10 +113,11 @@
     <record id="action_field_work_attention" model="ir.actions.act_window"><field name="view_ids" eval="[(5,0,0),(0,0,{'view_mode':'list','view_id':ref('view_field_lead_list')}),(0,0,{'view_mode':'form','view_id':ref('view_field_workcard')})]"/></record>
     <record id="action_field_collections_paid" model="ir.actions.act_window">
         <field name="name">גבייה שהושלמה / שולם</field><field name="res_model">crm.lead</field><field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_field_collection_search"/>
         <field name="domain">[('is_field_service','=',True),('field_dispatch_code','=','paid')]</field>
         <field name="view_ids" eval="[(5,0,0),(0,0,{'view_mode':'list','view_id':ref('view_field_collection_list')}),(0,0,{'view_mode':'form','view_id':ref('view_field_workcard')})]"/>
     </record>
-    <menuitem id="menu_field_collections_root" name="גבייה ותשלומים" parent="menu_field_service_root" sequence="20" groups="field_work_photos.group_field_dispatcher"/>
+    <menuitem id="menu_field_collections_root" name="גבייה מלקוחות" parent="menu_field_money" sequence="10" groups="field_work_photos.group_field_dispatcher"/>
     <record id="menu_field_collections" model="ir.ui.menu"><field name="parent_id" ref="menu_field_collections_root"/></record>
     <menuitem id="menu_field_collections_paid" name="גבייה שהושלמה / שולם" parent="menu_field_collections_root" action="action_field_collections_paid" sequence="20" groups="field_work_photos.group_field_dispatcher"/>
 </odoo>

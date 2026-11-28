@@ -1,7 +1,7 @@
 name: Cloady Git deployment safety
 on:
   pull_request:
-    paths: ['deploy/cloady/**', 'compose.yaml', '.devcontainer/Dockerfile', '.github/workflows/cloady-preparation.yml']
+    paths: ['addons/field_work_photos/**', 'deploy/cloady/**', 'compose.yaml', '.devcontainer/Dockerfile', '.github/workflows/cloady-preparation.yml']
   workflow_dispatch:
 permissions:
   contents: read
