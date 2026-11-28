@@ -1,0 +1,49 @@
+# Cloady Git source: repository root. Do not enable rolling auto-update.
+services:
+  db:
+    image: postgres:16-bookworm
+    environment:
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set the shared database secret}
+      POSTGRES_DB: field_crm
+    volumes:
+      - database:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U odoo -d field_crm']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 512M
+  odoo:
+    build:
+      context: .
+      dockerfile: deploy/cloady/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: '5432'
+      DB_USER: odoo
+      DB_PASSWORD: ${DB_PASSWORD:?Set the shared database secret}
+      DB_NAME: field_crm
+      DB_SSLMODE: disable
+      ODOO_ADMIN_PASSWORD: ${ODOO_ADMIN_PASSWORD:?Preserve the existing master secret}
+      ODOO_PREVIOUS_RELEASE: ${ODOO_PREVIOUS_RELEASE:?Record previous immutable release}
+    ports:
+      - '8069:8069'
+    volumes:
+      - filestore:/var/lib/odoo
+    stop_grace_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.75'
+          memory: 1536M
+volumes:
+  database:
+  filestore:
