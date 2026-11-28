@@ -57,9 +57,22 @@ Before/after read-only SQL and file checks passed:
 - Both existing named 1 GB volumes and services remain; no resources or billing settings were changed.
 
 Live URL: https://odoo-crm-git-vyvsw7k6-silver-maple-6.cloady.io/
-HTTPS serves the Hebrew login page. Authenticated login and business-screen acceptance
-remain **blocked pending secure sign-in**, not marked passed. No existing credentials
-were reset. Old applications/volumes were not deleted.
+HTTPS login was subsequently completed by the user as `kobiabudi`; the authenticated
+preferences dialog confirmed the existing account, Hebrew and Asia/Jerusalem.
+Read-only browser smoke checks passed for the work dashboard, jobs Kanban, central
+work card, pending collections, completed/paid collections, contractor rate list,
+and settlement report form (discarded without saving). An existing quote PDF also
+opened and rendered successfully under that authenticated session. Financial fields
+and actions were visible to Kobi. No business records or credentials were changed.
+These checks do not claim payment/write execution, a separate Naor login, or new
+negative permission tests. Old applications/volumes were not deleted.
+
+Observed UI follow-ups: two finance menu headings have the same label; a few labels
+remain English. Reopening the nested work-card URL directly showed the older form
+layout, while opening via the Kanban action showed the new central card. The sample
+PDF in the legacy quote slot is a transaction-account document; its business
+classification was not changed or treated as a verified receivable. These issues
+were observed during smoke testing and are not claimed resolved by this redeploy.
 
 Screenshots were captured privately. They are not published in this repository.
 
@@ -166,4 +179,5 @@ termination, lease loss and disk headroom. `test_postgres.py` uses disposable CI
 PostgreSQL 16 to verify exclusion and actual dump/restore+attachment correspondence.
 CI also builds the image and exercises an actual 18.0.17.0.2 to 18.0.18.0.0 upgrade, HTTP readiness, password-hash preservation, competing-server refusal and restart without repeated migration. Existing application CI remains intact.
 Production migration, same-app Git Redeploy, storage persistence and HTTPS were
-verified as recorded above. Authenticated business-screen acceptance is still pending.
+verified as recorded above. Authenticated read-only business-screen smoke checks
+passed as Kobi; the exact limits and UI follow-ups are recorded above.
