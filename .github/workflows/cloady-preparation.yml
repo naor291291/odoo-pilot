@@ -1,0 +1,45 @@
+name: Cloady Git deployment safety
+on:
+  pull_request:
+    paths: ['deploy/cloady/**', 'compose.yaml', '.devcontainer/Dockerfile', '.github/workflows/cloady-preparation.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  deployment-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-bookworm
+        env:
+          POSTGRES_USER: odoo
+          POSTGRES_PASSWORD: synthetic_ci_only
+          POSTGRES_DB: release_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U odoo -d release_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Focused safety checks and configuration validation
+        env:
+          DB_PASSWORD: synthetic_ci_only
+          ODOO_ADMIN_PASSWORD: synthetic_master_password_32_characters
+          ODOO_PREVIOUS_RELEASE: synthetic-previous-release
+        run: |
+          python3 deploy/cloady/generate_dockerfile.py --check
+          python3 deploy/cloady/test_startup.py
+          docker compose config --quiet
+      - name: PostgreSQL lock and paired backup restore
+        env:
+          CLOADY_SYNTHETIC_TEST: '1'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y postgresql-client-16
+          python3 -m pip install psycopg2-binary==2.9.10
+          python3 deploy/cloady/test_postgres.py
+      - name: Build from repository root with shared security fixes
+        run: docker build -f deploy/cloady/Dockerfile -t cloady-odoo:ci .
