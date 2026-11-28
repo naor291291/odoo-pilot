@@ -180,7 +180,48 @@ def run_child(command, env, conn):
             signal.signal(sig, handler)
 
 
+def maintenance():
+    """Keep the restore shell available without importing Odoo or opening the DB."""
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            body = b'Maintenance: Odoo is stopped. Data migration is not complete.\n'
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/plain; charset=utf-8')
+            self.send_header('Cache-Control', 'no-store')
+            self.send_header('Content-Length', str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *_):
+            pass
+
+    stopped = False
+    def stop(*_):
+        nonlocal stopped
+        stopped = True
+    handlers = {sig: signal.getsignal(sig) for sig in (signal.SIGTERM, signal.SIGINT)}
+    try:
+        for sig in handlers:
+            signal.signal(sig, stop)
+        with HTTPServer(('0.0.0.0', 8069), Handler) as server:
+            server.timeout = 0.5
+            print('Maintenance active: no Odoo, cron or database connections', flush=True)
+            while not stopped:
+                server.handle_request()
+    finally:
+        for sig, handler in handlers.items():
+            signal.signal(sig, handler)
+
+
 def main():
+    mode = os.environ.get('ODOO_MAINTENANCE', '0')
+    if mode not in ('0', '1'):
+        raise Stop('ODOO_MAINTENANCE must be 0 or 1')
+    if mode == '1':
+        maintenance()
+        return
     import psycopg2
     spec = importlib.util.spec_from_file_location('adapter', '/opt/field-crm/staxa-entrypoint.py')
     adapter = importlib.util.module_from_spec(spec); spec.loader.exec_module(adapter)

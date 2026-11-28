@@ -10,6 +10,14 @@ from unittest.mock import MagicMock, patch
 import startup as s
 
 class StartupTests(unittest.TestCase):
+    def test_maintenance_returns_before_config_database_or_odoo(self):
+        with patch.dict(os.environ, {'ODOO_MAINTENANCE':'1'}, clear=True), patch.object(s,'maintenance') as hold, patch.object(s.importlib.util,'spec_from_file_location') as config, patch.object(s.subprocess,'Popen') as child:
+            s.main()
+        hold.assert_called_once(); config.assert_not_called(); child.assert_not_called()
+    def test_invalid_maintenance_fails_closed(self):
+        with patch.dict(os.environ, {'ODOO_MAINTENANCE':'yes'}), patch.object(s,'maintenance') as hold:
+            with self.assertRaises(s.Stop): s.main()
+        hold.assert_not_called()
     def test_same_version_serves(self):
         self.assertEqual(s.decision(('installed','18.0.18.0.0'),'18.0.18.0.0',False),'serve')
     def test_upgrade(self):

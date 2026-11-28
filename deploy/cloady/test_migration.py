@@ -44,6 +44,15 @@ def ready():
 old=Path('.cloady-old-addons').resolve()
 run('docker','volume','create',VOLUME,stdout=subprocess.DEVNULL)
 try:
+    run('docker','run','-d','--name',NAME,'--network','host',
+        '-e','ODOO_MAINTENANCE=1','-v',VOLUME+':/var/lib/odoo',IMAGE,stdout=subprocess.DEVNULL)
+    ready()
+    with urllib.request.urlopen('http://127.0.0.1:8069/web/login',timeout=2) as response:
+        assert b'Maintenance: Odoo is stopped.' in response.read()
+    run('docker','exec',NAME,'python3','-c',
+        "from pathlib import Path; assert not Path('/var/lib/odoo/release-control').exists()")
+    run('docker','stop','--time','10',NAME,stdout=subprocess.DEVNULL)
+    run('docker','rm',NAME,stdout=subprocess.DEVNULL)
     run('docker','run','--rm','--network','host',*ENV,'-e','STAXA_ODOO_MODE=init',
         '-v',str(old)+':/mnt/extra-addons:ro','-v',VOLUME+':/var/lib/odoo',
         '--entrypoint','python3',IMAGE,'/opt/field-crm/staxa-entrypoint.py',stdout=subprocess.DEVNULL)
