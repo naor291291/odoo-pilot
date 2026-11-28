@@ -36,8 +36,32 @@ under bounded table locks (90-second hard deadline, automatic rollback); after i
 private download and checksum verification, the old Upload app was stopped through
 Cloady before the bounded write hold expired. Its volumes remain intact. The final
 snapshot was restored and verified again before launching the managed upgrade.
-Live upgraded-version, authenticated-screen and same-app Redeploy acceptance are
-still pending; update this paragraph only from observed results.
+The managed upgrade completed: SQL verified `18.0.18.0.0`, state `installed`.
+
+### Real same-app Redeploy proof — 2026-11-28
+
+All three PR #26 workflows passed before merge `c2dd232d0c6629c28787df64513ddd7aad5d9619`.
+In `odoo-crm-git` (USE1), both services were stopped, then Settings → Deployments →
+Deploy now built deployment `2d28ac15`. The app remained stopped after the build;
+Overview → Start activated the new image. Runtime logs showed
+`Release supervisor revision: git-redeploy-proof-20261128` and successful registry/HTTP startup.
+Image digest: `sha256:77f0c43ed175ce116596518a97613331e13f60417c96aa06a23ab649be651c94`.
+
+Before/after read-only SQL and file checks passed:
+- Module remains `18.0.18.0.0`, installed.
+- Exact fingerprints of 16 business/attachment tables are unchanged.
+- All 58 file references remain; each file matches its database SHA-1 checksum.
+- User/login/password/active/company/share fingerprint and group membership fingerprint are unchanged.
+- The pre-Redeploy baseline persisted on the existing filestore volume.
+- Managed migration backup count remains 1: no repeated migration on the same version.
+- Both existing named 1 GB volumes and services remain; no resources or billing settings were changed.
+
+Live URL: https://odoo-crm-git-vyvsw7k6-silver-maple-6.cloady.io/
+HTTPS serves the Hebrew login page. Authenticated login and business-screen acceptance
+remain **blocked pending secure sign-in**, not marked passed. No existing credentials
+were reset. Old applications/volumes were not deleted.
+
+Screenshots were captured privately. They are not published in this repository.
 
 ## Future update procedure
 
@@ -46,8 +70,10 @@ still pending; update this paragraph only from observed results.
 2. Verify an accessible paired backup and previous release reference. Arrange a
    maintenance window. In the **same Git application**, stop it and wait for both
    services to show Stopped; never change/delete its named volumes.
-3. Use Start (which builds current main) or Settings → Deployments → Deploy now
-   after the app is stopped. Keep deploy-on-push disabled to avoid rolling writers.
+3. After both services stop, use Settings → Deployments → Deploy now and verify
+   the expected main commit in build history. After the build, use Overview → Start
+   if the app remains stopped. Start alone is not proof that new Git code was built.
+   Keep deploy-on-push disabled to avoid rolling writers.
 4. Startup checks the installed version, holds its database lease, backs up before
    a necessary upgrade, and starts HTTP only after successful version verification.
 5. Verify the installed version, users, documents and business screens before
@@ -139,5 +165,5 @@ or discard writes. No deletion/reset is scripted.
 termination, lease loss and disk headroom. `test_postgres.py` uses disposable CI
 PostgreSQL 16 to verify exclusion and actual dump/restore+attachment correspondence.
 CI also builds the image and exercises an actual 18.0.17.0.2 to 18.0.18.0.0 upgrade, HTTP readiness, password-hash preservation, competing-server refusal and restart without repeated migration. Existing application CI remains intact.
-Production migration, storage persistence, HTTPS and authenticated acceptance are
-pending the paid-resource approval and actual migration, not claimed complete.
+Production migration, same-app Git Redeploy, storage persistence and HTTPS were
+verified as recorded above. Authenticated business-screen acceptance is still pending.
