@@ -19,6 +19,7 @@ import time
 
 MODULE = 'field_work_photos'
 LOCK = (181118, 8069)
+PG_BIN = Path('/usr/lib/postgresql/16/bin')
 
 
 class Stop(RuntimeError):
@@ -111,9 +112,9 @@ def backup(conn, cfg, root, current, expected, previous_release):
                   PGSSLMODE=cfg['db_sslmode'])
     # Never put a credential in argv or print subprocess output on failure.
     with (folder / 'backup.log').open('wb') as log:
-        subprocess.run(['pg_dump', '-Fc', '--no-owner', '--no-acl', '-f', str(folder / 'database.dump'),
+        subprocess.run([str(PG_BIN / 'pg_dump'), '-Fc', '--no-owner', '--no-acl', '-f', str(folder / 'database.dump'),
                         cfg['db_name']], env=pg_env, stdout=log, stderr=log, check=True)
-        subprocess.run(['pg_restore', '--list', str(folder / 'database.dump')],
+        subprocess.run([str(PG_BIN / 'pg_restore'), '--list', str(folder / 'database.dump')],
                        stdout=subprocess.DEVNULL, stderr=log, check=True)
     checks = []
     with conn.cursor() as cur:
@@ -199,6 +200,8 @@ def main():
                            application_name='field-crm-release-supervisor')
     conn.autocommit = True
     try:
+        if conn.server_version // 10000 != 16:
+            raise Stop('This release requires PostgreSQL 16 backup compatibility')
         with conn.cursor() as cur:
             cur.execute('SELECT pg_try_advisory_lock(%s,%s)', LOCK)
             if not cur.fetchone()[0]:

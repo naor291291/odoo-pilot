@@ -43,8 +43,8 @@ class DatabaseTests(unittest.TestCase):
                 self.assertFalse(manifest['restore_tested'])
                 self.assertEqual(manifest['attachment_checks'],[[1,name,checksum]])
                 env=dict(os.environ,PGHOST=cfg['db_host'],PGUSER=cfg['db_user'],PGPASSWORD=cfg['db_password'])
-                subprocess.run(['createdb','restore_test'],env=env,check=True)
-                subprocess.run(['pg_restore','--exit-on-error','--no-owner','--no-acl','-d','restore_test',str(backup/'database.dump')],env=env,check=True)
+                subprocess.run([str(s.PG_BIN/'createdb'),'restore_test'],env=env,check=True)
+                subprocess.run([str(s.PG_BIN/'pg_restore'),'--exit-on-error','--no-owner','--no-acl','-d','restore_test',str(backup/'database.dump')],env=env,check=True)
                 restored=psycopg2.connect(host=cfg['db_host'],user=cfg['db_user'],password=cfg['db_password'],dbname='restore_test')
                 try:
                     self.assertEqual(s.module_state(restored),('installed','18.0.17.0.2'))

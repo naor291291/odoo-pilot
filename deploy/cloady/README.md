@@ -15,8 +15,12 @@ successful authenticated acceptance and separate deletion approval.
 The existing account on 2026-11-28 showed $11.70 invoiced this period, $0 outstanding,
 $12.25 at renewal; resource subtotal $11.25 (2.5 vCPU, 5 GB RAM, 8 GB SSD).
 The $1 discrepancy is unresolved. Idle apps retain subscribed capacity.
-The new application quote, proration, volume capacity and final post-cleanup bill
-remain UNVERIFIED. Do not infer a price from these account totals.
+The authenticated Git preview recognizes compose.yaml, two services, 1 vCPU,
+2 GB RAM, two 1 GB volumes and Odoo port 8069. It quotes $3.89/month for the app
+but $11.25/month workspace total, inconsistent with existing renewal. Immediate
+proration and final post-cleanup bill remain UNVERIFIED. No Deploy was clicked.
+Public pricing gives Small (1 vCPU / 2 GB) at $5/month; this is an estimate for
+one remaining app, not an account-specific confirmed renewal quote.
 
 ## Startup contract
 
