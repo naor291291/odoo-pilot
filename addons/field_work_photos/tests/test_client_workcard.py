@@ -330,3 +330,18 @@ class TestClientWorkcard(TransactionCase):
         result = self.env['crm.lead'].with_user(self.ops).get_view(view.id, 'form')['arch']
         self.assertNotIn('<notebook', result)
         self.assertNotIn('name="field_commission_amount"', result)
+
+    def test_live_acceptance_navigation_and_document_widgets(self):
+        from lxml import etree
+        root = self.env.ref('field_work_photos.menu_field_money')
+        collections = self.env.ref('field_work_photos.menu_field_collections_root')
+        self.assertEqual(collections.parent_id, root)
+        self.assertNotEqual(collections.name, root.name)
+        self.assertEqual(self.env.ref('field_work_photos.action_field_collections_paid').search_view_id,
+                         self.env.ref('field_work_photos.view_field_collection_search'))
+        view = self.env.ref('field_work_photos.view_field_workcard')
+        arch = etree.fromstring(self.env['crm.lead'].with_user(self.owner).get_view(view.id, 'form')['arch'])
+        pdf = arch.xpath("//field[@name='field_document_history_ids']/list/field[@name='pdf']")[0]
+        self.assertEqual(pdf.get('widget'), 'binary')
+        self.assertEqual(pdf.get('filename'), 'filename')
+        self.assertEqual(arch.xpath("//field[@name='field_commission_formula']")[0].get('string'), 'שיטת חישוב העמלה')
